@@ -18,4 +18,15 @@ Check out the `official Dash website <https://www.dash.org/>`__ to learn how
 `individuals <https://www.dash.org/individuals/>`__ and `businesses
 <https://www.dash.org/businesses/>`__ can use Dash.
 
+.. toctree::
+   :maxdepth: 3
+   :titlesonly:
+   :hidden:
+
+   docs/index
+
+.. image:: https://raw.githubusercontent.com/dashpay/docs/master/img/businessplan.svg
+   :class: no-scaled-link
+   :align: center
+   :width: 90%
 ```
