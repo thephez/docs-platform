@@ -1,0 +1,151 @@
+/* Update theme variables based on https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/styling.html#css-theme-variables */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,900;1,900&family=Open+Sans:ital,wght@0,400;0,500;1,400&display=swap');
+
+:root {
+  --dash-blue: #008de4;
+  --dash-deep-blue: #012060;
+  --dash-midnight-blue: #0b0f3b;
+}
+
+html[data-theme="light"] {
+  --pst-color-primary:var(--dash-blue);
+  --pst-color-link:var(--pst-color-primary);
+  --pst-color-link-hover:var(--dash-deep-blue);
+}
+
+html[data-theme="dark"] {
+  --pst-color-primary:var(--dash-blue);
+  --pst-color-link:var(--pst-color-primary);
+}
+
+html {
+  /* Headers */
+  --pst-font-size-h1: 28px;
+  --pst-font-size-h2: 24px;
+  --pst-font-size-h3: 20px;
+
+  /* Sidebar styles */
+  --pst-sidebar-font-size: 0.95em;
+  --pst-sidebar-header-font-size: 1.2em;
+}
+
+html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
+    background: none;
+    border-radius: none;
+}
+
+h1,h2,h3,h4,h5,h6{
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+}
+
+p, a, li, ol {
+  font-family: 'Open Sans', sans-serif;
+} 
+
+p {
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.sidebar-end-items__item {
+    position: relative;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    appearance: none;
+    background: transparent;
+    border-radius: 0.25rem;
+}
+
+html[data-theme=dark] select {
+  color: #fff;
+}
+
+html[data-theme="light"] select{
+  color: #000;
+}
+
+html[data-theme="light"] {
+  --table-bg-color-odd: #eeeeee;
+  --table-bg-color-even: #ffffff;
+}
+
+tbody tr:nth-child(odd) { background-color: var(--table-bg-color-odd); }
+tbody tr:nth-child(even) { background-color: var(--table-bg-color-even); }
+
+.table thead th.head {
+  vertical-align: middle;
+}
+
+/* These are hacks to hide the pydata-theme search popup behind the readthedocs
+sphinx search extension interface.
+*/
+.search-button__wrapper.show .search-button__search-container,
+.search-button__wrapper.show .search-button__overlay {
+  z-index: 1;
+}
+
+.search-button__wrapper.show .search-button__overlay {
+  display: none;
+}
+
+/* Make sure it doesn't stick out on the sides of the RtD search screen */
+.search-button__wrapper.show .search-button__search-container {
+    width: 15%;
+}
+
+/* Handle actual styling of the RtD search extension's screen */
+.search__outer {
+  background-color: var(--pst-color-on-background);
+  border: var(--pst-color-border);
+  border-radius: 0.25em;
+}
+
+.search__outer__input {
+  background-color: var(--pst-color-on-background);
+  color: var(--pst-color-text-base);
+  font-size: var(--pst-font-size-icon);
+}
+
+.rtd__search__credits {
+  background-color: var(--pst-color-background);
+  color: var(--pst-color-text-muted);
+}
+
+.rtd__search__credits a {
+  color: var(--pst-color-link);
+}
+
+.search__result__content, .search__result__subheading, .search__error__box {
+  color: var(--pst-color-text-base);
+}
+
+.search__result__subheading span {
+  border-bottom-color: var(--pst-color-text-base);
+}
+
+[data-theme="dark"] .search__outer .search__result__content span,
+[data-theme="dark"] .search__outer .search__result__title span {
+  background-color: var(--pst-color-muted-highlight); /* Dark mode background color */
+}
+
+.search__outer .search__result__content span,
+.search__outer .search__result__title span {
+  border-bottom-color: var(--pst-color-text-base);
+}
+
+/* Make sure "X" remains visible */
+.search__cross__img {
+  fill: var(--pst-color-text-base);
+}
+
+/* Prevent hover from actually changing the color by setting it to what it
+  already is */
+.outer_div_page_results:hover, .search__result__box .active {
+  background-color: var(--pst-color-on-background);
+}
+
+/* End of styling of the RtD search extension's screen */
