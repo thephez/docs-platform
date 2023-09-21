@@ -193,16 +193,9 @@ const registerContract = async () => {
   const contract = await platform.contracts.create(contractDocuments, identity);
   console.dir({ contract: contract.toJSON() });
 
-  // Make sure contract passes validation checks
-  const validationResult = await platform.dpp.dataContract.validate(contract);
-
-  if (validationResult.isValid()) {
-    console.log('Validation passed, broadcasting contract..');
-    // Sign and submit the data contract
-    return platform.contracts.publish(contract, identity);
-  }
-  console.error(validationResult); // An array of detailed validation errors
-  throw validationResult.errors[0];
+  // Sign and submit the data contract
+  await platform.contracts.publish(contract, identity);
+  return contract;
 };
 
 registerContract()
@@ -249,16 +242,8 @@ const registerContract = async () => {
   const contract = await platform.contracts.create(contractDocuments, identity);
   console.dir({ contract: contract.toJSON() });
 
-  // Make sure contract passes validation checks
-  const validationResult = await platform.dpp.dataContract.validate(contract);
-
-  if (validationResult.isValid()) {
-    console.log('Validation passed, broadcasting contract..');
-    // Sign and submit the data contract
-    return platform.contracts.publish(contract, identity);
-  }
-  console.error(validationResult); // An array of detailed validation errors
-  throw validationResult.errors[0];
+  await platform.contracts.publish(contract, identity);
+  return contract;
 };
 
 registerContract()
@@ -319,16 +304,8 @@ const registerContract = async () => {
   contract.setDefinitions(definitions);
   console.dir({ contract: contract.toJSON() });
 
-  // Make sure contract passes validation checks
-  const validationResult = await platform.dpp.dataContract.validate(contract);
-
-  if (validationResult.isValid()) {
-    console.log('Validation passed, broadcasting contract..');
-    // Sign and submit the data contract
-    return platform.contracts.publish(contract, identity);
-  }
-  console.error(validationResult); // An array of detailed validation errors
-  throw validationResult.errors[0];
+  await platform.contracts.publish(contract, identity);
+  return contract;
 };
 
 registerContract()
@@ -371,16 +348,8 @@ const registerContract = async () => {
   const contract = await platform.contracts.create(contractDocuments, identity);
   console.dir({ contract: contract.toJSON() });
 
-  // Make sure contract passes validation checks
-  const validationResult = await platform.dpp.dataContract.validate(contract);
-
-  if (validationResult.isValid()) {
-    console.log('Validation passed, broadcasting contract..');
-    // Sign and submit the data contract
-    return platform.contracts.publish(contract, identity);
-  }
-  console.error(validationResult); // An array of detailed validation errors
-  throw validationResult.errors[0];
+  await platform.contracts.publish(contract, identity);
+  return contract;
 };
 
 registerContract()
@@ -425,16 +394,8 @@ const registerContract = async () => {
   const contract = await platform.contracts.create(contractDocuments, identity);
   console.dir({ contract: contract.toJSON() }, { depth: 5 });
 
-  // Make sure contract passes validation checks
-  const validationResult = await platform.dpp.dataContract.validate(contract);
-
-  if (validationResult.isValid()) {
-    console.log('Validation passed, broadcasting contract..');
-    // Sign and submit the data contract
-    return platform.contracts.publish(contract, identity);
-  }
-  console.error(validationResult); // An array of detailed validation errors
-  throw validationResult.errors[0];
+  await platform.contracts.publish(contract, identity);
+  return contract;
 };
 
 registerContract()
@@ -447,7 +408,7 @@ registerContract()
 
 > 👍 
 > 
-> **Make a note of the returned data contract `$id` as it will be used used in subsequent tutorials throughout the documentation.**
+> **Make a note of the returned data contract `id` as it will be used used in subsequent tutorials throughout the documentation.**
 
 # What's Happening
 
