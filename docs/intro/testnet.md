@@ -1,3 +1,7 @@
+```{eval-rst}
+.. _intro-testnet:
+```
+
 # Intro to Testnet
 
 Testnet is the Dash testing network used for experimentation and evaluation of Dash Core and Dash Platform features. As a testing network, Testnet may be subject to occasional updates and changes that break backwards compatibility.
