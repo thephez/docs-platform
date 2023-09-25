@@ -173,7 +173,7 @@ Testnet Block Explorer <https://testnet-insight.dashevo.org/insight/>
 Testnet Faucet <http://faucet.testnet.networks.dash.org/>
 JavaScript SDK <https://github.com/dashevo/platform/tree/master/packages/js-dash-sdk#readme>
 resources/source-code
-Previous Version of Docs <https://dashplatform.readme.io/v0.23.0/docs>
+Previous Version of Docs <https://docs.dash.org/projects/platform/en/0.24.0/docs/>
 ```
 
 ```{toctree}
