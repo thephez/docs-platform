@@ -19,11 +19,11 @@ Some [additional metadata](https://github.com/dashevo/platform/blob/master/packa
 
 ### broadcastStateTransition
 
-> 📘 
-> 
+> 📘
+>
 > **Note:** The [`waitForStateTransitionResult` endpoint](#waitforstatetransitionresult) should be used in conjunction with this one for instances where proof of block confirmation is required.
 
-Broadcasts a [state transition](../explanations/platform-protocol-state-transition.md) to the platform via DAPI to make a change to layer 2 data. The `broadcastStateTransition` call returns once the state transition has been accepted into the mempool. 
+Broadcasts a [state transition](../explanations/platform-protocol-state-transition.md) to the platform via DAPI to make a change to layer 2 data. The `broadcastStateTransition` call returns once the state transition has been accepted into the mempool.
 
 **Returns**: Nothing or error
 
@@ -48,8 +48,8 @@ Broadcasts a [state transition](../explanations/platform-protocol-state-transiti
 ### getIdentity
 
 > 🚧 Breaking changes
-> 
-> As of Dash Platform 0.24 the `protocolVersion` is no longer included in the CBOR-encoded data. It is instead prepended as a varint to the data following CBOR encoding.
+>
+> Due to serialization changes in Dash Platform 0.25, using wasm-dpp is recommended when working with identities, data contracts, and documents.
 
 **Returns**: [Identity](../explanations/identity.md) information for the requested identity  
 **Parameters**:
@@ -59,43 +59,47 @@ Broadcasts a [state transition](../explanations/platform-protocol-state-transiti
 | `id`    | Bytes   | Yes      | An identity `id`                                                      |
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity |
 
-> 📘 
-> 
+> 📘
+>
 > **Note**: When requesting proofs, the data requested will be encoded as part of the proof in the response.
 
-** Example Request and Response **
+**Example Request and Response**
 
 ::::{tab-set-code}
 
 ```javascript JavaScript (dapi-client)
 // JavaScript (dapi-client)
 const DAPIClient = require('@dashevo/dapi-client');
-const Identifier = require('@dashevo/dpp/lib/Identifier');
-const cbor = require('cbor');
-const varint = require('varint');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
 
+loadDpp();
+const dpp = new DashPlatformProtocol();
 const client = new DAPIClient();
 
 const identityId = Identifier.from('4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF');
 client.platform.getIdentity(identityId).then((response) => {
-  // Strip off protocol version (leading varint) and decode
-  const identityBuffer = Buffer.from(response.getIdentity());
-  const protocolVersion = varint.decode(identityBuffer);
-  const identity = cbor.decode(
-    identityBuffer.slice(varint.encodingLength(protocolVersion), identityBuffer.length),
-  );
-  console.log(identity);
+  const identity = dpp.identity.createFromBuffer(response.getIdentity());
+  console.log(identity.toJSON());
 });
 ```
+
 ```javascript JavaScript (dapi-grpc)
 // JavaScript (dapi-grpc)
 const {
   v0: { PlatformPromiseClient, GetIdentityRequest },
 } = require('@dashevo/dapi-grpc');
-const Identifier = require('@dashevo/dpp/lib/Identifier');
-const cbor = require('cbor');
-const varint = require('varint');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
 
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
 const platformPromiseClient = new PlatformPromiseClient(
   'https://seed-1.testnet.networks.dash.org:1443',
 );
@@ -106,18 +110,15 @@ const getIdentityRequest = new GetIdentityRequest();
 getIdentityRequest.setId(idBuffer);
 getIdentityRequest.setProve(false);
 
-platformPromiseClient.getIdentity(getIdentityRequest)
+platformPromiseClient
+  .getIdentity(getIdentityRequest)
   .then((response) => {
-    // Strip off protocol version (leading varint) and decode
-    const identityBuffer = Buffer.from(response.getIdentity());
-    const protocolVersion = varint.decode(identityBuffer);
-    const decodedIdentity = cbor.decode(
-      identityBuffer.slice(varint.encodingLength(protocolVersion), identityBuffer.length),
-    );
-    console.log(decodedIdentity);  
+    const identity = dpp.identity.createFromBuffer(response.getIdentity());
+    console.dir(identity.toJSON());
   })
   .catch((e) => console.error(e));
 ```
+
 ```shell gRPCurl
 # gRPCurl
 # `id` must be represented in base64
@@ -136,29 +137,37 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "id": "<Buffer 30 12 c1 9b 98 ec 00 33 ad db 36 cd 64 b7 f5 10 67 0f 2a 35 1a 43 04 b5 f6 99 41 44 28 6e fd ac>",
-  "balance": 5255234422,
-  "revision": 0,
+  "$version": "0",
+  "id": "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
   "publicKeys": [
     {
+      "$version": "0",
       "id": 0,
-      "data": "<Buffer 02 c8 b4 74 7b 52 8c ac 5f dd f7 a6 cc 63 70 2e e0 4e d7 d1 33 29 04 e0 85 10 34 3e a0 0d ce 54 6a>",
-      "type": 0,
       "purpose": 0,
+      "securityLevel": 0,
+      "contractBounds": null,
+      "type": 0,
       "readOnly": false,
-      "securityLevel": 0
+      "data": "Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
+      "disabledAt": null
     },
     {
+      "$version": "0",
       "id": 1,
-      "data": "<Buffer 02 01 ee 28 f8 4f 54 85 39 05 67 e9 39 c2 b5 86 01 0b 63 a6 9e c9 2c ab 53 5d c9 6a 8c 71 91 36 02>",
-      "type": 0,
       "purpose": 0,
+      "securityLevel": 2,
+      "contractBounds": null,
+      "type": 0,
       "readOnly": false,
-      "securityLevel": 2
+      "data": "AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
+      "disabledAt": null
     }
-  ]
+  ],
+  "balance": 7327280900,
+  "revision": 0
 }
 ```
+
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
@@ -176,7 +185,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 ### getIdentitiesByPublicKeyHashes
 
-**Returns**: [Identity](../explanations/identity.md) an array of identities associated with the provided public key hashes  
+**Returns**: An array of [identities](../explanations/identity.md) associated with the provided public key hashes  
 **Parameters**:
 
 | Name                | Type    | Required | Description                                                             |
@@ -184,28 +193,31 @@ grpcurl -proto protos/platform/v0/platform.proto \
 | `public_key_hashes` | Bytes   | Yes      | Public key hashes (sha256-ripemd160) of identity public keys            |
 | `prove`             | Boolean | No       | Set to `true` to receive a proof that contains the requested identities |
 
-> 📘 
-> 
+> 📘
+>
 > **Note**: When requesting proofs, the data requested will be encoded as part of the proof in the response.
 
 > 📘 Public key hash
-> 
+>
 > Note: the hash must be done using all fields of the identity public key object - e.g.
-> 
+>
 > ```json
 > {
+>   "$version": "0",
 >   "id": 0,
->   "type": 0,
 >   "purpose": 0,
 >   "securityLevel": 0,
->   "data": "A2GTAJk9eAWkMXVCb+rRKXH99POtR5OaW6zqZl7/yozp",
->   "readOnly": false
+>   "contractBounds": null,
+>   "type": 0,
+>   "readOnly": false,
+>   "data": "Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
+>   "disabledAt": null
 > }
 > ```
-> 
+>
 > When using the js-dpp library, the hash can be accessed via the [IdentityPublicKey object's](https://github.com/dashevo/platform/blob/master/packages/js-dpp/lib/identity/IdentityPublicKey.js) `hash` method (e.g. `identity.getPublicKeyById(0).hash()`).
 
-** Example Request and Response **
+**Example Request and Response**
 
 ::::{tab-set-code}
 
@@ -229,35 +241,36 @@ client.platform.getIdentitiesByPublicKeyHashes(publicKeysBuffer)
     console.log(retrievedIdentity.toJSON());
   });
 ```
+
 ```javascript JavaScript (dapi-grpc)
 // JavaScript (dapi-grpc)
 const {
   v0: { PlatformPromiseClient, GetIdentitiesByPublicKeyHashesRequest },
 } = require('@dashevo/dapi-grpc');
-const DashPlatformProtocol = require('@dashevo/dpp');
+const { DashPlatformProtocol, default: loadDpp } = require('@dashevo/wasm-dpp');
 
+loadDpp();
 const dpp = new DashPlatformProtocol();
 
-dpp.initialize()
-  .then(() => {
-    const platformPromiseClient = new PlatformPromiseClient(
-      'https://seed-1.testnet.networks.dash.org:1443',
-    );
+const platformPromiseClient = new PlatformPromiseClient(
+  'https://seed-1.testnet.networks.dash.org:1443',
+);
 
-    const publicKeyHash = 'b8d1591aa74d440e0af9c0be16c55bbc141847f7';
-    const publicKeysBuffer = [Buffer.from(publicKeyHash, 'hex')];
+const publicKeyHash = 'b8d1591aa74d440e0af9c0be16c55bbc141847f7';
+const publicKeysBuffer = [Buffer.from(publicKeyHash, 'hex')];
 
-    const getIdentitiesByPublicKeyHashesRequest = new GetIdentitiesByPublicKeyHashesRequest();
-    getIdentitiesByPublicKeyHashesRequest.setPublicKeyHashesList(publicKeysBuffer);
+const getIdentitiesByPublicKeyHashesRequest = new GetIdentitiesByPublicKeyHashesRequest();
+getIdentitiesByPublicKeyHashesRequest.setPublicKeyHashesList(publicKeysBuffer);
 
-    platformPromiseClient.getIdentitiesByPublicKeyHashes(getIdentitiesByPublicKeyHashesRequest)
-      .then((response) => {
-        const identitiesResponse = response.getIdentitiesList();
-      	console.log(dpp.identity.createFromBuffer(Buffer.from(identitiesResponse[0])).toJSON());
-      })
-      .catch((e) => console.error(e));
-  	});
+platformPromiseClient
+  .getIdentitiesByPublicKeyHashes(getIdentitiesByPublicKeyHashesRequest)
+  .then((response) => {
+    const identitiesResponse = response.getIdentities().getIdentitiesList();
+    console.log(dpp.identity.createFromBuffer(Buffer.from(identitiesResponse[0])).toJSON());
+  })
+  .catch((e) => console.error(e));
 ```
+
 ```shell gRPCurl
 # gRPCurl
 # `public_key_hashes` must be represented in base64
@@ -302,10 +315,11 @@ grpcurl -proto protos/platform/v0/platform.proto \
       "disabledAt": null
     }
   ],
-  "balance": 2344694260,
+  "balance": 7327280900,
   "revision": 0
 }
 ```
+
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
@@ -325,6 +339,10 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 ### getDataContract
 
+> 🚧 Breaking changes
+>
+> Due to serialization changes in Dash Platform 0.25, using wasm-dpp is recommended when working with identities, data contracts, and documents.
+
 **Returns**: [Data Contract](../explanations/platform-protocol-data-contract.md) information for the requested data contract  
 **Parameters**:
 
@@ -333,42 +351,41 @@ grpcurl -proto protos/platform/v0/platform.proto \
 | `id`    | Bytes   | Yes      | A data contract `id`                                                       |
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested data contract |
 
-> 📘 
-> 
+> 📘
+>
 > **Note**: When requesting proofs, the data requested will be encoded as part of the proof in the response.
 
-** Example Request and Response **
+**Example Request and Response**
 
 ::::{tab-set-code}
 
 ```javascript JavaScript (dapi-client)
 // JavaScript (dapi-client)
 const DAPIClient = require('@dashevo/dapi-client');
-const Identifier = require('@dashevo/dpp/lib/Identifier');
-const cbor = require('cbor');
-const varint = require('varint');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
 
+  loadDpp();
+const dpp = new DashPlatformProtocol(null);
 const client = new DAPIClient();
 
 const contractId = Identifier.from('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec');
 client.platform.getDataContract(contractId).then((response) => {
-    // Strip off protocol version (leading varint) and decode
-    const contractBuffer = Buffer.from(response.getDataContract());
-    const protocolVersion = varint.decode(contractBuffer);
-    const contract = cbor.decode(
-      contractBuffer.slice(varint.encodingLength(protocolVersion), contractBuffer.length),
-    );
-  console.dir(contract, { depth: 10 });
+  dpp.dataContract.createFromBuffer(response.getDataContract()).then((dataContract) => {
+    console.dir(dataContract.toJSON(), { depth: 10 });
+  });
 });
 ```
+
 ```javascript JavaScript (dapi-grpc)
 // JavaScript (dapi-grpc)
 const {
   v0: { PlatformPromiseClient, GetDataContractRequest },
 } = require('@dashevo/dapi-grpc');
-const Identifier = require('@dashevo/dpp/lib/Identifier');
-const cbor = require('cbor');
-const varint = require('varint');
+const { default: loadDpp, DashPlatformProtocol, Identifier } = require('@dashevo/wasm-dpp');
 
 const platformPromiseClient = new PlatformPromiseClient(
   'https://seed-1.testnet.networks.dash.org:1443',
@@ -379,18 +396,16 @@ const contractIdBuffer = Buffer.from(contractId);
 const getDataContractRequest = new GetDataContractRequest();
 getDataContractRequest.setId(contractIdBuffer);
 
-platformPromiseClient.getDataContract(getDataContractRequest)
+platformPromiseClient
+  .getDataContract(getDataContractRequest)
   .then((response) => {
-    // Strip off protocol version (leading varint) and decode
-    const contractBuffer = Buffer.from(response.getDataContract());
-    const protocolVersion = varint.decode(contractBuffer);
-    const decodedDataContract = cbor.decode(
-      contractBuffer.slice(varint.encodingLength(protocolVersion), contractBuffer.length),
-    );
-    console.dir(decodedDataContract, { depth: 5 });
+    dpp.dataContract.createFromBuffer(response.getDataContract()).then((dataContract) => {
+      console.dir(dataContract.toJSON(), { depth: 10 });
+    });
   })
   .catch((e) => console.error(e));
 ```
+
 ```shell gRPCurl
 # gRPCurl
 # `id` must be represented in base64
@@ -409,43 +424,114 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "$id": "Buffer(32) [Uint8Array] [
-    230, 104, 198,  89, 175, 102, 174, 225,
-    231,  44,  24, 109, 222, 123,  91, 126,
-     10,  29, 113,  42,   9, 196,  13,  87,
-     33, 246,  34, 191,  83, 197,  49,  85
-  ]",
-  "$schema": "https://schema.dash.org/dpp-0-4-0/meta/data-contract",
-  "ownerId": "Buffer(32) [Uint8Array] [
-     48,  18, 193, 155, 152, 236,   0,  51,
-    173, 219,  54, 205, 100, 183, 245,  16,
-    103,  15,  42,  53,  26,  67,   4, 181,
-    246, 153,  65,  68,  40, 110, 253, 172
-  ]",
+  "$format_version": "0",
+  "id": "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
+  "config": {
+    "$format_version": "0",
+    "canBeDeleted": false,
+    "readonly": false,
+    "keepsHistory": false,
+    "documentsKeepHistoryContractDefault": false,
+    "documentsMutableContractDefault": true,
+    "requiresIdentityEncryptionBoundedKey": null,
+    "requiresIdentityDecryptionBoundedKey": null
+  },
   "version": 1,
-  "documents": {
+  "ownerId": "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
+  "schemaDefs": null,
+  "documentSchemas": {
     "domain": {
       "type": "object",
       "indices": [
         {
           "name": "parentNameAndLabel",
-          "unique": true,
           "properties": [
             { "normalizedParentDomainName": "asc" },
             { "normalizedLabel": "asc" }
-          ]
+          ],
+          "unique": true
         },
         {
           "name": "dashIdentityId",
-          "unique": true,
-          "properties": [ { "records.dashUniqueIdentityId": "asc" } ]
+          "properties": [ { "records.dashUniqueIdentityId": "asc" } ],
+          "unique": true
         },
         {
           "name": "dashAlias",
           "properties": [ { "records.dashAliasIdentityId": "asc" } ]
         }
       ],
-      "$comment": "In order to register a domain you need to create a preorder. The preorder step is needed to prevent man-in-the-middle attacks. normalizedLabel + '.' + normalizedParentDomain must not be longer than 253 chars length as defined by RFC 1035. Domain documents are immutable: modification and deletion are restricted",
+      "properties": {
+        "label": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$",
+          "minLength": 3,
+          "maxLength": 63,
+          "description": "Domain label. e.g. 'Bob'."
+        },
+        "normalizedLabel": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+          "maxLength": 63,
+          "description": "Domain label in lowercase for case-insensitive uniqueness validation. e.g. 'bob'",
+          "$comment": "Must be equal to the label in lowercase. This property will be deprecated due to case insensitive indices"
+        },
+        "normalizedParentDomainName": {
+          "type": "string",
+          "pattern": "^$|^[a-z0-9][a-z0-9-\\.]{0,61}[a-z0-9]$",
+          "minLength": 0,
+          "maxLength": 63,
+          "description": "A full parent domain name in lowercase for case-insensitive uniqueness validation. e.g. 'dash'",
+          "$comment": "Must either be equal to an existing domain or empty to create a top level domain. Only the data contract owner can create top level domains."
+        },
+        "preorderSalt": {
+          "type": "array",
+          "byteArray": true,
+          "minItems": 32,
+          "maxItems": 32,
+          "description": "Salt used in the preorder document"
+        },
+        "records": {
+          "type": "object",
+          "properties": {
+            "dashUniqueIdentityId": {
+              "type": "array",
+              "byteArray": true,
+              "minItems": 32,
+              "maxItems": 32,
+              "contentMediaType": "application/x.dash.dpp.identifier",
+              "description": "Identity ID to be used to create the primary name the Identity",
+              "$comment": "Must be equal to the document owner"
+            },
+            "dashAliasIdentityId": {
+              "type": "array",
+              "byteArray": true,
+              "minItems": 32,
+              "maxItems": 32,
+              "contentMediaType": "application/x.dash.dpp.identifier",
+              "description": "Identity ID to be used to create alias names for the Identity",
+              "$comment": "Must be equal to the document owner"
+            }
+          },
+          "$comment": "Constraint with max and min properties ensure that only one identity record is used - either a `dashUniqueIdentityId` or a `dashAliasIdentityId`",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "additionalProperties": false
+        },
+        "subdomainRules": {
+          "type": "object",
+          "properties": {
+            "allowSubdomains": {
+              "type": "boolean",
+              "description": "This option defines who can create subdomains: true - anyone; false - only the domain owner",
+              "$comment": "Only the domain owner is allowed to create subdomains for non top-level domains"
+            }
+          },
+          "description": "Subdomain rules allow domain owners to define rules for subdomains",
+          "additionalProperties": false,
+          "required": [ "allowSubdomains" ]
+        }
+      },
       "required": [
         "label",
         "normalizedLabel",
@@ -454,104 +540,35 @@ grpcurl -proto protos/platform/v0/platform.proto \
         "records",
         "subdomainRules"
       ],
-      "properties": {
-        "label": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$",
-          "maxLength": 63,
-          "minLength": 3,
-          "description": "Domain label. e.g. 'Bob'."
-        },
-        "records": {
-          "type": "object",
-          "$comment": "Constraint with max and min properties ensure that only one identity record is used - either a `dashUniqueIdentityId` or a `dashAliasIdentityId`",
-          "properties": {
-            "dashAliasIdentityId": {
-              "type": "array",
-              "$comment": "Must be equal to the document owner",
-              "maxItems": 32,
-              "minItems": 32,
-              "byteArray": true,
-              "description": "Identity ID to be used to create alias names for the Identity",
-              "contentMediaType": "application/x.dash.dpp.identifier"
-            },
-            "dashUniqueIdentityId": {
-              "type": "array",
-              "$comment": "Must be equal to the document owner",
-              "maxItems": 32,
-              "minItems": 32,
-              "byteArray": true,
-              "description": "Identity ID to be used to create the primary name the Identity",
-              "contentMediaType": "application/x.dash.dpp.identifier"
-            }
-          },
-          "maxProperties": 1,
-          "minProperties": 1,
-          "additionalProperties": false
-        },
-        "preorderSalt": {
-          "type": "array",
-          "maxItems": 32,
-          "minItems": 32,
-          "byteArray": true,
-          "description": "Salt used in the preorder document"
-        },
-        "subdomainRules": {
-          "type": "object",
-          "required": [ "allowSubdomains" ],
-          "properties": {
-            "allowSubdomains": {
-              "type": "boolean",
-              "$comment": "Only the domain owner is allowed to create subdomains for non top-level domains",
-              "description": "This option defines who can create subdomains: true - anyone; false - only the domain owner"
-            }
-          },
-          "description": "Subdomain rules allow domain owners to define rules for subdomains",
-          "additionalProperties": false
-        },
-        "normalizedLabel": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
-          "$comment": "Must be equal to the label in lowercase. This property will be deprecated due to case insensitive indices",
-          "maxLength": 63,
-          "description": "Domain label in lowercase for case-insensitive uniqueness validation. e.g. 'bob'"
-        },
-        "normalizedParentDomainName": {
-          "type": "string",
-          "pattern": "^$|^[a-z0-9][a-z0-9-\\.]{0,61}[a-z0-9]$",
-          "$comment": "Must either be equal to an existing domain or empty to create a top level domain. Only the data contract owner can create top level domains.",
-          "maxLength": 63,
-          "minLength": 0,
-          "description": "A full parent domain name in lowercase for case-insensitive uniqueness validation. e.g. 'dash'"
-        }
-      },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "$comment": "In order to register a domain you need to create a preorder. The preorder step is needed to prevent man-in-the-middle attacks. normalizedLabel + '.' + normalizedParentDomain must not be longer than 253 chars length as defined by RFC 1035. Domain documents are immutable: modification and deletion are restricted"
     },
     "preorder": {
       "type": "object",
       "indices": [
         {
           "name": "saltedHash",
-          "unique": true,
-          "properties": [ { "saltedDomainHash": "asc" } ]
+          "properties": [ { "saltedDomainHash": "asc" } ],
+          "unique": true
         }
       ],
-      "$comment": "Preorder documents are immutable: modification and deletion are restricted",
-      "required": [ "saltedDomainHash" ],
       "properties": {
         "saltedDomainHash": {
           "type": "array",
-          "maxItems": 32,
-          "minItems": 32,
           "byteArray": true,
+          "minItems": 32,
+          "maxItems": 32,
           "description": "Double sha-256 of the concatenation of a 32 byte random salt and a normalized domain name"
         }
       },
-      "additionalProperties": false
+      "required": [ "saltedDomainHash" ],
+      "additionalProperties": false,
+      "$comment": "Preorder documents are immutable: modification and deletion are restricted"
     }
   }
 }
 ```
+
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
@@ -569,13 +586,17 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 ### getDocuments
 
+> 🚧 Breaking changes
+>
+> Due to serialization changes in Dash Platform 0.25, using wasm-dpp is recommended when working with identities, data contracts, and documents.
+
 **Returns**: [Document](../explanations/platform-protocol-document.md) information for the requested document(s)  
 **Parameters**:
 
-> 🚧 - Parameter constraints
-> 
-> The `where`, `order_by`, `limit`, `start_at`, and `start_after` parameters must comply with the limits defined on the [Query Syntax](../reference/query-syntax.md) page.
-> 
+> 📘 Parameter constraints
+>
+> **Note**: The `where`, `order_by`, `limit`, `start_at`, and `start_after` parameters must comply with the limits defined on the [Query Syntax](../reference/query-syntax.md) page.
+>
 > Additionally, note that `where` and `order_by` must be [CBOR](https://tools.ietf.org/html/rfc7049) encoded.
 
 | Name                    | Type    | Required | Description                                                                                      |
@@ -592,77 +613,104 @@ grpcurl -proto protos/platform/v0/platform.proto \
 | ----------              |         |          |                                                                                                  |
 | `prove`                 | Boolean | No       | Set to `true` to receive a proof that contains the requested document(s)                         |
 
-> 📘 
-> 
+> 📘
+>
 > **Note**: When requesting proofs, the data requested will be encoded as part of the proof in the response.
 
-** Example Request and Response **
+**Example Request and Response**
 
 ::::{tab-set-code}
 
 ```javascript JavaScript (dapi-client)
 // JavaScript (dapi-client)
 const DAPIClient = require('@dashevo/dapi-client');
-const Identifier = require('@dashevo/dpp/lib/Identifier');
-const cbor = require('cbor');
-const varint = require('varint');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
 
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
 const client = new DAPIClient();
 
 const contractId = Identifier.from('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec');
-client.platform.getDocuments(contractId, 'domain', { limit: 10 }).then((response) => {
-  for (const rawData of response.documents) {
-    // Strip off protocol version (leading varint) and decode
-    const documentBuffer = Buffer.from(rawData);
-    const protocolVersion = varint.decode(documentBuffer);
-    const document = cbor.decode(
-      documentBuffer.slice(varint.encodingLength(protocolVersion), documentBuffer.length),
-    );
-    console.log(document);
-  }
+const type = 'domain';
+const limit = 1;
+client.platform.getDataContract(contractId).then((contractResponse) => {
+  dpp.dataContract
+    .createFromBuffer(contractResponse.getDataContract())
+    .then((contract) => {
+      // Get document(s)
+      client.platform
+        .getDocuments(contractId, type, {
+          limit,
+        })
+        .then((response) => {
+          for (const document of response.documents) {
+            const doc = dpp.document.createExtendedDocumentFromDocumentBuffer(
+              document,
+              type,
+              contract,
+            );
+            console.log(doc.toJSON());
+          }
+        });
+    });
 });
 ```
+
 ```javascript JavaScript (dapi-grpc)
 // JavaScript (dapi-grpc)
 const {
-  v0: { PlatformPromiseClient, GetDocumentsRequest },
+  v0: { PlatformPromiseClient, GetDataContractRequest, GetDocumentsRequest },
 } = require('@dashevo/dapi-grpc');
-const cbor = require('cbor');
-const Identifier = require('@dashevo/dpp/lib/Identifier');
-const varint = require('varint');
+const { default: loadDpp, DashPlatformProtocol, Identifier } = require('@dashevo/wasm-dpp');
 
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
 const platformPromiseClient = new PlatformPromiseClient(
   'https://seed-1.testnet.networks.dash.org:1443',
 );
 
 const contractId = Identifier.from('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec');
 const contractIdBuffer = Buffer.from(contractId);
-const getDocumentsRequest = new GetDocumentsRequest();
-const type = 'domain';
-const limit = 10;
+const getDataContractRequest = new GetDataContractRequest();
+getDataContractRequest.setId(contractIdBuffer);
 
-getDocumentsRequest.setDataContractId(contractIdBuffer);
-getDocumentsRequest.setDocumentType(type);
-// getDocumentsRequest.setWhere(whereSerialized);
-// getDocumentsRequest.setOrderBy(orderBySerialized);
-getDocumentsRequest.setLimit(limit);
-// getDocumentsRequest.setStartAfter(startAfter);
-// getDocumentsRequest.setStartAt(startAt);
+platformPromiseClient
+  .getDataContract(getDataContractRequest)
+  .then((contractResponse) => {
+    dpp.dataContract.createFromBuffer(contractResponse.getDataContract()).then((contract) => {
+      // Get documents
+      const getDocumentsRequest = new GetDocumentsRequest();
+      const type = 'domain';
+      const limit = 10;
 
-platformPromiseClient.getDocuments(getDocumentsRequest)
-  .then((response) => {
-    for (const document of response.getDocumentsList()) {
-      // Strip off protocol version (leading varint) and decode
-      const documentBuffer = Buffer.from(document);
-      const protocolVersion = varint.decode(documentBuffer);
-      const decodedDocument = cbor.decode(
-        documentBuffer.slice(varint.encodingLength(protocolVersion), documentBuffer.length),
-      );
-      console.log(decodedDocument);      
-    }
+      getDocumentsRequest.setDataContractId(contractIdBuffer);
+      getDocumentsRequest.setDocumentType(type);
+      // getDocumentsRequest.setWhere(whereSerialized);
+      // getDocumentsRequest.setOrderBy(orderBySerialized);
+      getDocumentsRequest.setLimit(limit);
+      // getDocumentsRequest.setStartAfter(startAfter);
+      // getDocumentsRequest.setStartAt(startAt);
+
+      platformPromiseClient.getDocuments(getDocumentsRequest).then((response) => {
+        for (const document of response.getDocuments().getDocumentsList()) {
+          const documentBuffer = Buffer.from(document);
+          const doc = dpp.document.createExtendedDocumentFromDocumentBuffer(
+            documentBuffer,
+            type,
+            contract,
+          );
+          console.log(doc.toJSON());
+        }
+      });
+    });
   })
   .catch((e) => console.error(e));
 ```
+
 ```shell Request (gRPCurl)
 # gRPCurl
 # Request documents
@@ -684,21 +732,42 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "$id": "<Buffer 01 a0 7c 69 43 82 cf fe 93 97 be c9 f4 be cd 67 81 8f 60 d2 a7 56 48 08 11 80 49 84 0b 2e 2c 5d>",
-  "$type": "domain",
-  "label": "Dash01",
+  "$id": "AhWPYyM5eTFGFvGXEBPaqEPs93QyBTZRHYsQSVGn1Jg",
+  "$ownerId": "YhCPn6pSbZ11hCiFmFL6WJkmC3GSwuUSzhS4QAy84EF",
+  "label": "Alice007",
+  "normalizedLabel": "alice007",
+  "normalizedParentDomainName": "dash",
+  "preorderSalt": "WN/tDnACk4yyrYqXfABTpozmgtS05kvGWCz7ypt9310=",
   "records": {
-    "dashUniqueIdentityId": "<Buffer f5 50 ed 37 1a 12 3f 54 00 59 31 84 f7 f7 37 f1 f4 b1 5d 05 6f 9c a8 0e 5f 00 52 82 08 77 7c 4a>"
+    "dashAliasIdentityId": "CB50kDKQpfYnb1WdLv4ir1LOwJOW9cfXkhj9grusk+Q=",
+    "dashUniqueIdentityId": null
   },
-  "$ownerId": "<Buffer f5 50 ed 37 1a 12 3f 54 00 59 31 84 f7 f7 37 f1 f4 b1 5d 05 6f 9c a8 0e 5f 00 52 82 08 77 7c 4a>",
-  "$revision": 1,
-  "preorderSalt": "<Buffer 2c b4 1b e9 f4 40 03 9b 47 2f 31 74 46 df 7f 4f 43 fe 14 80 be ca 84 0d 63 0f a6 65 23 b9 9c a1>",
   "subdomainRules": { "allowSubdomains": false },
-  "$dataContractId": "<Buffer e6 68 c6 59 af 66 ae e1 e7 2c 18 6d de 7b 5b 7e 0a 1d 71 2a 09 c4 0d 57 21 f6 22 bf 53 c5 31 55>",
-  "normalizedLabel": "dash01",
-  "normalizedParentDomainName": "dash"
+  "$revision": 1,
+  "$createdAt": null,
+  "$updatedAt": null,
+  "$dataContract": {
+    "$format_version": "0",
+    "id": "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
+    "config": {
+      "$format_version": "0",
+      "canBeDeleted": false,
+      "readonly": false,
+      "keepsHistory": false,
+      "documentsKeepHistoryContractDefault": false,
+      "documentsMutableContractDefault": true,
+      "requiresIdentityEncryptionBoundedKey": null,
+      "requiresIdentityDecryptionBoundedKey": null
+    },
+    "version": 1,
+    "ownerId": "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
+    "schemaDefs": null,
+    "documentSchemas": { "domain": ["Object"], "preorder": ["Object"] }
+  },
+  "$type": "domain"
 }
 ```
+
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
@@ -726,11 +795,11 @@ grpcurl -proto protos/platform/v0/platform.proto \
 | `state_transition_hash` | Bytes   | Yes      | Hash of the state transition     |
 | `prove`                 | Boolean | Yes      | Set to `true` to request a proof |
 
-> 📘 
-> 
+> 📘
+>
 > **Note**: When requesting proofs, the data requested will be encoded as part of the proof in the response.
 
-** Example Request**
+**Example Request**
 
 ```{eval-rst}
 ..
@@ -758,6 +827,7 @@ client.platform.waitForStateTransitionResult(hash, { prove: true })
   });
 
 ```
+
 ```shell Request (gRPCurl)
 # gRPCurl
 # Replace `your_state_transition_hash` with your own before running
@@ -792,5 +862,5 @@ No endpoints were deprecated in Dash Platform v0.24, but the previous version of
 
 Implementation details related to the information on this page can be found in:
 
-- The [Platform repository](https://github.com/dashevo/platform/tree/master/packages/dapi) `packages/dapi/lib/grpcServer/handlers/core` folder
-- The [Platform repository](https://github.com/dashevo/platform/tree/master/packages/dapi-grpc) `packages/dapi-grpc/protos` folder
+* The [Platform repository](https://github.com/dashevo/platform/tree/master/packages/dapi) `packages/dapi/lib/grpcServer/handlers/core` folder
+* The [Platform repository](https://github.com/dashevo/platform/tree/master/packages/dapi-grpc) `packages/dapi-grpc/protos` folder
