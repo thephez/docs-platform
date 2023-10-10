@@ -4,17 +4,17 @@ In this tutorial we will register a data contract.
 
 ## Prerequisites
 
-- [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
-- A wallet mnemonic with some funds in it: [Tutorial: Create and Fund a Wallet](../../tutorials/create-and-fund-a-wallet.md)
-- A Dash Platform Identity: [Tutorial: Register an Identity](../../tutorials/identities-and-names/register-an-identity.md) 
+* [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
+* A wallet mnemonic with some funds in it: [Tutorial: Create and Fund a Wallet](../../tutorials/create-and-fund-a-wallet.md)
+* A Dash Platform Identity: [Tutorial: Register an Identity](../../tutorials/identities-and-names/register-an-identity.md)
 
 ## Code
 
 ### Defining contract documents
 
-As described in the [data contract explanation](../../explanations/platform-protocol-data-contract.md#structure), data contracts must include one or more developer-defined [documents](../../explanations/platform-protocol-document.md). 
+As described in the [data contract explanation](../../explanations/platform-protocol-data-contract.md#structure), data contracts must include one or more developer-defined [documents](../../explanations/platform-protocol-document.md).
 
-The most basic example below (tab 1) demonstrates a data contract containing a single document type (`note`) which has a single string property (`message`). 
+The most basic example below (tab 1) demonstrates a data contract containing a single document type (`note`) which has a single string property (`message`).
 
 The second tab shows the same data contract with an index defined on the `$ownerId` field. This would allow querying for documents owned by a specific identity using a [where clause](../../reference/query-syntax.md#where-clause).
 
@@ -22,8 +22,10 @@ The third tab shows a data contract using the [JSON-Schema $ref feature](https:/
 
 The fourth tab shows a data contract requiring the optional `$createdAt` and `$updatedAt` [base fields](../../explanations/platform-protocol-document.md#base-fields). Using these fields enables retrieving timestamps that indicate when a document was created or modified.
 
-> 🚧 
-> 
+The fifth tab shows a data contract using a byte array. This allows a contract to store binary data.
+
+> 🚧
+>
 > Since Platform v0.23, an index can [only use the ascending order](https://github.com/dashevo/platform/pull/435) (`asc`). Future updates will remove this restriction.
 
 ::::{tab-set-code}
@@ -42,6 +44,7 @@ The fourth tab shows a data contract requiring the optional `$createdAt` and `$u
   }
 }
 ```
+
 ```json 2. Indexed
 //  2. Indexed
 {
@@ -68,6 +71,7 @@ An identity's documents are accessible via a query including a where clause like
 }
 */
 ```
+
 ```json
 //  3. References ($ref)
 // NOTE: The `$ref` keyword is temporarily disabled for Platform v0.22.
@@ -101,6 +105,7 @@ being added to the contract via the contracts `.setDefinitions` method:
 }
 */
 ```
+
 ```json
 //  4. Timestamps
 {
@@ -124,6 +129,7 @@ when the document was created or modified.
 This information will be returned when the document is retrieved.
 */
 ```
+
 ```json
 // 5. Binary data
 {
@@ -149,13 +155,13 @@ array of bytes (e.g. a NodeJS Buffer).
 
 ::::
 
-> 📘 
-> 
+> 📘
+>
 > Please refer to the [data contract reference page](../../reference/data-contracts.md) for more comprehensive details related to contracts and documents.
 
 ### Registering the data contract
 
-The following examples demonstrate the details of creating contracts using the features [described above](#defining-contract-documents):
+The following examples demonstrate the details of creating contracts using the features [described above](#defining-contract-documents). Also, note that the sixth tab shows a data contract with contract history enabled to store each contract revision so it can be retrieved as needed for future reference:
 
 ::::{tab-set-code}
 
@@ -203,6 +209,7 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+
 ```javascript 2. Indexed
 // 2. Indexed
 const Dash = require('dash');
@@ -251,6 +258,7 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+
 ```javascript 3. References ($ref)
 // 3. References ($ref)
 // NOTE: The `$ref` keyword is temporarily disabled for Platform v0.22.
@@ -313,6 +321,7 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+
 ```javascript 4. Timestamps
 // 4. Timestamps
 const Dash = require('dash');
@@ -357,6 +366,7 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+
 ```javascript 5. Binary data
 // 5. Binary data
 const Dash = require('dash');
@@ -404,20 +414,72 @@ registerContract()
   .finally(() => client.disconnect());
 ```
 
+```javascript 6. Contract with history
+// 6. Contract with history
+const Dash = require('dash');
+
+const clientOpts = {
+  network: 'testnet',
+  wallet: {
+    mnemonic: 'a Dash wallet mnemonic with funds goes here',
+    unsafeOptions: {
+      skipSynchronizationBeforeHeight: 650000, // only sync from early-2022
+    },
+  },
+};
+const client = new Dash.Client(clientOpts);
+
+const registerContract = async () => {
+  const { platform } = client;
+  const identity = await platform.identities.get('an identity ID goes here');
+
+  const contractDocuments = {
+    note: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+        },
+      },
+      additionalProperties: false,
+    },
+  };
+
+  const contract = await platform.contracts.create(contractDocuments, identity);
+  contract.setConfig({
+    canBeDeleted: false,
+    readonly: false,    // Make contract read-only
+    keepsHistory: true, // Enable storing of contract history
+    documentsKeepHistoryContractDefault: false,
+    documentsMutableContractDefault: true,
+  })
+  console.dir({ contract: contract.toJSON() });
+
+  // Sign and submit the data contract
+  await platform.contracts.publish(contract, identity);
+  return contract;
+};
+
+registerContract()
+  .then((d) => console.log('Contract registered:\n', d.toJSON()))
+  .catch((e) => console.error('Something went wrong:\n', e))
+  .finally(() => client.disconnect());
+```
+
 ::::
 
-> 👍 
-> 
+> 👍
+>
 > **Make a note of the returned data contract `id` as it will be used used in subsequent tutorials throughout the documentation.**
 
 ## What's Happening
 
-After we initialize the Client, we create an object defining the documents this data contract requires (e.g. a `note` document in the example). The `platform.contracts.create` method takes two arguments: a contract definitions JSON-schema object and an identity. The contract definitions object consists of the document types being created (e.g. `note`). It defines the properties and any indices. 
+After we initialize the Client, we create an object defining the documents this data contract requires (e.g. a `note` document in the example). The `platform.contracts.create` method takes two arguments: a contract definitions JSON-schema object and an identity. The contract definitions object consists of the document types being created (e.g. `note`). It defines the properties and any indices.
 
 Once the data contract has been created, we still need to submit it to DAPI. The `platform.contracts.publish` method takes a data contract and an identity parameter. Internally, it creates a State Transition containing the previously created contract, signs the state transition, and submits the signed state transition to DAPI. A response will only be returned if an error is encountered.
 
 > 📘 Wallet Operations
-> 
-> The JavaScript SDK does not cache wallet information. It re-syncs the entire Core chain for some wallet operations (e.g. `client.getWalletAccount()`) which can result in wait times of  5+ minutes. 
-> 
+>
+> The JavaScript SDK does not cache wallet information. It re-syncs the entire Core chain for some wallet operations (e.g. `client.getWalletAccount()`) which can result in wait times of  5+ minutes.
+>
 > A future release will add caching so that access is much faster after the initial sync. For now, the `skipSynchronizationBeforeHeight` option can be used to sync the wallet starting at a certain block height.
