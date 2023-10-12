@@ -15,9 +15,10 @@ Data contracts are owned by the [identity](../explanations/identity.md) that reg
 ### Structure
 
 Each data contract must define several fields. When using the [JavaScript implementation](https://github.com/dashevo/platform/tree/master/packages/js-dpp) of the Dash Platform Protocol, some of these fields are automatically set to a default value and do not have to be explicitly provided. These include:
- - The platform protocol schema it uses (default: defined by [js-dpp](https://github.com/dashevo/platform/blob/master/packages/js-dpp/lib/dataContract/DataContract.js#L352))
- - A contract ID (generated from a hash of the data contract's owner identity plus some entropy)
- - One or more documents
+
+* The platform protocol schema it uses (default: defined by [js-dpp](https://github.com/dashevo/platform/blob/master/packages/js-dpp/lib/dataContract/DataContract.js#L352))
+* A contract ID (generated from a hash of the data contract's owner identity plus some entropy)
+* One or more documents
 
 In the [example contract](#example-contract) shown below, a `contact` document and a `profile` document are defined. Each of these documents then defines the properties and indices it requires.
 
@@ -39,7 +40,17 @@ The drawing below illustrates the steps an application developer follows to comp
 
 ### Updates
 
-Since Dash Platform v0.22, it is possible to update existing data contracts in certain backwards-compatible ways. This includes adding new documents, adding new optional properties to existing documents, and adding non-unique indices for properties added in the update.
+#### Contract revision history
+
+Dash Platform v0.25 added optional contract revision history storage. Contracts using this feature maintain a record of contract revisions which can be retrieved and verified as needed.
+
+#### Identity key binding
+
+Dash Platform v0.25 added key access rules that enable adding an encryption or decryption identity key that can only be used for the specific contract (or document) designated when the key is added. This provides a more granular and secure approach to key management.
+
+#### Contract updates
+
+Dash Platform v0.22 added the ability to update existing data contracts in certain backwards-compatible ways. This includes adding new documents, adding new optional properties to existing documents, and adding non-unique indices for properties added in the update.
 
 > 📘
 >
@@ -55,6 +66,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
     "type": "object",
     "indices": [
       {
+        "name": "ownerId",
         "properties": [
           {
             "$ownerId": "asc"
@@ -63,6 +75,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
         "unique": true
       },
       {
+        "name": "ownerIdAndUpdatedAt",
         "properties": [
           {
             "$ownerId": "asc"
@@ -76,7 +89,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
     "properties": {
       "avatarUrl": {
         "type": "string",
-        "format": "url",
+        "format": "uri",
         "maxLength": 2048
       },
       "avatarHash": {
@@ -112,6 +125,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
     "type": "object",
     "indices": [
       {
+        "name": "ownerIdAndKeys",
         "properties": [
           {
             "$ownerId": "asc"
@@ -126,6 +140,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
         "unique": true
       },
       {
+        "name": "ownerIdAndUpdatedAt",
         "properties": [
           {
             "$ownerId": "asc"
@@ -170,9 +185,12 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
     "additionalProperties": false
   },
   "contactRequest": {
+    "requiresIdentityEncryptionBoundedKey": 2,
+    "requiresIdentityDecryptionBoundedKey": 2,
     "type": "object",
     "indices": [
       {
+        "name": "ownerIdUserIdAndAccountRef",
         "properties": [
           {
             "$ownerId": "asc"
@@ -187,6 +205,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
         "unique": true
       },
       {
+        "name": "ownerIdUserId",
         "properties": [
           {
             "$ownerId": "asc"
@@ -197,6 +216,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
         ]
       },
       {
+        "name": "userIdCreatedAt",
         "properties": [
           {
             "toUserId": "asc"
@@ -207,6 +227,7 @@ An example contract for [DashPay](https://github.com/dashevo/platform/blob/maste
         ]
       },
       {
+        "name": "ownerIdCreatedAt",
         "properties": [
           {
             "$ownerId": "asc"
