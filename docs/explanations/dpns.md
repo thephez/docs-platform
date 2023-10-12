@@ -8,7 +8,8 @@ Dash Platform Name Service (DPNS) is a service used to register names on Dash Pl
 >
 > The [DPNS Dash Improvement Proposal (DIP)](https://github.com/dashpay/dips/blob/master/dip-0012.md) provides more extensive background information and details.
 
-###  Relationship to identities
+### Relationship to identities
+
 DPNS names and [Identities](../explanations/identity.md) are tightly integrated. Identities provide a foundation that DPNS builds on to enable name-based interactions -- a user experience similar to what is found in non-cryptocurrency applications. With DPNS, users or application developers register a name and associate it with an identity. Once linked, the identity's private keys allow them to prove ownership of the name to establish trust when they interact with other users and applications.
 
 ## Details
@@ -20,6 +21,7 @@ DPNS names and [Identities](../explanations/identity.md) are tightly integrated.
 > Given the DNS-compatible nature of DPNS, all DPNS names are technically domain names and are registered under a top-level DPNS domain (`.dash`). Some applications may abstract the top-level domain away, but it is important to be aware that it exists.
 
 To prevent [front-running](https://en.wikipedia.org/wiki/Domain_name_front_running), name registration is split into a two phase process consisting of:
+
 1. Pre-ordering the domain name
 2. Registering the domain name
 
@@ -29,20 +31,14 @@ In the registration phase, the domain name (e.g. `alice.dash`) is once again sub
 
 ### Implementation
 
-DPNS names currently have several constraints as defined in the [DPNS data contract](https://github.com/dashevo/platform/blob/master/packages/dpns-contract/schema/dpns-contract-documents.json). The constraints exist to maintain compatibility with DNS:
+DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashevo/platform/blob/master/packages/dpns-contract/schema/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
+
 * Maximum length - 63 characters
 * Character set - `0-9`, `-` (hyphen), and `A-Z` (case insensitive)
+  * Note: Use of `-` as a prefix/suffix to a name is _not_ allowed (e.g. `-name` or `name-`). This constraint is defined by this JSON-Schema [pattern](https://github.com/dashevo/platform/blob/master/packages/dpns-contract/schema/dpns-contract-documents.json#L38) in the DPNS data contract: `^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$`
+* Domain labels are converted to lowercase for case-insensitive uniqueness validation. Then, "o", "i" and "l" replaced with "0" and "1" to mitigate [homograph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack). For example, "Alice" is normalized "a11ce".
 
-> 📘
->
-> Note: Use of `-` as a prefix/suffix to a name is _not_ allowed (e.g. `-name` or `name-`). This constraint is defined by this JSON-Schema [pattern](https://github.com/dashevo/platform/blob/master/packages/dpns-contract/schema/dpns-contract-documents.json#L35) in the DPNS data contract:
-> ```
-> "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$"
-> ```
-
-Additionally, the DPNS [data triggers](../explanations/platform-protocol-data-trigger.md) defined in [js-dpp](https://github.com/dashevo/platform/tree/master/packages/js-dpp/lib/dataTrigger) enforce additional validation rules related to the `domain` document.
-
-For more implementation details, please reference the open-source JavaScript DPNS client reference implementation found in the [js-dpns-client](https://github.com/dashevo/js-dpns-client) repository. Additionally, the DPNS data contract is available in the [dpns-contract](https://github.com/dashevo/platform/blob/master/packages/dpns-contract/schema/dpns-contract-documents.json) repository.
+Additional validation rules related to the `domain` document are enforced by the DPNS [data triggers](../explanations/platform-protocol-data-trigger.md) defined in [rs-drive-abci](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/documents_batch/data_triggers/triggers).
 
 ### Contract Diagram
 
