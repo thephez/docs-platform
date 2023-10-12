@@ -10,13 +10,13 @@ DashPay is one of the first applications of Dash Platform's [data contracts](../
 
 The DashPay contract enables an improved Dash wallet experience with features including:
 
-- **User Centric Interaction**: DashPay brings users front and center in a cryptocurrency wallet. Instead of sending to an address, a user sends directly to another user. Users will have a username, a display name, an avatar and a quick bio/information message.
+* **User Centric Interaction**: DashPay brings users front and center in a cryptocurrency wallet. Instead of sending to an address, a user sends directly to another user. Users will have a username, a display name, an avatar and a quick bio/information message.
 
-- **Easy Payments**: Once two users have exchanged contact requests, each can make payments to the other without manually sharing addresses via emails, texts or BIP21 QR codes. This is because every contact request contains the information (an encrypted extended public key) required to send payments to the originator of the request. When decrypted, this extended public key can be used by the recipient of the contact request to generate payment addresses for the originator of the contact request.
+* **Easy Payments**: Once two users have exchanged contact requests, each can make payments to the other without manually sharing addresses via emails, texts or BIP21 QR codes. This is because every contact request contains the information (an encrypted extended public key) required to send payments to the originator of the request. When decrypted, this extended public key can be used by the recipient of the contact request to generate payment addresses for the originator of the contact request.
 
-- **Payment History**: When a contact is established, a user can easily track the payments they have sent to another user and the payments that they have received from that other user. A user will have an extended private key to track payments that are received from the other user and an extended public key to track payments that are sent to that other user.
+* **Payment History**: When a contact is established, a user can easily track the payments they have sent to another user and the payments that they have received from that other user. A user will have an extended private key to track payments that are received from the other user and an extended public key to track payments that are sent to that other user.
 
-- **Payment Participant Protection**: The extended public keys in contact requests are encrypted in such a way that only the two users involved in a contact's two way relationship can decrypt those keys. This ensures that when any two users make payments in DashPay, only they know the sender and receiver while 3rd parties do not.
+* **Payment Participant Protection**: The extended public keys in contact requests are encrypted in such a way that only the two users involved in a contact's two way relationship can decrypt those keys. This ensures that when any two users make payments in DashPay, only they know the sender and receiver while 3rd parties do not.
 
 ## Details
 
@@ -43,15 +43,15 @@ The contract defines three document types: `contactRequest`, `profile` and `cont
 
 ### Implementation
 
-DashPay has many constraints as defined in the [DashPay data contract](https://github.com/dashevo/platform/blob/master/packages/dashpay-contract/schema/dashpay.schema.json). Additionally, the DashPay data triggers defined in [js-dpp](https://github.com/dashevo/platform/tree/master/packages/js-dpp/lib/dataTrigger/dashpayDataTriggers) enforce additional validation rules related to the `contactRequest` document.
+DashPay has many constraints as defined in the [DashPay data contract](https://github.com/dashevo/platform/blob/master/packages/dashpay-contract/schema/dashpay.schema.json). Additionally, the DashPay data triggers defined in [rs-drive-abci](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/documents_batch/data_triggers/triggers/dashpay) enforce additional validation rules related to the `contactRequest` document.
 
 > 👍 DashPay DIP
 >
 > Please refer to the [DashPay Dash Improvement Proposal (DIP)](https://github.com/dashpay/dips/blob/master/dip-0015.md) for more extensive background information and complete details about the data contract.
 
-- <a href="https://github.com/dashpay/dips/blob/master/dip-0015.md#the-contact-request" target="_blank">Contact request details</a>
-- <a href="https://github.com/dashpay/dips/blob/master/dip-0015.md#the-profile" target="_blank">Profile details</a>
-- <a href="https://github.com/dashpay/dips/blob/master/dip-0015.md#contact-info" target="_blank">Contact Info details</a>
+* <a href="https://github.com/dashpay/dips/blob/master/dip-0015.md#the-contact-request" target="_blank">Contact request details</a>
+* <a href="https://github.com/dashpay/dips/blob/master/dip-0015.md#the-profile" target="_blank">Profile details</a>
+* <a href="https://github.com/dashpay/dips/blob/master/dip-0015.md#contact-info" target="_blank">Contact Info details</a>
 
 ```json
 {
@@ -59,6 +59,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
     "type": "object",
     "indices": [
       {
+        "name": "ownerId",
         "properties": [
           {
             "$ownerId": "asc"
@@ -67,6 +68,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
         "unique": true
       },
       {
+        "name": "ownerIdAndUpdatedAt",
         "properties": [
           {
             "$ownerId": "asc"
@@ -80,7 +82,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
     "properties": {
       "avatarUrl": {
         "type": "string",
-        "format": "url",
+        "format": "uri",
         "maxLength": 2048
       },
       "avatarHash": {
@@ -116,6 +118,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
     "type": "object",
     "indices": [
       {
+        "name": "ownerIdAndKeys",
         "properties": [
           {
             "$ownerId": "asc"
@@ -130,6 +133,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
         "unique": true
       },
       {
+        "name": "ownerIdAndUpdatedAt",
         "properties": [
           {
             "$ownerId": "asc"
@@ -174,9 +178,12 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
     "additionalProperties": false
   },
   "contactRequest": {
+    "requiresIdentityEncryptionBoundedKey": 2,
+    "requiresIdentityDecryptionBoundedKey": 2,
     "type": "object",
     "indices": [
       {
+        "name": "ownerIdUserIdAndAccountRef",
         "properties": [
           {
             "$ownerId": "asc"
@@ -191,6 +198,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
         "unique": true
       },
       {
+        "name": "ownerIdUserId",
         "properties": [
           {
             "$ownerId": "asc"
@@ -201,6 +209,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
         ]
       },
       {
+        "name": "userIdCreatedAt",
         "properties": [
           {
             "toUserId": "asc"
@@ -211,6 +220,7 @@ DashPay has many constraints as defined in the [DashPay data contract](https://g
         ]
       },
       {
+        "name": "ownerIdCreatedAt",
         "properties": [
           {
             "$ownerId": "asc"
