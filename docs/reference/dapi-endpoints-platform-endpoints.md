@@ -6,7 +6,7 @@ Please refer to the [gRPC Overview](../reference/dapi-endpoints-grpc-overview.md
 
 Since Dash Platform 0.20.0, Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L17-L22) so the data returned for a request can be verified as being valid. Full support is not yet available in the JavaScript client, but can be used via the low level [dapi-grpc library](https://github.com/dashevo/platform/tree/master/packages/dapi-grpc).
 
-Some [additional metadata](https://github.com/dashevo/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L30-L33) is also provided with responses:
+Some [additional metadata](https://github.com/dashevo/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L38-L44) is also provided with responses:
 
 | Metadata field          | Description                                           |
 | :---------------------- | :---------------------------------------------------- |
@@ -14,6 +14,7 @@ Some [additional metadata](https://github.com/dashevo/platform/blob/master/packa
 | `coreChainLockedHeight` | Height of the most recent ChainLock on the core chain |
 | `timeMs`                | Unix timestamp in milliseconds for the response       |
 | `protocolVersion`       | Platform protocol version                             |
+| `chainId`               | Name of the network                                   |
 
 ## Endpoint Details
 
@@ -368,7 +369,7 @@ const {
   Identifier,
 } = require('@dashevo/wasm-dpp');
 
-  loadDpp();
+loadDpp();
 const dpp = new DashPlatformProtocol(null);
 const client = new DAPIClient();
 
@@ -578,6 +579,150 @@ grpcurl -proto protos/platform/v0/platform.proto \
     "coreChainLockedHeight": 889435,
     "timeMs": "1684440772828",
     "protocolVersion": 1
+  }
+}
+```
+
+::::
+
+### getDataContractHistory
+
+**Returns**: [Data Contract](../explanations/platform-protocol-data-contract.md) information for the requested data contract  
+**Parameters**:
+
+| Name    | Type     | Required | Description                              |
+| ------- | -------- | -------- | ---------------------------------------- |
+| `id`    | Bytes    | Yes      | A data contract `id`                     |
+| `start_at_ms` | Integer | Yes | Request revisions starting at this timestamp |
+| `limit` | Integer  | Yes      | The maximum number of revisions to return |
+| `offset` | Integer | Yes      | The offset of the first revision to return |
+| `prove` | Boolean  | No       | Set to `true` to receive a proof that contains the requested data contract |
+
+> 📘
+>
+> **Note**: When requesting proofs, the data requested will be encoded as part of the proof in the response.
+
+**Example Request and Response**
+
+::::{tab-set-code}
+
+```javascript JavaScript (dapi-client)
+// JavaScript (dapi-client)
+const DAPIClient = require('@dashevo/dapi-client');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
+
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
+const client = new DAPIClient();
+
+const contractId = Identifier.from('BWgzcW4XRhmYKzup1xY8fMi3ZHGG1Hf8fD9Rm3e3bopm');
+client.platform.getDataContractHistory(contractId, 0, 2, 0).then((response) => {
+  for (const key in response.getDataContractHistory()) {
+    const revision = response.getDataContractHistory()[key];
+    dpp.dataContract.createFromBuffer(revision).then((dataContract) => {
+      console.dir(dataContract.toJSON(), { depth: 10 });
+    });
+  }
+});
+```
+
+```shell gRPCurl
+# gRPCurl
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "id":"5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+    "limit": 2,
+    "offset": 0,
+    "start_at_ms": 0,
+    "prove": false    
+    }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getDataContractHistory
+```
+
+::::
+
+::::{tab-set-code}
+
+```json Response (JavaScript)
+// Response (JavaScript)
+{
+  "$format_version": "0",
+  "id": "BWgzcW4XRhmYKzup1xY8fMi3ZHGG1Hf8fD9Rm3e3bopm",
+  "config": {
+    "$format_version": "0",
+    "canBeDeleted": false,
+    "readonly": false,
+    "keepsHistory": true,
+    "documentsKeepHistoryContractDefault": false,
+    "documentsMutableContractDefault": true,
+    "requiresIdentityEncryptionBoundedKey": null,
+    "requiresIdentityDecryptionBoundedKey": null
+  },
+  "version": 1,
+  "ownerId": "DKFKmJ58ZTDddvviDJwDyCznDMxd9Y6bsJcBN5Xp8m5w",
+  "schemaDefs": null,
+  "documentSchemas": {
+    "note": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+},
+{
+  "$format_version": "0",
+  "id": "BWgzcW4XRhmYKzup1xY8fMi3ZHGG1Hf8fD9Rm3e3bopm",
+  "config": {
+    "$format_version": "0",
+    "canBeDeleted": false,
+    "readonly": false,
+    "keepsHistory": true,
+    "documentsKeepHistoryContractDefault": false,
+    "documentsMutableContractDefault": true,
+    "requiresIdentityEncryptionBoundedKey": null,
+    "requiresIdentityDecryptionBoundedKey": null
+  },
+  "version": 2,
+  "ownerId": "DKFKmJ58ZTDddvviDJwDyCznDMxd9Y6bsJcBN5Xp8m5w",
+  "schemaDefs": null,
+  "documentSchemas": {
+    "note": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```
+
+```json Response (gRPCurl)
+// Response (gRPCurl)
+{
+  "dataContractHistory": {
+  },
+  "metadata": {
+    "height": "1056",
+    "coreChainLockedHeight": 922820,
+    "timeMs": "1697125325434",
+    "protocolVersion": 1,
+    "chainId": "devnet"
   }
 }
 ```
