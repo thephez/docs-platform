@@ -26,6 +26,8 @@ The fifth tab shows a data contract using a byte array. This allows a contract t
 
 > 🚧
 >
+> Since Platform v0.25.16, each document property must assign `position` value to support [backwards compatibility](https://github.com/dashpay/platform/pull/1594) for contract updates.
+>
 > Since Platform v0.23, an index can [only use the ascending order](https://github.com/dashevo/platform/pull/435) (`asc`). Future updates will remove this restriction.
 
 ::::{tab-set-code}
@@ -37,7 +39,8 @@ The fifth tab shows a data contract using a byte array. This allows a contract t
     "type": "object",
     "properties": {
       "message": {
-        "type": "string"
+        "type": "string",
+        "position": 0
       }
     },
     "additionalProperties": false
@@ -57,7 +60,8 @@ The fifth tab shows a data contract using a byte array. This allows a contract t
     ],
     "properties": {
       "message": {
-        "type": "string"
+        "type": "string",
+        "position": 0
       }
     },
     "additionalProperties": false
@@ -74,7 +78,7 @@ An identity's documents are accessible via a query including a where clause like
 
 ```json
 //  3. References ($ref)
-// NOTE: The `$ref` keyword is temporarily disabled for Platform v0.22.
+// NOTE: The `$ref` keyword is temporarily disabled since Platform v0.22.
 {
   "customer": {
     "type": "object",
@@ -113,7 +117,8 @@ being added to the contract via the contracts `.setDefinitions` method:
     "type": "object",
     "properties": {
       "message": {
-        "type": "string"
+        "type": "string",
+        "position": 0
       }
     },
     "required": ["$createdAt", "$updatedAt"],
@@ -140,7 +145,8 @@ This information will be returned when the document is retrieved.
         "type": "array",
         "byteArray": true,
         "maxItems": 64,
-        "description": "Store block hashes"
+        "description": "Store block hashes",
+        "position": 0
       }
     },
     "additionalProperties": false
@@ -190,6 +196,7 @@ const registerContract = async () => {
       properties: {
         message: {
           type: 'string',
+          "position": 0
         },
       },
       additionalProperties: false,
@@ -240,6 +247,7 @@ const registerContract = async () => {
       properties: {
         message: {
           type: 'string',
+          "position": 0
         },
       },
       additionalProperties: false,
@@ -347,6 +355,7 @@ const registerContract = async () => {
       properties: {
         message: {
           type: 'string',
+          "position": 0
         },
       },
       required: ['$createdAt', '$updatedAt'],
@@ -395,6 +404,7 @@ const registerContract = async () => {
           byteArray: true,
           maxItems: 64,
           description: 'Store block hashes',
+          "position": 0
         },
       },
       additionalProperties: false,
@@ -439,6 +449,7 @@ const registerContract = async () => {
       properties: {
         message: {
           type: 'string',
+          "position": 0
         },
       },
       additionalProperties: false,
