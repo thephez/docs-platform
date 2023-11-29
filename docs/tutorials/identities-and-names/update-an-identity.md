@@ -57,7 +57,9 @@ updateIdentityDisableKey()
 ```javascript Add identity key
 // Add identity key
 const Dash = require('dash');
-const { IdentityPublicKey, IdentityPublicKeyWithWitness } = require('@dashevo/wasm-dpp');
+const {
+  PlatformProtocol: { IdentityPublicKey, IdentityPublicKeyWithWitness },
+} = Dash;
 
 const clientOpts = {
   network: 'testnet',
