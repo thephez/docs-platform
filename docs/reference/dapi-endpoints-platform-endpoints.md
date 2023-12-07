@@ -4,17 +4,22 @@ Please refer to the [gRPC Overview](../reference/dapi-endpoints-grpc-overview.md
 
 ## Data Proofs and Metadata
 
-Since Dash Platform 0.20.0, Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L17-L22) so the data returned for a request can be verified as being valid. Full support is not yet available in the JavaScript client, but can be used via the low level [dapi-grpc library](https://github.com/dashevo/platform/tree/master/packages/dapi-grpc).
+Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L17-L22) so the data returned for a request can be verified as being valid. Full support is not yet available in the JavaScript client, but can be used via the low level [dapi-grpc library](https://github.com/dashevo/platform/tree/master/packages/dapi-grpc).
 
-Some [additional metadata](https://github.com/dashevo/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L38-L44) is also provided with responses:
+Some [additional metadata](https://github.com/dashevo/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L48-L55) is also provided with responses:
 
 | Metadata field          | Description                                           |
 | :---------------------- | :---------------------------------------------------- |
 | `height`                | Last committed platform chain height                  |
 | `coreChainLockedHeight` | Height of the most recent ChainLock on the core chain |
+| `epoch`                 | The current Platform epoch                            |
 | `timeMs`                | Unix timestamp in milliseconds for the response       |
 | `protocolVersion`       | Platform protocol version                             |
 | `chainId`               | Name of the network                                   |
+
+## Versioning
+
+Dash Platform 0.25.16 included a [breaking change that added versioning](https://github.com/dashpay/platform/pull/1522) to these endpoints so future updates can be done without creating significant issues for API consumers.
 
 ## Endpoint Details
 
@@ -125,8 +130,10 @@ platformPromiseClient
 # `id` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
-    "id":"MBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/aw="
-    }' \
+    "v0": {
+      "id": "MBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/aw="
+    }
+  }' \
   seed-1.testnet.networks.dash.org:1443 \
   org.dash.platform.dapi.v0.Platform/getIdentity
 ```
@@ -138,46 +145,50 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "$version": "0",
-  "id": "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
-  "publicKeys": [
+  "$version":"0",
+  "id":"4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
+  "publicKeys":[
     {
-      "$version": "0",
-      "id": 0,
-      "purpose": 0,
-      "securityLevel": 0,
-      "contractBounds": null,
-      "type": 0,
-      "readOnly": false,
-      "data": "Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
-      "disabledAt": null
+      "$version":"0",
+      "id":0,
+      "purpose":0,
+      "securityLevel":0,
+      "contractBounds":null,
+      "type":0,
+      "readOnly":false,
+      "data":"Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
+      "disabledAt":null
     },
     {
-      "$version": "0",
-      "id": 1,
-      "purpose": 0,
-      "securityLevel": 2,
-      "contractBounds": null,
-      "type": 0,
-      "readOnly": false,
-      "data": "AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
-      "disabledAt": null
+      "$version":"0",
+      "id":1,
+      "purpose":0,
+      "securityLevel":2,
+      "contractBounds":null,
+      "type":0,
+      "readOnly":false,
+      "data":"AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
+      "disabledAt":null
     }
   ],
-  "balance": 7327280900,
-  "revision": 0
+  "balance":17912102140,
+  "revision":0
 }
 ```
 
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
-  "identity": "AaRiaWRYIDASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sZ2JhbGFuY2UbAAAAATk8g3ZocmV2aXNpb24AanB1YmxpY0tleXOCpmJpZABkZGF0YVghAsi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRqZHR5cGUAZ3B1cnBvc2UAaHJlYWRPbmx59G1zZWN1cml0eUxldmVsAKZiaWQBZGRhdGFYIQIB7ij4T1SFOQVn6TnCtYYBC2Omnsksq1NdyWqMcZE2AmR0eXBlAGdwdXJwb3NlAGhyZWFkT25sefRtc2VjdXJpdHlMZXZlbAI=",
-  "metadata": {
-    "height": "4217",
-    "coreChainLockedHeight": 858833,
-    "timeMs": "1688058824358",
-    "protocolVersion": 1
+  "v0": {
+    "identity": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQLItHR7UoysX933psxjcC7gTtfRMykE4IUQND6gDc5UagABAAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA/QAAAAQrpPz8AA==",
+    "metadata": {
+      "height": "6730",
+      "coreChainLockedHeight": 926904,
+      "epoch": 844,
+      "timeMs": "1701959872131",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-37"
+    }
   }
 }
 ```
@@ -277,8 +288,10 @@ platformPromiseClient
 # `public_key_hashes` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
+    "v0": {
       "public_key_hashes":"uNFZGqdNRA4K+cC+FsVbvBQYR/c="
-    }' \
+    }
+  }' \
   seed-1.testnet.networks.dash.org:1443 \
   org.dash.platform.dapi.v0.Platform/getIdentitiesByPublicKeyHashes
 ```
@@ -290,48 +303,57 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "$version": "0",
-  "id": "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
-  "publicKeys": [
+  "$version":"0",
+  "id":"4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
+  "publicKeys":[
     {
-      "$version": "0",
-      "id": 0,
-      "purpose": 0,
-      "securityLevel": 0,
-      "contractBounds": null,
-      "type": 0,
-      "readOnly": false,
-      "data": "Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
-      "disabledAt": null
+      "$version":"0",
+      "id":0,
+      "purpose":0,
+      "securityLevel":0,
+      "contractBounds":null,
+      "type":0,
+      "readOnly":false,
+      "data":"Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
+      "disabledAt":null
     },
     {
-      "$version": "0",
-      "id": 1,
-      "purpose": 0,
-      "securityLevel": 2,
-      "contractBounds": null,
-      "type": 0,
-      "readOnly": false,
-      "data": "AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
-      "disabledAt": null
+      "$version":"0",
+      "id":1,
+      "purpose":0,
+      "securityLevel":2,
+      "contractBounds":null,
+      "type":0,
+      "readOnly":false,
+      "data":"AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
+      "disabledAt":null
     }
   ],
-  "balance": 7327280900,
-  "revision": 0
+  "balance":17912102140,
+  "revision":0
 }
 ```
 
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
-  "identities": [
-    "AaRiaWRYIDASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sZ2JhbGFuY2UbAAAAATk8g3ZocmV2aXNpb24AanB1YmxpY0tleXOCpmJpZABkZGF0YVghAsi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRqZHR5cGUAZ3B1cnBvc2UAaHJlYWRPbmx59G1zZWN1cml0eUxldmVsAKZiaWQBZGRhdGFYIQIB7ij4T1SFOQVn6TnCtYYBC2Omnsksq1NdyWqMcZE2AmR0eXBlAGdwdXJwb3NlAGhyZWFkT25sefRtc2VjdXJpdHlMZXZlbAI="
-  ],
-  "metadata": {
-    "height": "4216",
-    "coreChainLockedHeight": 858832,
-    "timeMs": "1688058626337",
-    "protocolVersion": 1
+  "v0": {
+    "identities": {
+      "identityEntries": [
+        {
+          "publicKeyHash": "uNFZGqdNRA4K+cC+FsVbvBQYR/c=",
+          "value": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQLItHR7UoysX933psxjcC7gTtfRMykE4IUQND6gDc5UagABAAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA/QAAAAQrpPz8AA=="
+        }
+      ]
+    },
+    "metadata": {
+      "height": "6733",
+      "coreChainLockedHeight": 926908,
+      "epoch": 844,
+      "timeMs": "1701960418324",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-37"
+    }
   }
 }
 ```
@@ -412,8 +434,10 @@ platformPromiseClient
 # `id` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
-    "id":"5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
-    }' \
+    "v0": {
+      "id":"5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
+    }
+  }' \
   seed-1.testnet.networks.dash.org:1443 \
   org.dash.platform.dapi.v0.Platform/getDataContract
 ```
@@ -425,115 +449,146 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "$format_version": "0",
-  "id": "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
-  "config": {
-    "$format_version": "0",
-    "canBeDeleted": false,
-    "readonly": false,
-    "keepsHistory": false,
-    "documentsKeepHistoryContractDefault": false,
-    "documentsMutableContractDefault": true,
-    "requiresIdentityEncryptionBoundedKey": null,
-    "requiresIdentityDecryptionBoundedKey": null
+  "$format_version":"0",
+  "id":"GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
+  "config":{
+    "$format_version":"0",
+    "canBeDeleted":false,
+    "readonly":false,
+    "keepsHistory":false,
+    "documentsKeepHistoryContractDefault":false,
+    "documentsMutableContractDefault":true,
+    "requiresIdentityEncryptionBoundedKey":null,
+    "requiresIdentityDecryptionBoundedKey":null
   },
-  "version": 1,
-  "ownerId": "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
-  "schemaDefs": null,
-  "documentSchemas": {
-    "domain": {
-      "type": "object",
-      "indices": [
+  "version":1,
+  "ownerId":"4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
+  "schemaDefs":null,
+  "documentSchemas":{
+    "domain":{
+      "type":"object",
+      "indices":[
         {
-          "name": "parentNameAndLabel",
-          "properties": [
-            { "normalizedParentDomainName": "asc" },
-            { "normalizedLabel": "asc" }
+          "name":"parentNameAndLabel",
+          "properties":[
+            {
+              "normalizedParentDomainName":"asc"
+            },
+            {
+              "normalizedLabel":"asc"
+            }
           ],
-          "unique": true
+          "unique":true
         },
         {
-          "name": "dashIdentityId",
-          "properties": [ { "records.dashUniqueIdentityId": "asc" } ],
-          "unique": true
+          "name":"dashIdentityId",
+          "properties":[
+            {
+              "records.dashUniqueIdentityId":"asc"
+            }
+          ],
+          "unique":true
         },
         {
-          "name": "dashAlias",
-          "properties": [ { "records.dashAliasIdentityId": "asc" } ]
+          "name":"dashAlias",
+          "properties":[
+            {
+              "records.dashAliasIdentityId":"asc"
+            }
+          ]
         }
       ],
-      "properties": {
-        "label": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$",
-          "minLength": 3,
-          "maxLength": 63,
-          "description": "Domain label. e.g. 'Bob'."
+      "properties":{
+        "label":{
+          "type":"string",
+          "pattern":"^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$",
+          "minLength":3,
+          "maxLength":63,
+          "position":0,
+          "description":"Domain label. e.g. 'Bob'."
         },
-        "normalizedLabel": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
-          "maxLength": 63,
-          "description": "Domain label in lowercase for case-insensitive uniqueness validation. e.g. 'bob'",
-          "$comment": "Must be equal to the label in lowercase. This property will be deprecated due to case insensitive indices"
+        "normalizedLabel":{
+          "type":"string",
+          "pattern":"^[a-hj-km-np-z0-9][a-hj-km-np-z0-9-]{0,61}[a-hj-km-np-z0-9]$",
+          "maxLength":63,
+          "position":1,
+          "description":"`Domain label converted to lowercase for case-insensitive uniqueness validation. \"o\", \"i\" and \"l\" replaced with \"0\" and \"1\" to mitigate homograph attack. e.g. 'b0b'`",
+          "$comment":"Must be equal to the label in lowercase. \"o\", \"i\" and \"l\" must be replaced with \"0\" and \"1\"."
         },
-        "normalizedParentDomainName": {
-          "type": "string",
-          "pattern": "^$|^[a-z0-9][a-z0-9-\\.]{0,61}[a-z0-9]$",
-          "minLength": 0,
-          "maxLength": 63,
-          "description": "A full parent domain name in lowercase for case-insensitive uniqueness validation. e.g. 'dash'",
-          "$comment": "Must either be equal to an existing domain or empty to create a top level domain. Only the data contract owner can create top level domains."
+        "parentDomainName":{
+          "type":"string",
+          "pattern":"^$|^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$",
+          "minLength":0,
+          "maxLength":63,
+          "position":2,
+          "description":"A full parent domain name. e.g. 'dash'."
         },
-        "preorderSalt": {
-          "type": "array",
-          "byteArray": true,
-          "minItems": 32,
-          "maxItems": 32,
-          "description": "Salt used in the preorder document"
+        "normalizedParentDomainName":{
+          "type":"string",
+          "pattern":"^$|^[a-hj-km-np-z0-9][a-hj-km-np-z0-9-\\.]{0,61}[a-hj-km-np-z0-9]$",
+          "minLength":0,
+          "maxLength":63,
+          "position":3,
+          "description":"`A parent domain name in lowercase for case-insensitive uniqueness validation. \"o\", \"i\" and \"l\" replaced with \"0\" and \"1\" to mitigate homograph attack. e.g. 'dash'`",
+          "$comment":"Must either be equal to an existing domain or empty to create a top level domain. \"o\", \"i\" and \"l\" must be replaced with \"0\" and \"1\". Only the data contract owner can create top level domains."
         },
-        "records": {
-          "type": "object",
-          "properties": {
-            "dashUniqueIdentityId": {
-              "type": "array",
-              "byteArray": true,
-              "minItems": 32,
-              "maxItems": 32,
-              "contentMediaType": "application/x.dash.dpp.identifier",
-              "description": "Identity ID to be used to create the primary name the Identity",
-              "$comment": "Must be equal to the document owner"
+        "preorderSalt":{
+          "type":"array",
+          "byteArray":true,
+          "minItems":32,
+          "maxItems":32,
+          "position":4,
+          "description":"Salt used in the preorder document"
+        },
+        "records":{
+          "type":"object",
+          "properties":{
+            "dashUniqueIdentityId":{
+              "type":"array",
+              "byteArray":true,
+              "minItems":32,
+              "maxItems":32,
+              "position":0,
+              "contentMediaType":"application/x.dash.dpp.identifier",
+              "description":"Identity ID to be used to create the primary name the Identity",
+              "$comment":"Must be equal to the document owner"
             },
-            "dashAliasIdentityId": {
-              "type": "array",
-              "byteArray": true,
-              "minItems": 32,
-              "maxItems": 32,
-              "contentMediaType": "application/x.dash.dpp.identifier",
-              "description": "Identity ID to be used to create alias names for the Identity",
-              "$comment": "Must be equal to the document owner"
+            "dashAliasIdentityId":{
+              "type":"array",
+              "byteArray":true,
+              "minItems":32,
+              "maxItems":32,
+              "position":1,
+              "contentMediaType":"application/x.dash.dpp.identifier",
+              "description":"Identity ID to be used to create alias names for the Identity",
+              "$comment":"Must be equal to the document owner"
             }
           },
-          "$comment": "Constraint with max and min properties ensure that only one identity record is used - either a `dashUniqueIdentityId` or a `dashAliasIdentityId`",
-          "minProperties": 1,
-          "maxProperties": 1,
-          "additionalProperties": false
+          "minProperties":1,
+          "maxProperties":1,
+          "position":5,
+          "additionalProperties":false,
+          "$comment":"Constraint with max and min properties ensure that only one identity record is used - either a `dashUniqueIdentityId` or a `dashAliasIdentityId`"
         },
-        "subdomainRules": {
-          "type": "object",
-          "properties": {
-            "allowSubdomains": {
-              "type": "boolean",
-              "description": "This option defines who can create subdomains: true - anyone; false - only the domain owner",
-              "$comment": "Only the domain owner is allowed to create subdomains for non top-level domains"
+        "subdomainRules":{
+          "type":"object",
+          "properties":{
+            "allowSubdomains":{
+              "type":"boolean",
+              "description":"This option defines who can create subdomains: true - anyone; false - only the domain owner",
+              "$comment":"Only the domain owner is allowed to create subdomains for non top-level domains",
+              "position":0
             }
           },
-          "description": "Subdomain rules allow domain owners to define rules for subdomains",
-          "additionalProperties": false,
-          "required": [ "allowSubdomains" ]
+          "position":6,
+          "description":"Subdomain rules allow domain owners to define rules for subdomains",
+          "additionalProperties":false,
+          "required":[
+            "allowSubdomains"
+          ]
         }
       },
-      "required": [
+      "required":[
         "label",
         "normalizedLabel",
         "normalizedParentDomainName",
@@ -541,30 +596,37 @@ grpcurl -proto protos/platform/v0/platform.proto \
         "records",
         "subdomainRules"
       ],
-      "additionalProperties": false,
-      "$comment": "In order to register a domain you need to create a preorder. The preorder step is needed to prevent man-in-the-middle attacks. normalizedLabel + '.' + normalizedParentDomain must not be longer than 253 chars length as defined by RFC 1035. Domain documents are immutable: modification and deletion are restricted"
+      "additionalProperties":false,
+      "$comment":"In order to register a domain you need to create a preorder. The preorder step is needed to prevent man-in-the-middle attacks. normalizedLabel + '.' + normalizedParentDomain must not be longer than 253 chars length as defined by RFC 1035. Domain documents are immutable: modification and deletion are restricted"
     },
-    "preorder": {
-      "type": "object",
-      "indices": [
+    "preorder":{
+      "type":"object",
+      "indices":[
         {
-          "name": "saltedHash",
-          "properties": [ { "saltedDomainHash": "asc" } ],
-          "unique": true
+          "name":"saltedHash",
+          "properties":[
+            {
+              "saltedDomainHash":"asc"
+            }
+          ],
+          "unique":true
         }
       ],
-      "properties": {
-        "saltedDomainHash": {
-          "type": "array",
-          "byteArray": true,
-          "minItems": 32,
-          "maxItems": 32,
-          "description": "Double sha-256 of the concatenation of a 32 byte random salt and a normalized domain name"
+      "properties":{
+        "saltedDomainHash":{
+          "type":"array",
+          "byteArray":true,
+          "minItems":32,
+          "maxItems":32,
+          "position":0,
+          "description":"Double sha-256 of the concatenation of a 32 byte random salt and a normalized domain name"
         }
       },
-      "required": [ "saltedDomainHash" ],
-      "additionalProperties": false,
-      "$comment": "Preorder documents are immutable: modification and deletion are restricted"
+      "required":[
+        "saltedDomainHash"
+      ],
+      "additionalProperties":false,
+      "$comment":"Preorder documents are immutable: modification and deletion are restricted"
     }
   }
 }
@@ -573,12 +635,16 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
-  "dataContract": "AaVjJGlkWCDmaMZZr2au4ecsGG3ee1t+Ch1xKgnEDVch9iK/U8UxVWckc2NoZW1heDRodHRwczovL3NjaGVtYS5kYXNoLm9yZy9kcHAtMC00LTAvbWV0YS9kYXRhLWNvbnRyYWN0Z293bmVySWRYIDASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sZ3ZlcnNpb24BaWRvY3VtZW50c6JmZG9tYWlupmR0eXBlZm9iamVjdGdpbmRpY2Vzg6NkbmFtZXJwYXJlbnROYW1lQW5kTGFiZWxmdW5pcXVl9Wpwcm9wZXJ0aWVzgqF4Gm5vcm1hbGl6ZWRQYXJlbnREb21haW5OYW1lY2FzY6Fvbm9ybWFsaXplZExhYmVsY2FzY6NkbmFtZW5kYXNoSWRlbnRpdHlJZGZ1bmlxdWX1anByb3BlcnRpZXOBoXgccmVjb3Jkcy5kYXNoVW5pcXVlSWRlbnRpdHlJZGNhc2OiZG5hbWVpZGFzaEFsaWFzanByb3BlcnRpZXOBoXgbcmVjb3Jkcy5kYXNoQWxpYXNJZGVudGl0eUlkY2FzY2gkY29tbWVudHkBN0luIG9yZGVyIHRvIHJlZ2lzdGVyIGEgZG9tYWluIHlvdSBuZWVkIHRvIGNyZWF0ZSBhIHByZW9yZGVyLiBUaGUgcHJlb3JkZXIgc3RlcCBpcyBuZWVkZWQgdG8gcHJldmVudCBtYW4taW4tdGhlLW1pZGRsZSBhdHRhY2tzLiBub3JtYWxpemVkTGFiZWwgKyAnLicgKyBub3JtYWxpemVkUGFyZW50RG9tYWluIG11c3Qgbm90IGJlIGxvbmdlciB0aGFuIDI1MyBjaGFycyBsZW5ndGggYXMgZGVmaW5lZCBieSBSRkMgMTAzNS4gRG9tYWluIGRvY3VtZW50cyBhcmUgaW1tdXRhYmxlOiBtb2RpZmljYXRpb24gYW5kIGRlbGV0aW9uIGFyZSByZXN0cmljdGVkaHJlcXVpcmVkhmVsYWJlbG9ub3JtYWxpemVkTGFiZWx4Gm5vcm1hbGl6ZWRQYXJlbnREb21haW5OYW1lbHByZW9yZGVyU2FsdGdyZWNvcmRzbnN1YmRvbWFpblJ1bGVzanByb3BlcnRpZXOmZWxhYmVspWR0eXBlZnN0cmluZ2dwYXR0ZXJueCpeW2EtekEtWjAtOV1bYS16QS1aMC05LV17MCw2MX1bYS16QS1aMC05XSRpbWF4TGVuZ3RoGD9pbWluTGVuZ3RoA2tkZXNjcmlwdGlvbngZRG9tYWluIGxhYmVsLiBlLmcuICdCb2InLmdyZWNvcmRzpmR0eXBlZm9iamVjdGgkY29tbWVudHiQQ29uc3RyYWludCB3aXRoIG1heCBhbmQgbWluIHByb3BlcnRpZXMgZW5zdXJlIHRoYXQgb25seSBvbmUgaWRlbnRpdHkgcmVjb3JkIGlzIHVzZWQgLSBlaXRoZXIgYSBgZGFzaFVuaXF1ZUlkZW50aXR5SWRgIG9yIGEgYGRhc2hBbGlhc0lkZW50aXR5SWRganByb3BlcnRpZXOic2Rhc2hBbGlhc0lkZW50aXR5SWSnZHR5cGVlYXJyYXloJGNvbW1lbnR4I011c3QgYmUgZXF1YWwgdG8gdGhlIGRvY3VtZW50IG93bmVyaG1heEl0ZW1zGCBobWluSXRlbXMYIGlieXRlQXJyYXn1a2Rlc2NyaXB0aW9ueD1JZGVudGl0eSBJRCB0byBiZSB1c2VkIHRvIGNyZWF0ZSBhbGlhcyBuYW1lcyBmb3IgdGhlIElkZW50aXR5cGNvbnRlbnRNZWRpYVR5cGV4IWFwcGxpY2F0aW9uL3guZGFzaC5kcHAuaWRlbnRpZmllcnRkYXNoVW5pcXVlSWRlbnRpdHlJZKdkdHlwZWVhcnJheWgkY29tbWVudHgjTXVzdCBiZSBlcXVhbCB0byB0aGUgZG9jdW1lbnQgb3duZXJobWF4SXRlbXMYIGhtaW5JdGVtcxggaWJ5dGVBcnJhefVrZGVzY3JpcHRpb254PklkZW50aXR5IElEIHRvIGJlIHVzZWQgdG8gY3JlYXRlIHRoZSBwcmltYXJ5IG5hbWUgdGhlIElkZW50aXR5cGNvbnRlbnRNZWRpYVR5cGV4IWFwcGxpY2F0aW9uL3guZGFzaC5kcHAuaWRlbnRpZmllcm1tYXhQcm9wZXJ0aWVzAW1taW5Qcm9wZXJ0aWVzAXRhZGRpdGlvbmFsUHJvcGVydGllc/RscHJlb3JkZXJTYWx0pWR0eXBlZWFycmF5aG1heEl0ZW1zGCBobWluSXRlbXMYIGlieXRlQXJyYXn1a2Rlc2NyaXB0aW9ueCJTYWx0IHVzZWQgaW4gdGhlIHByZW9yZGVyIGRvY3VtZW50bnN1YmRvbWFpblJ1bGVzpWR0eXBlZm9iamVjdGhyZXF1aXJlZIFvYWxsb3dTdWJkb21haW5zanByb3BlcnRpZXOhb2FsbG93U3ViZG9tYWluc6NkdHlwZWdib29sZWFuaCRjb21tZW50eE9Pbmx5IHRoZSBkb21haW4gb3duZXIgaXMgYWxsb3dlZCB0byBjcmVhdGUgc3ViZG9tYWlucyBmb3Igbm9uIHRvcC1sZXZlbCBkb21haW5za2Rlc2NyaXB0aW9ueFtUaGlzIG9wdGlvbiBkZWZpbmVzIHdobyBjYW4gY3JlYXRlIHN1YmRvbWFpbnM6IHRydWUgLSBhbnlvbmU7IGZhbHNlIC0gb25seSB0aGUgZG9tYWluIG93bmVya2Rlc2NyaXB0aW9ueEJTdWJkb21haW4gcnVsZXMgYWxsb3cgZG9tYWluIG93bmVycyB0byBkZWZpbmUgcnVsZXMgZm9yIHN1YmRvbWFpbnN0YWRkaXRpb25hbFByb3BlcnRpZXP0b25vcm1hbGl6ZWRMYWJlbKVkdHlwZWZzdHJpbmdncGF0dGVybnghXlthLXowLTldW2EtejAtOS1dezAsNjF9W2EtejAtOV0kaCRjb21tZW50eGlNdXN0IGJlIGVxdWFsIHRvIHRoZSBsYWJlbCBpbiBsb3dlcmNhc2UuIFRoaXMgcHJvcGVydHkgd2lsbCBiZSBkZXByZWNhdGVkIGR1ZSB0byBjYXNlIGluc2Vuc2l0aXZlIGluZGljZXNpbWF4TGVuZ3RoGD9rZGVzY3JpcHRpb254UERvbWFpbiBsYWJlbCBpbiBsb3dlcmNhc2UgZm9yIGNhc2UtaW5zZW5zaXRpdmUgdW5pcXVlbmVzcyB2YWxpZGF0aW9uLiBlLmcuICdib2IneBpub3JtYWxpemVkUGFyZW50RG9tYWluTmFtZaZkdHlwZWZzdHJpbmdncGF0dGVybngmXiR8XlthLXowLTldW2EtejAtOS1cLl17MCw2MX1bYS16MC05XSRoJGNvbW1lbnR4jE11c3QgZWl0aGVyIGJlIGVxdWFsIHRvIGFuIGV4aXN0aW5nIGRvbWFpbiBvciBlbXB0eSB0byBjcmVhdGUgYSB0b3AgbGV2ZWwgZG9tYWluLiBPbmx5IHRoZSBkYXRhIGNvbnRyYWN0IG93bmVyIGNhbiBjcmVhdGUgdG9wIGxldmVsIGRvbWFpbnMuaW1heExlbmd0aBg/aW1pbkxlbmd0aABrZGVzY3JpcHRpb254XkEgZnVsbCBwYXJlbnQgZG9tYWluIG5hbWUgaW4gbG93ZXJjYXNlIGZvciBjYXNlLWluc2Vuc2l0aXZlIHVuaXF1ZW5lc3MgdmFsaWRhdGlvbi4gZS5nLiAnZGFzaCd0YWRkaXRpb25hbFByb3BlcnRpZXP0aHByZW9yZGVypmR0eXBlZm9iamVjdGdpbmRpY2VzgaNkbmFtZWpzYWx0ZWRIYXNoZnVuaXF1ZfVqcHJvcGVydGllc4GhcHNhbHRlZERvbWFpbkhhc2hjYXNjaCRjb21tZW50eEpQcmVvcmRlciBkb2N1bWVudHMgYXJlIGltbXV0YWJsZTogbW9kaWZpY2F0aW9uIGFuZCBkZWxldGlvbiBhcmUgcmVzdHJpY3RlZGhyZXF1aXJlZIFwc2FsdGVkRG9tYWluSGFzaGpwcm9wZXJ0aWVzoXBzYWx0ZWREb21haW5IYXNopWR0eXBlZWFycmF5aG1heEl0ZW1zGCBobWluSXRlbXMYIGlieXRlQXJyYXn1a2Rlc2NyaXB0aW9ueFlEb3VibGUgc2hhLTI1NiBvZiB0aGUgY29uY2F0ZW5hdGlvbiBvZiBhIDMyIGJ5dGUgcmFuZG9tIHNhbHQgYW5kIGEgbm9ybWFsaXplZCBkb21haW4gbmFtZXRhZGRpdGlvbmFsUHJvcGVydGllc/Q=",
-  "metadata": {
-    "height": "4253",
-    "coreChainLockedHeight": 889435,
-    "timeMs": "1684440772828",
-    "protocolVersion": 1
+  "v0": {
+    "dataContract": "AOZoxlmvZq7h5ywYbd57W34KHXEqCcQNVyH2Ir9TxTFVAAAAAAABAAABMBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/awAAgZkb21haW4WBhIEdHlwZRIGb2JqZWN0EgdpbmRpY2VzFQMWAxIEbmFtZRIScGFyZW50TmFtZUFuZExhYmVsEgpwcm9wZXJ0aWVzFQIWARIabm9ybWFsaXplZFBhcmVudERvbWFpbk5hbWUSA2FzYxYBEg9ub3JtYWxpemVkTGFiZWwSA2FzYxIGdW5pcXVlEwEWAxIEbmFtZRIOZGFzaElkZW50aXR5SWQSCnByb3BlcnRpZXMVARYBEhxyZWNvcmRzLmRhc2hVbmlxdWVJZGVudGl0eUlkEgNhc2MSBnVuaXF1ZRMBFgISBG5hbWUSCWRhc2hBbGlhcxIKcHJvcGVydGllcxUBFgESG3JlY29yZHMuZGFzaEFsaWFzSWRlbnRpdHlJZBIDYXNjEgpwcm9wZXJ0aWVzFgcSBWxhYmVsFgYSBHR5cGUSBnN0cmluZxIHcGF0dGVybhIqXlthLXpBLVowLTldW2EtekEtWjAtOS1dezAsNjF9W2EtekEtWjAtOV0kEgltaW5MZW5ndGgCAxIJbWF4TGVuZ3RoAj8SCHBvc2l0aW9uAgASC2Rlc2NyaXB0aW9uEhlEb21haW4gbGFiZWwuIGUuZy4gJ0JvYicuEg9ub3JtYWxpemVkTGFiZWwWBhIEdHlwZRIGc3RyaW5nEgdwYXR0ZXJuEjxeW2EtaGota20tbnAtejAtOV1bYS1oai1rbS1ucC16MC05LV17MCw2MX1bYS1oai1rbS1ucC16MC05XSQSCW1heExlbmd0aAI/Eghwb3NpdGlvbgIBEgtkZXNjcmlwdGlvbhKjRG9tYWluIGxhYmVsIGNvbnZlcnRlZCB0byBsb3dlcmNhc2UgZm9yIGNhc2UtaW5zZW5zaXRpdmUgdW5pcXVlbmVzcyB2YWxpZGF0aW9uLiAibyIsICJpIiBhbmQgImwiIHJlcGxhY2VkIHdpdGggIjAiIGFuZCAiMSIgdG8gbWl0aWdhdGUgaG9tb2dyYXBoIGF0dGFjay4gZS5nLiAnYjBiJxIIJGNvbW1lbnQSXE11c3QgYmUgZXF1YWwgdG8gdGhlIGxhYmVsIGluIGxvd2VyY2FzZS4gIm8iLCAiaSIgYW5kICJsIiBtdXN0IGJlIHJlcGxhY2VkIHdpdGggIjAiIGFuZCAiMSIuEhBwYXJlbnREb21haW5OYW1lFgYSBHR5cGUSBnN0cmluZxIHcGF0dGVybhItXiR8XlthLXpBLVowLTldW2EtekEtWjAtOS1dezAsNjF9W2EtekEtWjAtOV0kEgltaW5MZW5ndGgCABIJbWF4TGVuZ3RoAj8SCHBvc2l0aW9uAgISC2Rlc2NyaXB0aW9uEidBIGZ1bGwgcGFyZW50IGRvbWFpbiBuYW1lLiBlLmcuICdkYXNoJy4SGm5vcm1hbGl6ZWRQYXJlbnREb21haW5OYW1lFgcSBHR5cGUSBnN0cmluZxIHcGF0dGVybhJBXiR8XlthLWhqLWttLW5wLXowLTldW2EtaGota20tbnAtejAtOS1cLl17MCw2MX1bYS1oai1rbS1ucC16MC05XSQSCW1pbkxlbmd0aAIAEgltYXhMZW5ndGgCPxIIcG9zaXRpb24CAxILZGVzY3JpcHRpb24SokEgcGFyZW50IGRvbWFpbiBuYW1lIGluIGxvd2VyY2FzZSBmb3IgY2FzZS1pbnNlbnNpdGl2ZSB1bmlxdWVuZXNzIHZhbGlkYXRpb24uICJvIiwgImkiIGFuZCAibCIgcmVwbGFjZWQgd2l0aCAiMCIgYW5kICIxIiB0byBtaXRpZ2F0ZSBob21vZ3JhcGggYXR0YWNrLiBlLmcuICdkYXNoJxIIJGNvbW1lbnQSwE11c3QgZWl0aGVyIGJlIGVxdWFsIHRvIGFuIGV4aXN0aW5nIGRvbWFpbiBvciBlbXB0eSB0byBjcmVhdGUgYSB0b3AgbGV2ZWwgZG9tYWluLiAibyIsICJpIiBhbmQgImwiIG11c3QgYmUgcmVwbGFjZWQgd2l0aCAiMCIgYW5kICIxIi4gT25seSB0aGUgZGF0YSBjb250cmFjdCBvd25lciBjYW4gY3JlYXRlIHRvcCBsZXZlbCBkb21haW5zLhIMcHJlb3JkZXJTYWx0FgYSBHR5cGUSBWFycmF5EglieXRlQXJyYXkTARIIbWluSXRlbXMCIBIIbWF4SXRlbXMCIBIIcG9zaXRpb24CBBILZGVzY3JpcHRpb24SIlNhbHQgdXNlZCBpbiB0aGUgcHJlb3JkZXIgZG9jdW1lbnQSB3JlY29yZHMWBxIEdHlwZRIGb2JqZWN0Egpwcm9wZXJ0aWVzFgISFGRhc2hVbmlxdWVJZGVudGl0eUlkFggSBHR5cGUSBWFycmF5EglieXRlQXJyYXkTARIIbWluSXRlbXMCIBIIbWF4SXRlbXMCIBIIcG9zaXRpb24CABIQY29udGVudE1lZGlhVHlwZRIhYXBwbGljYXRpb24veC5kYXNoLmRwcC5pZGVudGlmaWVyEgtkZXNjcmlwdGlvbhI+SWRlbnRpdHkgSUQgdG8gYmUgdXNlZCB0byBjcmVhdGUgdGhlIHByaW1hcnkgbmFtZSB0aGUgSWRlbnRpdHkSCCRjb21tZW50EiNNdXN0IGJlIGVxdWFsIHRvIHRoZSBkb2N1bWVudCBvd25lchITZGFzaEFsaWFzSWRlbnRpdHlJZBYIEgR0eXBlEgVhcnJheRIJYnl0ZUFycmF5EwESCG1pbkl0ZW1zAiASCG1heEl0ZW1zAiASCHBvc2l0aW9uAgESEGNvbnRlbnRNZWRpYVR5cGUSIWFwcGxpY2F0aW9uL3guZGFzaC5kcHAuaWRlbnRpZmllchILZGVzY3JpcHRpb24SPUlkZW50aXR5IElEIHRvIGJlIHVzZWQgdG8gY3JlYXRlIGFsaWFzIG5hbWVzIGZvciB0aGUgSWRlbnRpdHkSCCRjb21tZW50EiNNdXN0IGJlIGVxdWFsIHRvIHRoZSBkb2N1bWVudCBvd25lchINbWluUHJvcGVydGllcwIBEg1tYXhQcm9wZXJ0aWVzAgESCHBvc2l0aW9uAgUSFGFkZGl0aW9uYWxQcm9wZXJ0aWVzEwASCCRjb21tZW50EpBDb25zdHJhaW50IHdpdGggbWF4IGFuZCBtaW4gcHJvcGVydGllcyBlbnN1cmUgdGhhdCBvbmx5IG9uZSBpZGVudGl0eSByZWNvcmQgaXMgdXNlZCAtIGVpdGhlciBhIGBkYXNoVW5pcXVlSWRlbnRpdHlJZGAgb3IgYSBgZGFzaEFsaWFzSWRlbnRpdHlJZGASDnN1YmRvbWFpblJ1bGVzFgYSBHR5cGUSBm9iamVjdBIKcHJvcGVydGllcxYBEg9hbGxvd1N1YmRvbWFpbnMWBBIEdHlwZRIHYm9vbGVhbhILZGVzY3JpcHRpb24SW1RoaXMgb3B0aW9uIGRlZmluZXMgd2hvIGNhbiBjcmVhdGUgc3ViZG9tYWluczogdHJ1ZSAtIGFueW9uZTsgZmFsc2UgLSBvbmx5IHRoZSBkb21haW4gb3duZXISCCRjb21tZW50Ek9Pbmx5IHRoZSBkb21haW4gb3duZXIgaXMgYWxsb3dlZCB0byBjcmVhdGUgc3ViZG9tYWlucyBmb3Igbm9uIHRvcC1sZXZlbCBkb21haW5zEghwb3NpdGlvbgIAEghwb3NpdGlvbgIGEgtkZXNjcmlwdGlvbhJCU3ViZG9tYWluIHJ1bGVzIGFsbG93IGRvbWFpbiBvd25lcnMgdG8gZGVmaW5lIHJ1bGVzIGZvciBzdWJkb21haW5zEhRhZGRpdGlvbmFsUHJvcGVydGllcxMAEghyZXF1aXJlZBUBEg9hbGxvd1N1YmRvbWFpbnMSCHJlcXVpcmVkFQYSBWxhYmVsEg9ub3JtYWxpemVkTGFiZWwSGm5vcm1hbGl6ZWRQYXJlbnREb21haW5OYW1lEgxwcmVvcmRlclNhbHQSB3JlY29yZHMSDnN1YmRvbWFpblJ1bGVzEhRhZGRpdGlvbmFsUHJvcGVydGllcxMAEggkY29tbWVudBL7ATdJbiBvcmRlciB0byByZWdpc3RlciBhIGRvbWFpbiB5b3UgbmVlZCB0byBjcmVhdGUgYSBwcmVvcmRlci4gVGhlIHByZW9yZGVyIHN0ZXAgaXMgbmVlZGVkIHRvIHByZXZlbnQgbWFuLWluLXRoZS1taWRkbGUgYXR0YWNrcy4gbm9ybWFsaXplZExhYmVsICsgJy4nICsgbm9ybWFsaXplZFBhcmVudERvbWFpbiBtdXN0IG5vdCBiZSBsb25nZXIgdGhhbiAyNTMgY2hhcnMgbGVuZ3RoIGFzIGRlZmluZWQgYnkgUkZDIDEwMzUuIERvbWFpbiBkb2N1bWVudHMgYXJlIGltbXV0YWJsZTogbW9kaWZpY2F0aW9uIGFuZCBkZWxldGlvbiBhcmUgcmVzdHJpY3RlZAhwcmVvcmRlchYGEgR0eXBlEgZvYmplY3QSB2luZGljZXMVARYDEgRuYW1lEgpzYWx0ZWRIYXNoEgpwcm9wZXJ0aWVzFQEWARIQc2FsdGVkRG9tYWluSGFzaBIDYXNjEgZ1bmlxdWUTARIKcHJvcGVydGllcxYBEhBzYWx0ZWREb21haW5IYXNoFgYSBHR5cGUSBWFycmF5EglieXRlQXJyYXkTARIIbWluSXRlbXMCIBIIbWF4SXRlbXMCIBIIcG9zaXRpb24CABILZGVzY3JpcHRpb24SWURvdWJsZSBzaGEtMjU2IG9mIHRoZSBjb25jYXRlbmF0aW9uIG9mIGEgMzIgYnl0ZSByYW5kb20gc2FsdCBhbmQgYSBub3JtYWxpemVkIGRvbWFpbiBuYW1lEghyZXF1aXJlZBUBEhBzYWx0ZWREb21haW5IYXNoEhRhZGRpdGlvbmFsUHJvcGVydGllcxMAEggkY29tbWVudBJKUHJlb3JkZXIgZG9jdW1lbnRzIGFyZSBpbW11dGFibGU6IG1vZGlmaWNhdGlvbiBhbmQgZGVsZXRpb24gYXJlIHJlc3RyaWN0ZWQ=",
+    "metadata": {
+      "height": "6750",
+      "coreChainLockedHeight": 926935,
+      "epoch": 845,
+      "timeMs": "1701963780843",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-37"
+    }
   }
 }
 ```
@@ -619,7 +685,7 @@ loadDpp();
 const dpp = new DashPlatformProtocol(null);
 const client = new DAPIClient();
 
-const contractId = Identifier.from('BWgzcW4XRhmYKzup1xY8fMi3ZHGG1Hf8fD9Rm3e3bopm');
+const contractId = Identifier.from('2ciAVGRuzogbR2NNtNfbn6YdW7BkLWntC7jrLNRMZN9n');
 client.platform.getDataContractHistory(contractId, 0, 2, 0).then((response) => {
   for (const key in response.getDataContractHistory()) {
     const revision = response.getDataContractHistory()[key];
@@ -635,12 +701,14 @@ client.platform.getDataContractHistory(contractId, 0, 2, 0).then((response) => {
 # `id` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
-    "id":"5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
-    "limit": 2,
-    "offset": 0,
-    "start_at_ms": 0,
-    "prove": false    
-    }' \
+    "v0": {
+      "id":"GAGPHaxHbGDQv62LYIMuYbOaYjqD36X/pIXADxTfJvE=",
+      "limit": 2,
+      "offset": 0,
+      "start_at_ms": 0,
+      "prove": false
+    }
+  }' \
   seed-1.testnet.networks.dash.org:1443 \
   org.dash.platform.dapi.v0.Platform/getDataContractHistory
 ```
@@ -652,61 +720,64 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "$format_version": "0",
-  "id": "BWgzcW4XRhmYKzup1xY8fMi3ZHGG1Hf8fD9Rm3e3bopm",
-  "config": {
-    "$format_version": "0",
-    "canBeDeleted": false,
-    "readonly": false,
-    "keepsHistory": true,
-    "documentsKeepHistoryContractDefault": false,
-    "documentsMutableContractDefault": true,
-    "requiresIdentityEncryptionBoundedKey": null,
-    "requiresIdentityDecryptionBoundedKey": null
+  "$format_version":"0",
+  "id":"2ciAVGRuzogbR2NNtNfbn6YdW7BkLWntC7jrLNRMZN9n",
+  "config":{
+    "$format_version":"0",
+    "canBeDeleted":false,
+    "readonly":false,
+    "keepsHistory":true,
+    "documentsKeepHistoryContractDefault":false,
+    "documentsMutableContractDefault":true,
+    "requiresIdentityEncryptionBoundedKey":null,
+    "requiresIdentityDecryptionBoundedKey":null
   },
-  "version": 1,
-  "ownerId": "DKFKmJ58ZTDddvviDJwDyCznDMxd9Y6bsJcBN5Xp8m5w",
-  "schemaDefs": null,
-  "documentSchemas": {
-    "note": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
+  "version":1,
+  "ownerId":"EB9eBUQxLjA7XGj71x3Msdd1uNmehKYZff3b6idhnTyV",
+  "schemaDefs":null,
+  "documentSchemas":{
+    "note":{
+      "type":"object",
+      "properties":{
+        "message":{
+          "type":"string",
+          "position":0
         }
       },
-      "additionalProperties": false
+      "additionalProperties":false
     }
   }
 },
 {
-  "$format_version": "0",
-  "id": "BWgzcW4XRhmYKzup1xY8fMi3ZHGG1Hf8fD9Rm3e3bopm",
-  "config": {
-    "$format_version": "0",
-    "canBeDeleted": false,
-    "readonly": false,
-    "keepsHistory": true,
-    "documentsKeepHistoryContractDefault": false,
-    "documentsMutableContractDefault": true,
-    "requiresIdentityEncryptionBoundedKey": null,
-    "requiresIdentityDecryptionBoundedKey": null
+  "$format_version":"0",
+  "id":"2ciAVGRuzogbR2NNtNfbn6YdW7BkLWntC7jrLNRMZN9n",
+  "config":{
+    "$format_version":"0",
+    "canBeDeleted":false,
+    "readonly":false,
+    "keepsHistory":true,
+    "documentsKeepHistoryContractDefault":false,
+    "documentsMutableContractDefault":true,
+    "requiresIdentityEncryptionBoundedKey":null,
+    "requiresIdentityDecryptionBoundedKey":null
   },
-  "version": 2,
-  "ownerId": "DKFKmJ58ZTDddvviDJwDyCznDMxd9Y6bsJcBN5Xp8m5w",
-  "schemaDefs": null,
-  "documentSchemas": {
-    "note": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
+  "version":2,
+  "ownerId":"EB9eBUQxLjA7XGj71x3Msdd1uNmehKYZff3b6idhnTyV",
+  "schemaDefs":null,
+  "documentSchemas":{
+    "note":{
+      "type":"object",
+      "properties":{
+        "message":{
+          "type":"string",
+          "position":0
         },
-        "author": {
-          "type": "string"
+        "author":{
+          "type":"string",
+          "position":1
         }
       },
-      "additionalProperties": false
+      "additionalProperties":false
     }
   }
 }
@@ -715,14 +786,27 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
-  "dataContractHistory": {
-  },
-  "metadata": {
-    "height": "1056",
-    "coreChainLockedHeight": 922820,
-    "timeMs": "1697125325434",
-    "protocolVersion": 1,
-    "chainId": "devnet"
+  "v0": {
+    "dataContractHistory": {
+      "dataContractEntries": [
+        {
+          "date": "1701271990189",
+          "value": "ABgBjx2sR2xg0L+ti2CDLmGzmmI6g9+l/6SFwA8U3ybxAAAAAQABAAABw8GCMyj2ynyRr4i36i1KKHFYdYuPDVwKmo1jmEgT4zwAAQRub3RlFgMSBHR5cGUSBm9iamVjdBIKcHJvcGVydGllcxYBEgdtZXNzYWdlFgISBHR5cGUSBnN0cmluZxIIcG9zaXRpb24DABIUYWRkaXRpb25hbFByb3BlcnRpZXMTAA=="
+        },
+        {
+          "date": "1701272469813",
+          "value": "ABgBjx2sR2xg0L+ti2CDLmGzmmI6g9+l/6SFwA8U3ybxAAAAAQABAAACw8GCMyj2ynyRr4i36i1KKHFYdYuPDVwKmo1jmEgT4zwAAQRub3RlFgMSBHR5cGUSBm9iamVjdBIKcHJvcGVydGllcxYCEgdtZXNzYWdlFgISBHR5cGUSBnN0cmluZxIIcG9zaXRpb24CABIGYXV0aG9yFgISBHR5cGUSBnN0cmluZxIIcG9zaXRpb24CARIUYWRkaXRpb25hbFByb3BlcnRpZXMTAA=="
+        }
+      ]
+    },
+    "metadata": {
+      "height": "6776",
+      "coreChainLockedHeight": 926975,
+      "epoch": 846,
+      "timeMs": "1701968396855",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-37"
+    }
   }
 }
 ```
@@ -862,10 +946,12 @@ platformPromiseClient
 # `id` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
-    "data_contract_id":"5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
-    "document_type":"domain",
-    "limit":1
-    }' \
+    "v0": {
+      "data_contract_id":"5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+      "document_type":"domain",
+      "limit":1
+    }
+  }' \
   seed-1.testnet.networks.dash.org:1443 \
   org.dash.platform.dapi.v0.Platform/getDocuments
 ```
@@ -877,53 +963,68 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json Response (JavaScript)
 // Response (JavaScript)
 {
-  "$id": "AhWPYyM5eTFGFvGXEBPaqEPs93QyBTZRHYsQSVGn1Jg",
-  "$ownerId": "YhCPn6pSbZ11hCiFmFL6WJkmC3GSwuUSzhS4QAy84EF",
-  "label": "Alice007",
-  "normalizedLabel": "alice007",
-  "normalizedParentDomainName": "dash",
-  "preorderSalt": "WN/tDnACk4yyrYqXfABTpozmgtS05kvGWCz7ypt9310=",
-  "records": {
-    "dashAliasIdentityId": "CB50kDKQpfYnb1WdLv4ir1LOwJOW9cfXkhj9grusk+Q=",
-    "dashUniqueIdentityId": null
+  "$id":"Do3YtBPJG72zG4tCbN5VE8djJ6rLpvx7yvtMWEy89HC",
+  "$ownerId":"4pk6ZhgDtxn9yN2bbB6kfsYLRmUBH7PKUq275cjyzepT",
+  "label":"Chronic",
+  "normalizedLabel":"chr0n1c",
+  "normalizedParentDomainName":"dash",
+  "parentDomainName":"dash",
+  "preorderSalt":"1P9N5qv1Ww2xkv6/XXpsvymyGYychRsLXMhCqvW79Jo=",
+  "records":{
+    "dashUniqueIdentityId":"OM4WaCQNLedQ0rpbl1UMTZhEbnVeMfL4941ZD08iyFw="
   },
-  "subdomainRules": { "allowSubdomains": false },
-  "$revision": 1,
-  "$createdAt": null,
-  "$updatedAt": null,
-  "$dataContract": {
-    "$format_version": "0",
-    "id": "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
-    "config": {
-      "$format_version": "0",
-      "canBeDeleted": false,
-      "readonly": false,
-      "keepsHistory": false,
-      "documentsKeepHistoryContractDefault": false,
-      "documentsMutableContractDefault": true,
-      "requiresIdentityEncryptionBoundedKey": null,
-      "requiresIdentityDecryptionBoundedKey": null
+  "subdomainRules":{
+    "allowSubdomains":false
+  },
+  "$revision":1,
+  "$createdAt":null,
+  "$updatedAt":null,
+  "$dataContract":{
+    "$format_version":"0",
+    "id":"GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
+    "config":{
+      "$format_version":"0",
+      "canBeDeleted":false,
+      "readonly":false,
+      "keepsHistory":false,
+      "documentsKeepHistoryContractDefault":false,
+      "documentsMutableContractDefault":true,
+      "requiresIdentityEncryptionBoundedKey":null,
+      "requiresIdentityDecryptionBoundedKey":null
     },
-    "version": 1,
-    "ownerId": "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
-    "schemaDefs": null,
-    "documentSchemas": { "domain": ["Object"], "preorder": ["Object"] }
+    "version":1,
+    "ownerId":"4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
+    "schemaDefs":null,
+    "documentSchemas":{
+      "domain":[
+        "Object"
+      ],
+      "preorder":[
+        "Object"
+      ]
+    }
   },
-  "$type": "domain"
+  "$type":"domain"
 }
 ```
 
 ```json Response (gRPCurl)
 // Response (gRPCurl)
 {
-  "documents": [
-    "AatjJGlkWCACod79ik2tILNnybx5VepoaX2cceXDSogwSgxdWi9zYmUkdHlwZWZkb21haW5lbGFiZWx0Yzg4OWMyM2FiY2ZkYzU3NGNmZWJncmVjb3Jkc6FzZGFzaEFsaWFzSWRlbnRpdHlJZFggMBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/axoJG93bmVySWRYIDASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2saSRyZXZpc2lvbgFscHJlb3JkZXJTYWx0WCAkJyav6iQVX7hFrUFagKC+xddHsyA5Wo/NdvejXt6aSG5zdWJkb21haW5SdWxlc6FvYWxsb3dTdWJkb21haW5z9W8kZGF0YUNvbnRyYWN0SWRYIOZoxlmvZq7h5ywYbd57W34KHXEqCcQNVyH2Ir9TxTFVb25vcm1hbGl6ZWRMYWJlbHRjODg5YzIzYWJjZmRjNTc0Y2ZlYngabm9ybWFsaXplZFBhcmVudERvbWFpbk5hbWVg"
-  ],
-  "metadata": {
-    "height": "4254",
-    "coreChainLockedHeight": 889435,
-    "timeMs": "1684440970270",
-    "protocolVersion": 1
+  "v0":{
+    "documents":{
+      "documents":[
+        "AANHCCLI23JAM6yPcJwiyAaVouU4btv1kXxaMF0mfXTDOM4WaCQNLedQ0rpbl1UMTZhEbnVeMfL4941ZD08iyFwBAAAHQ2hyb25pYwdjaHIwbjFjAQRkYXNoBGRhc2jU/03mq/VbDbGS/r9demy/KbIZjJyFGwtcyEKq9bv0miIBOM4WaCQNLedQ0rpbl1UMTZhEbnVeMfL4941ZD08iyFwAAQA="
+      ]
+    },
+    "metadata":{
+      "height":"6755",
+      "coreChainLockedHeight":926945,
+      "epoch":845,
+      "timeMs":"1701964691399",
+      "protocolVersion":1,
+      "chainId":"dash-testnet-37"
+    }
   }
 }
 ```
@@ -980,9 +1081,11 @@ client.platform.waitForStateTransitionResult(hash, { prove: true })
 #    Example: wEiwFu9WvAtylrwTph5v0uXQm743N+75C+C9DhmZBkw=
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
-    "state_transition_hash":your_state_transition_hash,
-    "prove": "true"
-    }' \
+    "v0": {
+      "state_transition_hash":your_state_transition_hash,
+      "prove": "true"
+    }
+  }' \
   seed-1.testnet.networks.dash.org:1443 \
   org.dash.platform.dapi.v0.Platform/waitForStateTransitionResult
 ```
