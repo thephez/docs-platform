@@ -34,10 +34,10 @@ revisions to be retrieved in the future as needed.
 >
 > Since Platform v0.23, an index can [only use the ascending order](https://github.com/dashevo/platform/pull/435) (`asc`). Future updates will remove this restriction.
 
-::::{tab-set-code}
-
-```json 1. Minimal contract
-// 1. Minimal contract
+::::{tab-set}
+:::{tab-item} 1. Minimal contract
+:sync: minimal
+```json
 {
   "note": {
     "type": "object",
@@ -51,9 +51,11 @@ revisions to be retrieved in the future as needed.
   }
 }
 ```
+:::
 
-```json 2. Indexed
-//  2. Indexed
+:::{tab-item} 2. Indexed
+:sync: indexed
+```json
 {
   "note": {
     "type": "object",
@@ -79,9 +81,11 @@ An identity's documents are accessible via a query including a where clause like
 }
 */
 ```
+:::
 
+:::{tab-item} 3. Timestamps
+:sync: timestamp
 ```json
-//  3. Timestamps
 {
   "note": {
     "type": "object",
@@ -104,9 +108,11 @@ when the document was created or modified.
 This information will be returned when the document is retrieved.
 */
 ```
+:::
 
+:::{tab-item} 4. Binary data
+:sync: binary
 ```json
-// 4. Binary data
 {
  "block": {
    "type": "object",
@@ -128,7 +134,28 @@ Setting `"byteArray": true` indicates that the provided data will be an
 array of bytes (e.g. a NodeJS Buffer).
 */
 ```
+:::
 
+:::{tab-item} 5. Contract with history
+:sync: history
+```json
+// Identical to the minimal contract
+// Contract history configuration is done in code and
+// is not part of the contract itself.
+{
+  "note": {
+    "type": "object",
+    "properties": {
+      "message": {
+        "type": "string",
+        "position": 0
+      }
+    },
+    "additionalProperties": false
+  }
+}
+```
+:::
 ::::
 
 > 📘
@@ -139,10 +166,10 @@ array of bytes (e.g. a NodeJS Buffer).
 
 The following examples demonstrate the details of creating contracts using the features [described above](#defining-contract-documents). Also, note that the sixth tab shows a data contract with contract history enabled to store each contract revision so it can be retrieved as needed for future reference:
 
-::::{tab-set-code}
-
-```javascript 1. Minimal contract
-// 1. Minimal contract
+::::{tab-set}
+:::{tab-item} 1. Minimal contract
+:sync: minimal
+```javascript
 const Dash = require('dash');
 
 const clientOpts = {
@@ -186,9 +213,11 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+:::
 
-```javascript 2. Indexed
-// 2. Indexed
+:::{tab-item} 2. Indexed
+:sync: indexed
+```javascript
 const Dash = require('dash');
 
 const clientOpts = {
@@ -236,9 +265,11 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+:::
 
-```javascript 3. Timestamps
-// 3. Timestamps
+:::{tab-item} 3. Timestamps
+:sync: timestamp
+```javascript
 const Dash = require('dash');
 
 const clientOpts = {
@@ -282,9 +313,11 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+:::
 
-```javascript 4. Binary data
-// 4. Binary data
+:::{tab-item} 4. Binary data
+:sync: binary
+```javascript
 const Dash = require('dash');
 
 const clientOpts = {
@@ -330,9 +363,11 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
+:::
 
-```javascript 5. Contract with history
-// 5. Contract with history
+:::{tab-item} 5. Contract with history
+:sync: history
+```javascript
 const Dash = require('dash');
 
 const clientOpts = {
@@ -383,7 +418,7 @@ registerContract()
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());
 ```
-
+:::
 ::::
 
 > 👍
