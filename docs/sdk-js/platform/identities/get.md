@@ -1,11 +1,11 @@
 # Get
 
 **Usage**: `client.platform.identities.get(identityId)`  
-**Description**: This method will allow you to fetch back an identity from its id. 
+**Description**: This method will allow you to fetch back an identity from its id.
 
-Parameters: 
+Parameters:
 
-| parameters     | type   | required | Description                                          |
+| Parameters     | Type   | Required | Description                                          |
 | -------------- | ------ | -------- | ---------------------------------------------------- |
 | **identifier** | string | yes      | Will fetch back the identity matching the identifier |
 

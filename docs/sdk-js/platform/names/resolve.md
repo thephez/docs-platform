@@ -1,11 +1,11 @@
 # Resolve
 
 **Usage**: `client.platform.names.resolve('<name>.dash')`  
-**Description**: This method will allow you to resolve a DPNS record from its humanized name. 
+**Description**: This method will allow you to resolve a DPNS record from its humanized name.
 
-Parameters: 
+Parameters:
 
-| parameters | type   | required | Description                                                                   |
+| Parameters | Type   | Required | Description                                                                   |
 | ---------- | ------ | -------- | ----------------------------------------------------------------------------- |
 | **name**   | String | yes      | An alphanumeric (2-63) value used for human-identification (can contains `-`) |
 

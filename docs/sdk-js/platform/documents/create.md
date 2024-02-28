@@ -1,17 +1,17 @@
 # Create
 
 **Usage**: `client.platform.documents.create(typeLocator, identity, documentOpts)`  
-**Description**: This method will return a ExtendedDocument object initialized with the parameters defined and apply to the used identity. 
+**Description**: This method will return a ExtendedDocument object initialized with the parameters defined and apply to the used identity.
 
-Parameters: 
+Parameters:
 
-| parameters     | type     | required | Description                                                                                     |
+| Parameters     | Type     | Required | Description                                                                                     |
 | -------------- | -------- | -------- | ----------------------------------------------------------------------------------------------- |
 | **dotLocator** | string   | yes      | Field of a specific application, under the form `appName.fieldName`                             |
 | **identity**   | Identity | yes      | A valid [registered identity](../identities/register.md) |
 | **docOpts**    | Object   | yes      | A valid data that match the data contract structure                                             |
 
-**Example**: 
+**Example**:
 
 ```js
 const identityId = '';// Your identity identifier

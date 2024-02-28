@@ -1,11 +1,11 @@
 # Get
 
 **Usage**: `client.platform.contracts.get(contractId)`  
-**Description**: This method will allow you to fetch back a contract from its id. 
+**Description**: This method will allow you to fetch back a contract from its id.
 
-Parameters: 
+Parameters:
 
-| parameters     | type   | required | Description                                          |
+| Parameters     | Type   | Required | Description                                          |
 | -------------- | ------ | -------- | ---------------------------------------------------- |
 | **identifier** | string | yes      | Will fetch back the contract matching the identifier |
 

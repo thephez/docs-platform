@@ -1,11 +1,11 @@
 # Create
 
 **Usage**: `client.platform.contracts.create(contractDefinitions, identity)`  
-**Description**: This method will return a Contract object initialized with the parameters defined and apply to the used identity. 
+**Description**: This method will return a Contract object initialized with the parameters defined and apply to the used identity.
 
-Parameters: 
+Parameters:
 
-| parameters              | type             | required | Description                                                                                                            |
+| Parameters              | Type             | Required | Description                                                                                                            |
 | ----------------------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
 | **contractDefinitions** | JSONDataContract | yes      | The defined [JSON Application Schema](../../../explanations/platform-protocol-data-contract.md) |
 | **identity**            | Identity         | yes      | A valid [registered `application` identity](../identities/register.md)          |

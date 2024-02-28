@@ -1,11 +1,11 @@
 # Register
 
 **Usage**: `client.platform.identities.register()`  
-**Description**: This method will register a new identity for you. 
+**Description**: This method will register a new identity for you.
 
-Parameters: 
+Parameters:
 
-| parameters    | type   | required | Description                                                         |
+| Parameters    | Type   | Required | Description                                                         |
 | ------------- | ------ | -------- | ------------------------------------------------------------------- |
 | fundingAmount | number | no       | Defaults: 10000. Allow to set a funding amount in duffs (satoshis). |
 
