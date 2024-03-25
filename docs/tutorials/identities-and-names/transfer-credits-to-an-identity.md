@@ -38,7 +38,7 @@ const transferCreditsToIdentity = async () => {
 
   const recipientID = 'identity ID of the recipient goes here';
   console.log('Recipient identity balance before transfer: ', recipientIdentity.balance);
-  const transferAmount = 1000; // Number of credits to transfer
+  const transferAmount = 300000; // Number of credits to transfer
 
   await client.platform.identities.creditTransfer(
     identity,
