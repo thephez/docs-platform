@@ -111,6 +111,7 @@ intro/testnet
 tutorials/introduction
 tutorials/connecting-to-testnet
 tutorials/create-and-fund-a-wallet
+tutorials/client-setup
 tutorials/identities-and-names
 tutorials/contracts-and-documents
 tutorials/send-funds
