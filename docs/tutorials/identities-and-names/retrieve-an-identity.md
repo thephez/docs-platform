@@ -14,9 +14,9 @@ In this tutorial we will retrieve the identity created in the [Register an Ident
 ## Code
 
 ```javascript
-const Dash = require('dash');
+const setupDashClient = require('../setupDashClient');
 
-const client = new Dash.Client({ network: 'testnet' });
+const client = setupDashClient();
 
 const retrieveIdentity = async () => {
   return client.platform.identities.get('an identity ID goes here');

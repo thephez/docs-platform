@@ -14,28 +14,18 @@ Identities serve as the basis for interactions with Dash Platform. They consist 
 
 - [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
 - A wallet mnemonic with some funds in it: [How to Create and Fund a Wallet](../../tutorials/create-and-fund-a-wallet.md)
+- A configured client: [Setup Client](../client-setup.md)
 
 ## Code
 
-> 📘 Wallet Operations
+> 📘 Wallet Sync
 >
-> The JavaScript SDK does not cache wallet information. It re-syncs the entire Core chain for some wallet operations (e.g. `client.getWalletAccount()`) which can result in wait times of  5+ minutes.
->
-> A future release will add caching so that access is much faster after the initial sync. For now, the `skipSynchronizationBeforeHeight` option can be used to sync the wallet starting at a certain block height.
+> Since the SDK does not cache wallet information, lengthy re-syncs (5+ minutes) may be required for some Core chain wallet operations. See [Wallet Operations](../client-setup.md#wallet-operations) for options.
 
 ```javascript
-const Dash = require('dash');
+const setupDashClient = require('../setupDashClient');
 
-const clientOpts = {
-  network: 'testnet',
-  wallet: {
-    mnemonic: 'a Dash wallet mnemonic with testnet funds goes here',
-    unsafeOptions: {
-      skipSynchronizationBeforeHeight: 875000, // only sync from mid-2023
-    },
-  },
-};
-const client = new Dash.Client(clientOpts);
+const client = setupDashClient();
 
 const createIdentity = async () => {
   return client.platform.identities.register();

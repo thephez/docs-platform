@@ -13,16 +13,6 @@ In this tutorial we will show how to configure the client for use in the remaini
 Save the following client configuration module in a file named `setupDashClient.js`. This module
 will be re-used in later tutorials.
 
-> 📘 Wallet Operations
->
-> The JavaScript SDK does not cache wallet information. It re-syncs the entire Core chain for some
-> wallet operations (e.g. `client.getWalletAccount()`) which can result in wait times of  5+
-> minutes.
->
-> A future release will add caching so that access is much faster after the initial sync. For now,
-> the `skipSynchronizationBeforeHeight` option can be used to sync the wallet starting at a certain
-> block height.
-
 ```{code-block} javascript
 :caption: setupDashClient.js
 :name: setupDashClient.js
@@ -94,4 +84,16 @@ const setupDashClient = () => {
 module.exports = setupDashClient;
 ```
 
+## Wallet Operations
+
+Since the SDK does not cache wallet information, lengthy re-syncs (5+ minutes) may be required for some Core chain wallet operations (e.g. `client.getWalletAccount()`). A future release will add caching so that access is much faster after the initial sync.
+
+For now, the `skipSynchronizationBeforeHeight` option can be used to sync the wallet starting at a
+certain block height. Set it to a height just below your wallet's first transaction height to
+minimize the sync time.
+
 ## What's Happening
+
+In this module, we return an SDK client configured with the options necessary for typical use. The
+module is then imported in the following tutorials to streamline them and avoid repeating client
+initialization details.
