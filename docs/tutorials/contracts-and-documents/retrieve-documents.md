@@ -9,22 +9,14 @@ In this tutorial we will retrieve some of the current data from a data contract.
 ## Prerequisites
 
 - [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
-- A Dash Platform Contract ID: [Tutorial: Register a Data Contract](../../tutorials/contracts-and-documents/register-a-data-contract.md)
+- A configured client: [Setup SDK Client](../setup-sdk-client.md)- A Dash Platform Contract ID: [Tutorial: Register a Data Contract](../../tutorials/contracts-and-documents/register-a-data-contract.md)
 
 ## Code
 
 ```javascript
-const Dash = require('dash');
+const setupDashClient = require('../setupDashClient');
 
-const clientOpts = {
-  network: 'testnet',
-  apps: {
-    tutorialContract: {
-      contractId: '8cvMFwa2YbEsNNoc1PXfTacy2PVq2SzVnkZLeQSzjfi6',
-    },
-  },
-};
-const client = new Dash.Client(clientOpts);
+const client = setupDashClient();
 
 const getDocuments = async () => {
   return client.platform.documents.get('tutorialContract.note', {
