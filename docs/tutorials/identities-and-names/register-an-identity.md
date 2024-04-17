@@ -14,7 +14,7 @@ Identities serve as the basis for interactions with Dash Platform. They consist 
 
 - [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
 - A wallet mnemonic with some funds in it: [How to Create and Fund a Wallet](../../tutorials/create-and-fund-a-wallet.md)
-- A configured client: [Setup Client](../setup-sdk-client.md)
+- A configured client: [Setup SDK Client](../setup-sdk-client.md)
 
 ## Code
 

@@ -9,6 +9,7 @@ In this tutorial we will retrieve the identity created in the [Register an Ident
 ## Prerequisites
 
 - [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
+- A configured client: [Setup SDK Client](../setup-sdk-client.md)
 - A Dash Platform Identity: [Tutorial: Register an Identity](../../tutorials/identities-and-names/register-an-identity.md)
 
 ## Code

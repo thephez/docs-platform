@@ -9,15 +9,16 @@ In this tutorial we will retrieve the name created in the [Register a Name for a
 ## Prerequisites
 
 - [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
+- A configured client: [Setup SDK Client](../setup-sdk-client.md)
 
 ## Code
 
 ::::{tab-set}
 :::{tab-item} JavaScript - Resolve by Name
 ```javascript
-const Dash = require('dash');
+const setupDashClient = require('../setupDashClient');
 
-const client = new Dash.Client({ network: 'testnet' });
+const client = setupDashClient();
 
 const retrieveName = async () => {
   // Retrieve by full name (e.g., myname.dash)
@@ -33,9 +34,9 @@ retrieveName()
 
 :::{tab-item} JavaScript - Revolve by Record
 ```javascript
-const Dash = require('dash');
+const setupDashClient = require('../setupDashClient');
 
-const client = new Dash.Client({ network: 'testnet' });
+const client = setupDashClient();
 
 const retrieveNameByRecord = async () => {
   // Retrieve by a name's identity ID
@@ -54,9 +55,9 @@ retrieveNameByRecord()
 
 :::{tab-item} JavaScript - Search for Name
 ```javascript
-const Dash = require('dash');
+const setupDashClient = require('../setupDashClient');
 
-const client = new Dash.Client({ network: 'testnet' });
+const client = setupDashClient();
 
 const retrieveNameBySearch = async () => {
   // Search for names (e.g. `user*`)
