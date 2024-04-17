@@ -14,13 +14,13 @@ Identities serve as the basis for interactions with Dash Platform. They consist 
 
 - [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
 - A wallet mnemonic with some funds in it: [How to Create and Fund a Wallet](../../tutorials/create-and-fund-a-wallet.md)
-- A configured client: [Setup Client](../client-setup.md)
+- A configured client: [Setup Client](../setup-sdk-client.md)
 
 ## Code
 
 > 📘 Wallet Sync
 >
-> Since the SDK does not cache wallet information, lengthy re-syncs (5+ minutes) may be required for some Core chain wallet operations. See [Wallet Operations](../client-setup.md#wallet-operations) for options.
+> Since the SDK does not cache wallet information, lengthy re-syncs (5+ minutes) may be required for some Core chain wallet operations. See [Wallet Operations](../setup-sdk-client.md#wallet-operations) for options.
 
 ```javascript
 const setupDashClient = require('../setupDashClient');

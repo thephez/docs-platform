@@ -1,4 +1,4 @@
-# Setup Client
+# Setup SDK Client
 
 In this tutorial we will show how to configure the client for use in the remaining tutorials.
 

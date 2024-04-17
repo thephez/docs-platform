@@ -43,4 +43,4 @@ After connecting to the Client, we call `platform.identities.topUp` with an iden
 
 > 📘 Wallet Sync
 >
-> Since the SDK does not cache wallet information, lengthy re-syncs (5+ minutes) may be required for some Core chain wallet operations. See [Wallet Operations](../client-setup.md#wallet-operations) for options.
+> Since the SDK does not cache wallet information, lengthy re-syncs (5+ minutes) may be required for some Core chain wallet operations. See [Wallet Operations](../setup-sdk-client.md#wallet-operations) for options.
