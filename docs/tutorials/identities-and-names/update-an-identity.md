@@ -10,6 +10,7 @@ Since Dash Platform v0.23, it is possible to update identities to add new keys o
 
 - [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
 - A wallet mnemonic with some funds in it: [Tutorial: Create and Fund a Wallet](../../tutorials/create-and-fund-a-wallet.md)
+- A configured client: [Setup SDK Client](../setup-sdk-client.md)
 - A Dash Platform Identity: [Tutorial: Register an Identity](../../tutorials/identities-and-names/register-an-identity.md)
 
 ## Code
@@ -23,18 +24,9 @@ The two examples below demonstrate updating an existing identity to add a new ke
 ::::{tab-set}
 :::{tab-item} Disable identity key
 ```javascript
-const Dash = require('dash');
+const setupDashClient = require('../setupDashClient');
 
-const clientOpts = {
-  network: 'testnet',
-  wallet: {
-    mnemonic: 'a Dash wallet mnemonic with funds goes here',
-    unsafeOptions: {
-      skipSynchronizationBeforeHeight: 875000, // only sync from mid-2023
-    },    
-  },
-};
-const client = new Dash.Client(clientOpts);
+const client = setupDashClient();
 
 const updateIdentityDisableKey = async () => {
   const identityId = 'an identity ID goes here';
@@ -61,21 +53,9 @@ updateIdentityDisableKey()
 
 :::{tab-item} Add identity key
 ```javascript
-const Dash = require('dash');
-const {
-  PlatformProtocol: { IdentityPublicKey, IdentityPublicKeyWithWitness },
-} = Dash;
+const setupDashClient = require('../setupDashClient');
 
-const clientOpts = {
-  network: 'testnet',
-  wallet: {
-    mnemonic: 'a Dash wallet mnemonic with funds goes here',
-    unsafeOptions: {
-      skipSynchronizationBeforeHeight: 875000, // only sync from mid-2023
-    },    
-  },
-};
-const client = new Dash.Client(clientOpts);
+const client = setupDashClient();
 
 const updateIdentityAddKey = async () => {
   const identityId = 'an identity ID goes here';

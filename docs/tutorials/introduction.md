@@ -25,6 +25,7 @@ The tutorials in this section are written in JavaScript and use [Node.js](https:
 While going through each tutorial is advantageous, the subset of tutorials listed below get you from a start to storing data on Dash Platform most quickly:
 
 - [Obtaining test funds](../tutorials/create-and-fund-a-wallet.md)
+- [Setting up client options](../tutorials/setup-sdk-client.md)
 - [Registering an Identity](../tutorials/identities-and-names/register-an-identity.md)
 - [Registering a Data Contract](../tutorials/contracts-and-documents/register-a-data-contract.md)
 - [Submitting data](../tutorials/contracts-and-documents/submit-documents.md)
