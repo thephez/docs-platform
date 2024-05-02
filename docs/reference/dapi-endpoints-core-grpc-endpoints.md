@@ -450,6 +450,90 @@ grpcurl -proto protos/core/v0/core.proto \
 :::
 ::::
 
+### getMasternodeStatus
+
+**Returns**: Masternode status information from the Core chain  
+**Parameters**: None
+
+#### Example Request and Response
+
+::::{tab-set}
+:::{tab-item}  JavaScript (dapi-client)
+:sync: js-dapi-client
+```javascript
+const DAPIClient = require('@dashevo/dapi-client');
+
+const client = new DAPIClient({
+  seeds: [{
+    host: 'seed-1.testnet.networks.dash.org',
+    port: 1443,
+  }],
+});
+
+client.core.getMasternodeStatus()
+  .then((response) => console.log(response));
+```
+:::
+
+:::{tab-item} JavaScript (dapi-grpc)
+:sync: js-dapi-gprc
+```javascript
+const {
+  v0: {
+    GetMasternodeStatusRequest,
+    CorePromiseClient,
+  },
+} = require('@dashevo/dapi-grpc');
+
+const corePromiseClient = new CorePromiseClient('https://seed-1.testnet.networks.dash.org:1443');
+
+corePromiseClient.client.getMasternodeStatus(new GetMasternodeStatusRequest())
+  .then((response) => console.log(response));
+```
+:::
+
+:::{tab-item} Shell (gRPCurl)
+:sync: grpcurl
+```shell
+# Run in the platform repository's `packages/dapi-grpc/` directory
+grpcurl -proto protos/core/v0/core.proto \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Core/getMasternodeStatus
+```
+:::
+::::
+
+> 📘 
+> 
+> **Note:** The gRPCurl response `bestBlockHash` and `chainWork` data is Base64 encoded.
+
+::::{tab-set}
+:::{tab-item} Response (JavaScript)
+:sync: js-dapi-client
+```json
+{
+  "status": "READY",
+  "proTxHash": "<Buffer 85 f1 5a 31 d3 83 82 93 a9 c1 d7 2a 1a 0f a2 1e 66 11 0c e2 08 78 bd 4c 10 24 c4 ae 1d 5b e8 24>",
+  "posePenalty": 0,
+  "isSynced": true,
+  "syncProgress": 1
+}
+```
+:::
+
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "status": "READY",
+  "proTxHash": "LkhlGi6cDLTy+3q4dAYapK8M0otZaVYx5qNa85UO9vs=",
+  "isSynced": true,
+  "syncProgress": 1
+}
+```
+:::
+::::
+
 ### getTransaction
 
 **Returns**: A raw transaction  
