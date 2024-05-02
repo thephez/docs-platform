@@ -25,7 +25,9 @@ streaming of events related to blocks and transactions/transitions.
 | :---: | -------- | - |
 |   1   | [`broadcastTransaction`](../reference/dapi-endpoints-core-grpc-endpoints.md#broadcasttransaction) | Broadcasts the provided transaction |
 |   1   | [`getBlock`](../reference/dapi-endpoints-core-grpc-endpoints.md#getblock) | Returns information for the requested block |
-|   1   | [`getStatus`](../reference/dapi-endpoints-core-grpc-endpoints.md#getstatus) | Returns blockchain status information |
+|   1   | [`getBlockchainStatus`](../reference/dapi-endpoints-core-grpc-endpoints.md#getblockchainstatus) | Returns blockchain status information<br>**Added in Dash Platform v1.0.0-dev.12** |
+|   1   | [`getMasternodeStatus`](../reference/dapi-endpoints-core-grpc-endpoints.md#getmasternodestatus) | Returns masternode status information <br>**Added in Dash Platform v1.0.0-dev.12**|
+|   1   | `getStatus` | **Removed in Dash Platform v1.0.0-dev.12**<br>Split into [`getBlockchainStatus`](../reference/dapi-endpoints-core-grpc-endpoints.md#getblockchainstatus) and [`getMasternodeStatus`](../reference/dapi-endpoints-core-grpc-endpoints.md#getmasternodestatus).<br>Returns blockchain status information |
 |   1   | [`getTransaction`](../reference/dapi-endpoints-core-grpc-endpoints.md#gettransaction) | Returns details for the requested transaction |
 |   1   | [`subscribeTo` `BlockHeadersWithChainLocks`](../reference/dapi-endpoints-core-grpc-endpoints.md#subscribetoblockheaderswithchainlocks) | Returns the requested block headers along with the associated ChainLocks.<br>_Added in Dash Platform v0.22_ |
 |   1   | [`subscribeTo` `TransactionsWithProofs`](../reference/dapi-endpoints-core-grpc-endpoints.md#subscribetotransactionswithproofs) | Returns transactions matching the provided bloom filter along with the associated [`islock` message](https://docs.dash.org/projects/core/en/stable/docs/reference/p2p-network-instantsend-messages.html#islock) and [merkle block](https://docs.dash.org/projects/core/en/stable/docs/reference/p2p-network-data-messages.html#merkleblock) |
@@ -68,7 +70,7 @@ data returned is valid and complete. The endpoints are versioned so updates can 
 > 📘
 >
 > The previous version of documentation can be [viewed
-> here](https://docs.dash.org/projects/platform/en/0.24.0/docs/reference/dapi-endpoints.html).
+> here](https://docs.dash.org/projects/platform/en/0.25.0/docs/reference/dapi-endpoints.html).
 
 ```{toctree}
 :maxdepth: 2
