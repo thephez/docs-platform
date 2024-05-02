@@ -320,6 +320,136 @@ grpcurl -proto protos/core/v0/core.proto \
 :::
 ::::
 
+### getBlockchainStatus
+
+**Returns**: Status information from the Core chain  
+**Parameters**: None
+
+#### Example Request and Response
+
+::::{tab-set}
+:::{tab-item}  JavaScript (dapi-client)
+```javascript
+const DAPIClient = require('@dashevo/dapi-client');
+
+const client = new DAPIClient({
+  seeds: [{
+    host: 'seed-1.testnet.networks.dash.org',
+    port: 1443,
+  }],
+});
+
+client.core.getBlockchainStatus()
+  .then((response) => console.log(response));
+```
+:::
+
+:::{tab-item} JavaScript (dapi-grpc)
+:sync: js-dapi-gprc
+```javascript
+const {
+  v0: {
+    GetBlockchainStatusRequest,
+    CorePromiseClient,
+  },
+} = require('@dashevo/dapi-grpc');
+
+const corePromiseClient = new CorePromiseClient('https://seed-1.testnet.networks.dash.org:1443');
+
+corePromiseClient.client.getBlockchainStatus(new GetBlockchainStatusRequest())
+  .then((response) => console.log(response));
+```
+:::
+
+:::{tab-item} Shell (gRPCurl)
+:sync: grpcurl
+```shell
+# Run in the platform repository's `packages/dapi-grpc/` directory
+grpcurl -proto protos/core/v0/core.proto \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Core/getBlockchainStatus
+```
+:::
+::::
+
+> 📘 
+> 
+> **Note:** The gRPCurl response `bestBlockHash` and `chainWork` data is Base64 encoded.
+
+::::{tab-set}
+:::{tab-item} Response (JavaScript)
+:sync: js-dapi-client
+```json
+{
+  "version": {
+    "protocol": 70231,
+    "software": 200101,
+    "agent": "/Dash Core:20.1.1/"
+  },
+  "time": {
+    "now": 1714510152,
+    "offset": 0,
+    "median": 1714509603
+  },
+  "status": "SYNCING",
+  "syncProgress": 0.9999996959296329,
+  "chain": {
+    "name": "test",
+    "headersCount": 1017418,
+    "blocksCount": 1017418,
+    "bestBlockHash": "<Buffer 00 00 00 cb 47 55 98 22 b2 e2 97 05 df 40 cf 23 f5 2a 64 88 5f 3e 8e 3b c9 4d 25 f6 83 94 79 f6>",
+    "difficulty": 0.003101216201073328,
+    "chainWork": "<Buffer 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 09 28 c3 98 79 31 62>",
+    "isSynced": false,
+    "syncProgress": 0.9999996959296329
+  },
+  "network": {
+    "peersCount": 130,
+    "fee": {
+      "relay": 0.00001,
+      "incremental": 0.00001
+    }
+  }
+}
+```
+:::
+
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "version": {
+    "protocol": 70231,
+    "software": 200101,
+    "agent": "/Dash Core:20.1.1/"
+  },
+  "time": {
+    "now": 1714509795,
+    "median": 1714508653
+  },
+  "status": "SYNCING",
+  "syncProgress": 0.9999993584439603,
+  "chain": {
+    "name": "test",
+    "headersCount": 1017413,
+    "blocksCount": 1017413,
+    "bestBlockHash": "AAAANNAMN3b95BPomRUPbuTrgkTddEgcU/aEtc4Pobo=",
+    "difficulty": 0.002658981405023059,
+    "chainWork": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwkow5StfJE=",
+    "syncProgress": 0.9999993584439603
+  },
+  "network": {
+    "peersCount": 122,
+    "fee": {
+      "relay": 1e-05,
+      "incremental": 1e-05
+    }
+  }
+}
+```
+:::
+::::
+
 ### getTransaction
 
 **Returns**: A raw transaction  
