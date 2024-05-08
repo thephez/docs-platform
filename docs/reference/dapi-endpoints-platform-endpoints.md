@@ -361,6 +361,88 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+### getIdentityContractNonce
+
+**Returns**: Current contract nonce for the requested [Identity](../explanations/identity.md)
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `identity_id`    | Bytes   | Yes      | An identity ID
+| `contract_id`    | Bytes   | Yes      | A contract ID
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity contract nonce
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} JavaScript (dapi-client)
+:sync: js-dapi-client
+```javascript
+const DAPIClient = require('@dashevo/dapi-client');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
+
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
+const client = new DAPIClient();
+
+const identityId = Identifier.from('4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF');
+const contractId = Identifier.from('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec');
+client.platform.getIdentityContractNonce(identityId, contractId).then((response) => {
+  console.log(`Current identity contract nonce: ${response.getIdentityContractNonce()}`);
+});
+```
+:::
+
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identity_id": "MBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/aw=",
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityContractNonce
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (dapi-client)
+:sync: js-dapi-client
+```text
+Current identity contract nonce: 0
+```
+:::
+
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "identityContractNonce": "0",
+    "metadata": {
+      "height": "4039",
+      "coreChainLockedHeight": 1021684,
+      "epoch": 200,
+      "timeMs": "1715111140075",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-45"
+    }
+  }
+}
+```
+:::
+::::
+
 ### getIdentityKeys
 
 **Returns**: Keys for an [Identity](../explanations/identity.md).
@@ -509,102 +591,16 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
-### getIdentities
+### getIdentityNonce
 
-**Returns**: [Identity](../explanations/identity.md) information for the requested identities  
+**Returns**: Current nonce for the requested [Identity](../explanations/identity.md)
 
 **Parameters**:
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ------------ |
-| `ids`   | Array   | Yes      | An array of identity IDs
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-:sync: grpcurl
-```shell
-# `id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "ids": [
-        "MBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/aw="
-      ]
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentities
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "identities": {
-      "identityEntries": [
-        {
-          "key": "MBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/aw=",
-          "value": {
-            "value": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQLItHR7UoysX933psxjcC7gTtfRMykE4IUQND6gDc5UagABAAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA/QAAAAQrpPz8AA=="
-          }
-        }
-      ]
-    },
-    "metadata": {
-      "height": "6851",
-      "coreChainLockedHeight": 927070,
-      "epoch": 850,
-      "timeMs": "1701982306949",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
-    }
-  }
-}
-
-```
-:::
-::::
-
-### getIdentitiesByPublicKeyHashes
-
-**Returns**: An array of [identities](../explanations/identity.md) associated with the provided public key hashes  
-**Parameters**:
-
-| Name                | Type    | Required | Description                                                             |
-| ------------------- | ------- | -------- | ----------------------------------------------------------------------- |
-| `public_key_hashes` | Bytes   | Yes      | Public key hashes (sha256-ripemd160) of identity public keys            |
-| `prove`             | Boolean | No       | Set to `true` to receive a proof that contains the requested identities |
-
-> 📘
->
-> **Note**: When requesting proofs, the data requested will be encoded as part of the proof in the response.
-
-> 📘 Public key hash
->
-> Note: the hash must be done using all fields of the identity public key object - e.g.
->
-> ```json
-> {
->   "$version": "0",
->   "id": 0,
->   "purpose": 0,
->   "securityLevel": 0,
->   "contractBounds": null,
->   "type": 0,
->   "readOnly": false,
->   "data": "Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
->   "disabledAt": null
-> }
-> ```
->
-> When using the js-dpp library, the hash can be accessed via the [IdentityPublicKey object's](https://github.com/dashevo/platform/blob/master/packages/js-dpp/lib/identity/IdentityPublicKey.js) `hash` method (e.g. `identity.getPublicKeyById(0).hash()`).
+| `identity_id`    | Bytes   | Yes      | An identity ID
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity nonce
 
 **Example Request and Response**
 
@@ -614,105 +610,43 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```javascript
 const DAPIClient = require('@dashevo/dapi-client');
 const {
-  default: loadDpp, DashPlatformProtocol,
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
 } = require('@dashevo/wasm-dpp');
 
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
 const client = new DAPIClient();
-loadDpp();
-const dpp = new DashPlatformProtocol();
 
-const publicKeyHash = 'b8d1591aa74d440e0af9c0be16c55bbc141847f7';
-const publicKeysBuffer = [Buffer.from(publicKeyHash, 'hex')];
-
-client.platform.getIdentitiesByPublicKeyHashes(publicKeysBuffer)
-  .then((response) => {
-    const retrievedIdentity = dpp.identity.createFromBuffer(response.identities[0]);
-    console.log(retrievedIdentity.toJSON());
-  });
-```
-:::
-
-:::{tab-item} JavaScript (dapi-grpc)
-:sync: js-dapi-grpc
-```javascript
-const {
-  v0: { PlatformPromiseClient, GetIdentitiesByPublicKeyHashesRequest },
-} = require('@dashevo/dapi-grpc');
-const { DashPlatformProtocol, default: loadDpp } = require('@dashevo/wasm-dpp');
-
-loadDpp();
-const dpp = new DashPlatformProtocol();
-
-const platformPromiseClient = new PlatformPromiseClient(
-  'https://seed-1.testnet.networks.dash.org:1443',
-);
-
-const publicKeyHash = 'b8d1591aa74d440e0af9c0be16c55bbc141847f7';
-const publicKeysBuffer = [Buffer.from(publicKeyHash, 'hex')];
-
-const getIdentitiesByPublicKeyHashesRequest = new GetIdentitiesByPublicKeyHashesRequest();
-getIdentitiesByPublicKeyHashesRequest.setPublicKeyHashesList(publicKeysBuffer);
-
-platformPromiseClient
-  .getIdentitiesByPublicKeyHashes(getIdentitiesByPublicKeyHashesRequest)
-  .then((response) => {
-    const identitiesResponse = response.getIdentities().getIdentitiesList();
-    console.log(dpp.identity.createFromBuffer(Buffer.from(identitiesResponse[0])).toJSON());
-  })
-  .catch((e) => console.error(e));
+const identityId = Identifier.from('4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF');
+client.platform.getIdentityNonce(identityId).then((response) => {
+  console.log(`Current identity nonce: ${response.getIdentityNonce()}`);
+});
 ```
 :::
 
 :::{tab-item} gRPCurl
 :sync: grpcurl
 ```shell
-# `public_key_hashes` must be represented in base64
+# `id` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "public_key_hashes":"uNFZGqdNRA4K+cC+FsVbvBQYR/c="
+      "identity_id": "MBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/aw="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentitiesByPublicKeyHashes
+  org.dash.platform.dapi.v0.Platform/getIdentityNonce
 ```
 :::
 ::::
 
 ::::{tab-set}
-:::{tab-item} Response (JavaScript)
+:::{tab-item} Response (dapi-client)
 :sync: js-dapi-client
-```json
-{
-  "$version":"0",
-  "id":"4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
-  "publicKeys":[
-    {
-      "$version":"0",
-      "id":0,
-      "purpose":0,
-      "securityLevel":0,
-      "contractBounds":null,
-      "type":0,
-      "readOnly":false,
-      "data":"Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
-      "disabledAt":null
-    },
-    {
-      "$version":"0",
-      "id":1,
-      "purpose":0,
-      "securityLevel":2,
-      "contractBounds":null,
-      "type":0,
-      "readOnly":false,
-      "data":"AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
-      "disabledAt":null
-    }
-  ],
-  "balance":17912102140,
-  "revision":0
-}
+```text
+Current identity nonce: 0
 ```
 :::
 
@@ -721,21 +655,83 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "identities": {
-      "identityEntries": [
-        {
-          "publicKeyHash": "uNFZGqdNRA4K+cC+FsVbvBQYR/c=",
-          "value": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQLItHR7UoysX933psxjcC7gTtfRMykE4IUQND6gDc5UagABAAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA/QAAAAQrpPz8AA=="
-        }
-      ]
-    },
+    "identityNonce": "0",
     "metadata": {
-      "height": "6733",
-      "coreChainLockedHeight": 926908,
-      "epoch": 844,
-      "timeMs": "1701960418324",
+      "height": "4035",
+      "coreChainLockedHeight": 1021681,
+      "epoch": 200,
+      "timeMs": "1715110406689",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
+      "chainId": "dash-testnet-45"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentitiesContractKeys
+
+**Returns**: Keys associated to a specific contract for multiple [Identities](../explanations/identity.md).
+
+**Parameters**:
+
+| Name                 | Type                    | Required | Description |
+|----------------------|-------------------------|----------|-------------|
+| `identities_ids`     | Array of Strings        | Yes      | An array of identity IDs |
+| `contract_id`        | String                  | Yes      | The ID of the contract |
+| `document_type_name` | String                  | No       | Name of the document type |
+| `purposes`           | Array of [KeyPurpose](#key-purposes) | No | Array of purposes for which keys are requested |
+| `prove`              | Boolean                 | No       | Set to `true` to receive a proof that contains the requested identity keys |
+
+#### Key Purposes
+
+**Key Purposes** define the intent of usage for each key. Here are the available purposes:
+
+- `AUTHENTICATION` - Keys used for authentication purposes.
+- `ENCRYPTION` - Keys used for encrypting data.
+- `DECRYPTION` - Keys used for decrypting data.
+- `TRANSFER` - Keys used for transferring assets.
+- `VOTING` - Keys used for voting mechanisms.
+
+#### Example Request and Response
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+# Request identity keys associated with the specified contract
+# `identities_ids` and `contract_id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identities_ids": [
+        "MBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/aw=",
+        "NBgQk65dTNttDYDGLZNLrb1QEAWB91jqkqXtK1KU4Dc="
+      ],
+      "purposes": [],
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentitiesContractKeys
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "identitiesKeys": {},
+    "metadata": {
+      "height": "3994",
+      "coreChainLockedHeight": 1021628,
+      "epoch": 198,
+      "timeMs": "1715102626945",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-45"
     }
   }
 }
@@ -1845,7 +1841,32 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 ## Deprecated Endpoints
 
-No endpoints were deprecated in Dash Platform v0.25, but the previous version of documentation can be [viewed here](https://docs.dash.org/projects/platform/en/0.24.0/docs/reference/dapi-endpoints-platform-endpoints.html).
+The following endpoints were recently deprecated. See the [previous version of documentation](https://docs.dash.org/projects/platform/en/0.25.0/docs/reference/dapi-endpoints-platform-endpoints.html) for additional information on these endpoints.
+
+### getIdentities
+
+*Deprecated in Dash Platform v1.0.0-dev.12*
+
+**Returns**: [Identity](../explanations/identity.md) information for the requested identities  
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `ids`   | Array   | Yes      | An array of identity IDs
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
+
+### getIdentitiesByPublicKeyHashes
+
+*Deprecated in Dash Platform v1.0.0-dev.12*
+
+**Returns**: An array of [identities](../explanations/identity.md) associated with the provided public key hashes  
+**Parameters**:
+
+| Name                | Type    | Required | Description                                                             |
+| ------------------- | ------- | -------- | ----------------------------------------------------------------------- |
+| `public_key_hashes` | Bytes   | Yes      | Public key hashes (sha256-ripemd160) of identity public keys            |
+| `prove`             | Boolean | No       | Set to `true` to receive a proof that contains the requested identities |
 
 ## Code Reference
 
