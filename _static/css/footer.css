@@ -1,4 +1,0 @@
-/* Make each footer item in-line so they stack horizontally instead of vertically */
-.footer-items__start, .footer-items__end {
-  flex-direction: row;
-}
