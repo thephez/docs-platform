@@ -1,0 +1,1841 @@
+# Protocol Documentation
+<a name="top"></a>
+
+## Table of Contents
+
+- [platform.proto](#platform-proto)
+    - [AllKeys](#org-dash-platform-dapi-v0-AllKeys)
+    - [BroadcastStateTransitionRequest](#org-dash-platform-dapi-v0-BroadcastStateTransitionRequest)
+    - [BroadcastStateTransitionResponse](#org-dash-platform-dapi-v0-BroadcastStateTransitionResponse)
+    - [GetConsensusParamsRequest](#org-dash-platform-dapi-v0-GetConsensusParamsRequest)
+    - [GetConsensusParamsRequest.GetConsensusParamsRequestV0](#org-dash-platform-dapi-v0-GetConsensusParamsRequest-GetConsensusParamsRequestV0)
+    - [GetConsensusParamsResponse](#org-dash-platform-dapi-v0-GetConsensusParamsResponse)
+    - [GetConsensusParamsResponse.ConsensusParamsBlock](#org-dash-platform-dapi-v0-GetConsensusParamsResponse-ConsensusParamsBlock)
+    - [GetConsensusParamsResponse.ConsensusParamsEvidence](#org-dash-platform-dapi-v0-GetConsensusParamsResponse-ConsensusParamsEvidence)
+    - [GetConsensusParamsResponse.GetConsensusParamsResponseV0](#org-dash-platform-dapi-v0-GetConsensusParamsResponse-GetConsensusParamsResponseV0)
+    - [GetDataContractHistoryRequest](#org-dash-platform-dapi-v0-GetDataContractHistoryRequest)
+    - [GetDataContractHistoryRequest.GetDataContractHistoryRequestV0](#org-dash-platform-dapi-v0-GetDataContractHistoryRequest-GetDataContractHistoryRequestV0)
+    - [GetDataContractHistoryResponse](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse)
+    - [GetDataContractHistoryResponse.GetDataContractHistoryResponseV0](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0)
+    - [GetDataContractHistoryResponse.GetDataContractHistoryResponseV0.DataContractHistory](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0-DataContractHistory)
+    - [GetDataContractHistoryResponse.GetDataContractHistoryResponseV0.DataContractHistoryEntry](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0-DataContractHistoryEntry)
+    - [GetDataContractRequest](#org-dash-platform-dapi-v0-GetDataContractRequest)
+    - [GetDataContractRequest.GetDataContractRequestV0](#org-dash-platform-dapi-v0-GetDataContractRequest-GetDataContractRequestV0)
+    - [GetDataContractResponse](#org-dash-platform-dapi-v0-GetDataContractResponse)
+    - [GetDataContractResponse.GetDataContractResponseV0](#org-dash-platform-dapi-v0-GetDataContractResponse-GetDataContractResponseV0)
+    - [GetDataContractsRequest](#org-dash-platform-dapi-v0-GetDataContractsRequest)
+    - [GetDataContractsRequest.GetDataContractsRequestV0](#org-dash-platform-dapi-v0-GetDataContractsRequest-GetDataContractsRequestV0)
+    - [GetDataContractsResponse](#org-dash-platform-dapi-v0-GetDataContractsResponse)
+    - [GetDataContractsResponse.DataContractEntry](#org-dash-platform-dapi-v0-GetDataContractsResponse-DataContractEntry)
+    - [GetDataContractsResponse.DataContracts](#org-dash-platform-dapi-v0-GetDataContractsResponse-DataContracts)
+    - [GetDataContractsResponse.GetDataContractsResponseV0](#org-dash-platform-dapi-v0-GetDataContractsResponse-GetDataContractsResponseV0)
+    - [GetDocumentsRequest](#org-dash-platform-dapi-v0-GetDocumentsRequest)
+    - [GetDocumentsRequest.GetDocumentsRequestV0](#org-dash-platform-dapi-v0-GetDocumentsRequest-GetDocumentsRequestV0)
+    - [GetDocumentsResponse](#org-dash-platform-dapi-v0-GetDocumentsResponse)
+    - [GetDocumentsResponse.GetDocumentsResponseV0](#org-dash-platform-dapi-v0-GetDocumentsResponse-GetDocumentsResponseV0)
+    - [GetDocumentsResponse.GetDocumentsResponseV0.Documents](#org-dash-platform-dapi-v0-GetDocumentsResponse-GetDocumentsResponseV0-Documents)
+    - [GetEpochsInfoRequest](#org-dash-platform-dapi-v0-GetEpochsInfoRequest)
+    - [GetEpochsInfoRequest.GetEpochsInfoRequestV0](#org-dash-platform-dapi-v0-GetEpochsInfoRequest-GetEpochsInfoRequestV0)
+    - [GetEpochsInfoResponse](#org-dash-platform-dapi-v0-GetEpochsInfoResponse)
+    - [GetEpochsInfoResponse.GetEpochsInfoResponseV0](#org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0)
+    - [GetEpochsInfoResponse.GetEpochsInfoResponseV0.EpochInfo](#org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0-EpochInfo)
+    - [GetEpochsInfoResponse.GetEpochsInfoResponseV0.EpochInfos](#org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0-EpochInfos)
+    - [GetIdentitiesByPublicKeyHashesRequest](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesRequest)
+    - [GetIdentitiesByPublicKeyHashesRequest.GetIdentitiesByPublicKeyHashesRequestV0](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesRequest-GetIdentitiesByPublicKeyHashesRequestV0)
+    - [GetIdentitiesByPublicKeyHashesResponse](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse)
+    - [GetIdentitiesByPublicKeyHashesResponse.GetIdentitiesByPublicKeyHashesResponseV0](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-GetIdentitiesByPublicKeyHashesResponseV0)
+    - [GetIdentitiesByPublicKeyHashesResponse.IdentitiesByPublicKeyHashes](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-IdentitiesByPublicKeyHashes)
+    - [GetIdentitiesByPublicKeyHashesResponse.PublicKeyHashIdentityEntry](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-PublicKeyHashIdentityEntry)
+    - [GetIdentitiesRequest](#org-dash-platform-dapi-v0-GetIdentitiesRequest)
+    - [GetIdentitiesRequest.GetIdentitiesRequestV0](#org-dash-platform-dapi-v0-GetIdentitiesRequest-GetIdentitiesRequestV0)
+    - [GetIdentitiesResponse](#org-dash-platform-dapi-v0-GetIdentitiesResponse)
+    - [GetIdentitiesResponse.GetIdentitiesResponseV0](#org-dash-platform-dapi-v0-GetIdentitiesResponse-GetIdentitiesResponseV0)
+    - [GetIdentitiesResponse.Identities](#org-dash-platform-dapi-v0-GetIdentitiesResponse-Identities)
+    - [GetIdentitiesResponse.IdentityEntry](#org-dash-platform-dapi-v0-GetIdentitiesResponse-IdentityEntry)
+    - [GetIdentitiesResponse.IdentityValue](#org-dash-platform-dapi-v0-GetIdentitiesResponse-IdentityValue)
+    - [GetIdentityBalanceAndRevisionRequest](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionRequest)
+    - [GetIdentityBalanceAndRevisionRequest.GetIdentityBalanceAndRevisionRequestV0](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionRequest-GetIdentityBalanceAndRevisionRequestV0)
+    - [GetIdentityBalanceAndRevisionResponse](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse)
+    - [GetIdentityBalanceAndRevisionResponse.GetIdentityBalanceAndRevisionResponseV0](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse-GetIdentityBalanceAndRevisionResponseV0)
+    - [GetIdentityBalanceAndRevisionResponse.GetIdentityBalanceAndRevisionResponseV0.BalanceAndRevision](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse-GetIdentityBalanceAndRevisionResponseV0-BalanceAndRevision)
+    - [GetIdentityBalanceRequest](#org-dash-platform-dapi-v0-GetIdentityBalanceRequest)
+    - [GetIdentityBalanceRequest.GetIdentityBalanceRequestV0](#org-dash-platform-dapi-v0-GetIdentityBalanceRequest-GetIdentityBalanceRequestV0)
+    - [GetIdentityBalanceResponse](#org-dash-platform-dapi-v0-GetIdentityBalanceResponse)
+    - [GetIdentityBalanceResponse.GetIdentityBalanceResponseV0](#org-dash-platform-dapi-v0-GetIdentityBalanceResponse-GetIdentityBalanceResponseV0)
+    - [GetIdentityByPublicKeyHashRequest](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashRequest)
+    - [GetIdentityByPublicKeyHashRequest.GetIdentityByPublicKeyHashRequestV0](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashRequest-GetIdentityByPublicKeyHashRequestV0)
+    - [GetIdentityByPublicKeyHashResponse](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashResponse)
+    - [GetIdentityByPublicKeyHashResponse.GetIdentityByPublicKeyHashResponseV0](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashResponse-GetIdentityByPublicKeyHashResponseV0)
+    - [GetIdentityKeysRequest](#org-dash-platform-dapi-v0-GetIdentityKeysRequest)
+    - [GetIdentityKeysRequest.GetIdentityKeysRequestV0](#org-dash-platform-dapi-v0-GetIdentityKeysRequest-GetIdentityKeysRequestV0)
+    - [GetIdentityKeysResponse](#org-dash-platform-dapi-v0-GetIdentityKeysResponse)
+    - [GetIdentityKeysResponse.GetIdentityKeysResponseV0](#org-dash-platform-dapi-v0-GetIdentityKeysResponse-GetIdentityKeysResponseV0)
+    - [GetIdentityKeysResponse.GetIdentityKeysResponseV0.Keys](#org-dash-platform-dapi-v0-GetIdentityKeysResponse-GetIdentityKeysResponseV0-Keys)
+    - [GetIdentityRequest](#org-dash-platform-dapi-v0-GetIdentityRequest)
+    - [GetIdentityRequest.GetIdentityRequestV0](#org-dash-platform-dapi-v0-GetIdentityRequest-GetIdentityRequestV0)
+    - [GetIdentityResponse](#org-dash-platform-dapi-v0-GetIdentityResponse)
+    - [GetIdentityResponse.GetIdentityResponseV0](#org-dash-platform-dapi-v0-GetIdentityResponse-GetIdentityResponseV0)
+    - [GetProofsRequest](#org-dash-platform-dapi-v0-GetProofsRequest)
+    - [GetProofsRequest.GetProofsRequestV0](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0)
+    - [GetProofsRequest.GetProofsRequestV0.ContractRequest](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-ContractRequest)
+    - [GetProofsRequest.GetProofsRequestV0.DocumentRequest](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-DocumentRequest)
+    - [GetProofsRequest.GetProofsRequestV0.IdentityRequest](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-IdentityRequest)
+    - [GetProofsResponse](#org-dash-platform-dapi-v0-GetProofsResponse)
+    - [GetProofsResponse.GetProofsResponseV0](#org-dash-platform-dapi-v0-GetProofsResponse-GetProofsResponseV0)
+    - [GetProtocolVersionUpgradeStateRequest](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateRequest)
+    - [GetProtocolVersionUpgradeStateRequest.GetProtocolVersionUpgradeStateRequestV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateRequest-GetProtocolVersionUpgradeStateRequestV0)
+    - [GetProtocolVersionUpgradeStateResponse](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse)
+    - [GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0)
+    - [GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0.VersionEntry](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0-VersionEntry)
+    - [GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0.Versions](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0-Versions)
+    - [GetProtocolVersionUpgradeVoteStatusRequest](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusRequest)
+    - [GetProtocolVersionUpgradeVoteStatusRequest.GetProtocolVersionUpgradeVoteStatusRequestV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusRequest-GetProtocolVersionUpgradeVoteStatusRequestV0)
+    - [GetProtocolVersionUpgradeVoteStatusResponse](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse)
+    - [GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0)
+    - [GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0.VersionSignal](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0-VersionSignal)
+    - [GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0.VersionSignals](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0-VersionSignals)
+    - [KeyRequestType](#org-dash-platform-dapi-v0-KeyRequestType)
+    - [Proof](#org-dash-platform-dapi-v0-Proof)
+    - [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata)
+    - [SearchKey](#org-dash-platform-dapi-v0-SearchKey)
+    - [SearchKey.PurposeMapEntry](#org-dash-platform-dapi-v0-SearchKey-PurposeMapEntry)
+    - [SecurityLevelMap](#org-dash-platform-dapi-v0-SecurityLevelMap)
+    - [SecurityLevelMap.SecurityLevelMapEntry](#org-dash-platform-dapi-v0-SecurityLevelMap-SecurityLevelMapEntry)
+    - [SpecificKeys](#org-dash-platform-dapi-v0-SpecificKeys)
+    - [StateTransitionBroadcastError](#org-dash-platform-dapi-v0-StateTransitionBroadcastError)
+    - [WaitForStateTransitionResultRequest](#org-dash-platform-dapi-v0-WaitForStateTransitionResultRequest)
+    - [WaitForStateTransitionResultRequest.WaitForStateTransitionResultRequestV0](#org-dash-platform-dapi-v0-WaitForStateTransitionResultRequest-WaitForStateTransitionResultRequestV0)
+    - [WaitForStateTransitionResultResponse](#org-dash-platform-dapi-v0-WaitForStateTransitionResultResponse)
+    - [WaitForStateTransitionResultResponse.WaitForStateTransitionResultResponseV0](#org-dash-platform-dapi-v0-WaitForStateTransitionResultResponse-WaitForStateTransitionResultResponseV0)
+  
+    - [GetProofsRequest.GetProofsRequestV0.IdentityRequest.Type](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-IdentityRequest-Type)
+    - [SecurityLevelMap.KeyKindRequestType](#org-dash-platform-dapi-v0-SecurityLevelMap-KeyKindRequestType)
+  
+    - [Platform](#org-dash-platform-dapi-v0-Platform)
+  
+- [Scalar Value Types](#scalar-value-types)
+
+
+
+<a name="platform-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## platform.proto
+
+
+
+<a name="org-dash-platform-dapi-v0-AllKeys"></a>
+
+### AllKeys
+
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-BroadcastStateTransitionRequest"></a>
+
+### BroadcastStateTransitionRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| state_transition | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-BroadcastStateTransitionResponse"></a>
+
+### BroadcastStateTransitionResponse
+
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetConsensusParamsRequest"></a>
+
+### GetConsensusParamsRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetConsensusParamsRequest.GetConsensusParamsRequestV0](#org-dash-platform-dapi-v0-GetConsensusParamsRequest-GetConsensusParamsRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetConsensusParamsRequest-GetConsensusParamsRequestV0"></a>
+
+### GetConsensusParamsRequest.GetConsensusParamsRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| height | [int32](#int32) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetConsensusParamsResponse"></a>
+
+### GetConsensusParamsResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetConsensusParamsResponse.GetConsensusParamsResponseV0](#org-dash-platform-dapi-v0-GetConsensusParamsResponse-GetConsensusParamsResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetConsensusParamsResponse-ConsensusParamsBlock"></a>
+
+### GetConsensusParamsResponse.ConsensusParamsBlock
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| max_bytes | [string](#string) |  |  |
+| max_gas | [string](#string) |  |  |
+| time_iota_ms | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetConsensusParamsResponse-ConsensusParamsEvidence"></a>
+
+### GetConsensusParamsResponse.ConsensusParamsEvidence
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| max_age_num_blocks | [string](#string) |  |  |
+| max_age_duration | [string](#string) |  |  |
+| max_bytes | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetConsensusParamsResponse-GetConsensusParamsResponseV0"></a>
+
+### GetConsensusParamsResponse.GetConsensusParamsResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| block | [GetConsensusParamsResponse.ConsensusParamsBlock](#org-dash-platform-dapi-v0-GetConsensusParamsResponse-ConsensusParamsBlock) |  |  |
+| evidence | [GetConsensusParamsResponse.ConsensusParamsEvidence](#org-dash-platform-dapi-v0-GetConsensusParamsResponse-ConsensusParamsEvidence) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractHistoryRequest"></a>
+
+### GetDataContractHistoryRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDataContractHistoryRequest.GetDataContractHistoryRequestV0](#org-dash-platform-dapi-v0-GetDataContractHistoryRequest-GetDataContractHistoryRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractHistoryRequest-GetDataContractHistoryRequestV0"></a>
+
+### GetDataContractHistoryRequest.GetDataContractHistoryRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [bytes](#bytes) |  |  |
+| limit | [google.protobuf.UInt32Value](#google-protobuf-UInt32Value) |  |  |
+| offset | [google.protobuf.UInt32Value](#google-protobuf-UInt32Value) |  |  |
+| start_at_ms | [uint64](#uint64) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractHistoryResponse"></a>
+
+### GetDataContractHistoryResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDataContractHistoryResponse.GetDataContractHistoryResponseV0](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0"></a>
+
+### GetDataContractHistoryResponse.GetDataContractHistoryResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data_contract_history | [GetDataContractHistoryResponse.GetDataContractHistoryResponseV0.DataContractHistory](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0-DataContractHistory) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0-DataContractHistory"></a>
+
+### GetDataContractHistoryResponse.GetDataContractHistoryResponseV0.DataContractHistory
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data_contract_entries | [GetDataContractHistoryResponse.GetDataContractHistoryResponseV0.DataContractHistoryEntry](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0-DataContractHistoryEntry) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractHistoryResponse-GetDataContractHistoryResponseV0-DataContractHistoryEntry"></a>
+
+### GetDataContractHistoryResponse.GetDataContractHistoryResponseV0.DataContractHistoryEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| date | [uint64](#uint64) |  |  |
+| value | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractRequest"></a>
+
+### GetDataContractRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDataContractRequest.GetDataContractRequestV0](#org-dash-platform-dapi-v0-GetDataContractRequest-GetDataContractRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractRequest-GetDataContractRequestV0"></a>
+
+### GetDataContractRequest.GetDataContractRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [bytes](#bytes) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractResponse"></a>
+
+### GetDataContractResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDataContractResponse.GetDataContractResponseV0](#org-dash-platform-dapi-v0-GetDataContractResponse-GetDataContractResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractResponse-GetDataContractResponseV0"></a>
+
+### GetDataContractResponse.GetDataContractResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data_contract | [bytes](#bytes) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractsRequest"></a>
+
+### GetDataContractsRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDataContractsRequest.GetDataContractsRequestV0](#org-dash-platform-dapi-v0-GetDataContractsRequest-GetDataContractsRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractsRequest-GetDataContractsRequestV0"></a>
+
+### GetDataContractsRequest.GetDataContractsRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ids | [bytes](#bytes) | repeated |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractsResponse"></a>
+
+### GetDataContractsResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDataContractsResponse.GetDataContractsResponseV0](#org-dash-platform-dapi-v0-GetDataContractsResponse-GetDataContractsResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractsResponse-DataContractEntry"></a>
+
+### GetDataContractsResponse.DataContractEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identifier | [bytes](#bytes) |  |  |
+| data_contract | [google.protobuf.BytesValue](#google-protobuf-BytesValue) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractsResponse-DataContracts"></a>
+
+### GetDataContractsResponse.DataContracts
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data_contract_entries | [GetDataContractsResponse.DataContractEntry](#org-dash-platform-dapi-v0-GetDataContractsResponse-DataContractEntry) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDataContractsResponse-GetDataContractsResponseV0"></a>
+
+### GetDataContractsResponse.GetDataContractsResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data_contracts | [GetDataContractsResponse.DataContracts](#org-dash-platform-dapi-v0-GetDataContractsResponse-DataContracts) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDocumentsRequest"></a>
+
+### GetDocumentsRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDocumentsRequest.GetDocumentsRequestV0](#org-dash-platform-dapi-v0-GetDocumentsRequest-GetDocumentsRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDocumentsRequest-GetDocumentsRequestV0"></a>
+
+### GetDocumentsRequest.GetDocumentsRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data_contract_id | [bytes](#bytes) |  |  |
+| document_type | [string](#string) |  |  |
+| where | [bytes](#bytes) |  |  |
+| order_by | [bytes](#bytes) |  |  |
+| limit | [uint32](#uint32) |  |  |
+| start_after | [bytes](#bytes) |  |  |
+| start_at | [bytes](#bytes) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDocumentsResponse"></a>
+
+### GetDocumentsResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetDocumentsResponse.GetDocumentsResponseV0](#org-dash-platform-dapi-v0-GetDocumentsResponse-GetDocumentsResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDocumentsResponse-GetDocumentsResponseV0"></a>
+
+### GetDocumentsResponse.GetDocumentsResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| documents | [GetDocumentsResponse.GetDocumentsResponseV0.Documents](#org-dash-platform-dapi-v0-GetDocumentsResponse-GetDocumentsResponseV0-Documents) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetDocumentsResponse-GetDocumentsResponseV0-Documents"></a>
+
+### GetDocumentsResponse.GetDocumentsResponseV0.Documents
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| documents | [bytes](#bytes) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetEpochsInfoRequest"></a>
+
+### GetEpochsInfoRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetEpochsInfoRequest.GetEpochsInfoRequestV0](#org-dash-platform-dapi-v0-GetEpochsInfoRequest-GetEpochsInfoRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetEpochsInfoRequest-GetEpochsInfoRequestV0"></a>
+
+### GetEpochsInfoRequest.GetEpochsInfoRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| start_epoch | [google.protobuf.UInt32Value](#google-protobuf-UInt32Value) |  |  |
+| count | [uint32](#uint32) |  |  |
+| ascending | [bool](#bool) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetEpochsInfoResponse"></a>
+
+### GetEpochsInfoResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetEpochsInfoResponse.GetEpochsInfoResponseV0](#org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0"></a>
+
+### GetEpochsInfoResponse.GetEpochsInfoResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| epochs | [GetEpochsInfoResponse.GetEpochsInfoResponseV0.EpochInfos](#org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0-EpochInfos) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0-EpochInfo"></a>
+
+### GetEpochsInfoResponse.GetEpochsInfoResponseV0.EpochInfo
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| number | [uint32](#uint32) |  |  |
+| first_block_height | [uint64](#uint64) |  |  |
+| first_core_block_height | [uint32](#uint32) |  |  |
+| start_time | [uint64](#uint64) |  |  |
+| fee_multiplier | [double](#double) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0-EpochInfos"></a>
+
+### GetEpochsInfoResponse.GetEpochsInfoResponseV0.EpochInfos
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| epoch_infos | [GetEpochsInfoResponse.GetEpochsInfoResponseV0.EpochInfo](#org-dash-platform-dapi-v0-GetEpochsInfoResponse-GetEpochsInfoResponseV0-EpochInfo) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesRequest"></a>
+
+### GetIdentitiesByPublicKeyHashesRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentitiesByPublicKeyHashesRequest.GetIdentitiesByPublicKeyHashesRequestV0](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesRequest-GetIdentitiesByPublicKeyHashesRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesRequest-GetIdentitiesByPublicKeyHashesRequestV0"></a>
+
+### GetIdentitiesByPublicKeyHashesRequest.GetIdentitiesByPublicKeyHashesRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| public_key_hashes | [bytes](#bytes) | repeated |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse"></a>
+
+### GetIdentitiesByPublicKeyHashesResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentitiesByPublicKeyHashesResponse.GetIdentitiesByPublicKeyHashesResponseV0](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-GetIdentitiesByPublicKeyHashesResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-GetIdentitiesByPublicKeyHashesResponseV0"></a>
+
+### GetIdentitiesByPublicKeyHashesResponse.GetIdentitiesByPublicKeyHashesResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identities | [GetIdentitiesByPublicKeyHashesResponse.IdentitiesByPublicKeyHashes](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-IdentitiesByPublicKeyHashes) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-IdentitiesByPublicKeyHashes"></a>
+
+### GetIdentitiesByPublicKeyHashesResponse.IdentitiesByPublicKeyHashes
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identity_entries | [GetIdentitiesByPublicKeyHashesResponse.PublicKeyHashIdentityEntry](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-PublicKeyHashIdentityEntry) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse-PublicKeyHashIdentityEntry"></a>
+
+### GetIdentitiesByPublicKeyHashesResponse.PublicKeyHashIdentityEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| public_key_hash | [bytes](#bytes) |  |  |
+| value | [google.protobuf.BytesValue](#google-protobuf-BytesValue) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesRequest"></a>
+
+### GetIdentitiesRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentitiesRequest.GetIdentitiesRequestV0](#org-dash-platform-dapi-v0-GetIdentitiesRequest-GetIdentitiesRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesRequest-GetIdentitiesRequestV0"></a>
+
+### GetIdentitiesRequest.GetIdentitiesRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ids | [bytes](#bytes) | repeated |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesResponse"></a>
+
+### GetIdentitiesResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentitiesResponse.GetIdentitiesResponseV0](#org-dash-platform-dapi-v0-GetIdentitiesResponse-GetIdentitiesResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesResponse-GetIdentitiesResponseV0"></a>
+
+### GetIdentitiesResponse.GetIdentitiesResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identities | [GetIdentitiesResponse.Identities](#org-dash-platform-dapi-v0-GetIdentitiesResponse-Identities) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesResponse-Identities"></a>
+
+### GetIdentitiesResponse.Identities
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identity_entries | [GetIdentitiesResponse.IdentityEntry](#org-dash-platform-dapi-v0-GetIdentitiesResponse-IdentityEntry) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesResponse-IdentityEntry"></a>
+
+### GetIdentitiesResponse.IdentityEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [bytes](#bytes) |  |  |
+| value | [GetIdentitiesResponse.IdentityValue](#org-dash-platform-dapi-v0-GetIdentitiesResponse-IdentityValue) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentitiesResponse-IdentityValue"></a>
+
+### GetIdentitiesResponse.IdentityValue
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| value | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionRequest"></a>
+
+### GetIdentityBalanceAndRevisionRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityBalanceAndRevisionRequest.GetIdentityBalanceAndRevisionRequestV0](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionRequest-GetIdentityBalanceAndRevisionRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionRequest-GetIdentityBalanceAndRevisionRequestV0"></a>
+
+### GetIdentityBalanceAndRevisionRequest.GetIdentityBalanceAndRevisionRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [bytes](#bytes) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse"></a>
+
+### GetIdentityBalanceAndRevisionResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityBalanceAndRevisionResponse.GetIdentityBalanceAndRevisionResponseV0](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse-GetIdentityBalanceAndRevisionResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse-GetIdentityBalanceAndRevisionResponseV0"></a>
+
+### GetIdentityBalanceAndRevisionResponse.GetIdentityBalanceAndRevisionResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| balance_and_revision | [GetIdentityBalanceAndRevisionResponse.GetIdentityBalanceAndRevisionResponseV0.BalanceAndRevision](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse-GetIdentityBalanceAndRevisionResponseV0-BalanceAndRevision) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse-GetIdentityBalanceAndRevisionResponseV0-BalanceAndRevision"></a>
+
+### GetIdentityBalanceAndRevisionResponse.GetIdentityBalanceAndRevisionResponseV0.BalanceAndRevision
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| balance | [uint64](#uint64) |  |  |
+| revision | [uint64](#uint64) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceRequest"></a>
+
+### GetIdentityBalanceRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityBalanceRequest.GetIdentityBalanceRequestV0](#org-dash-platform-dapi-v0-GetIdentityBalanceRequest-GetIdentityBalanceRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceRequest-GetIdentityBalanceRequestV0"></a>
+
+### GetIdentityBalanceRequest.GetIdentityBalanceRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [bytes](#bytes) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceResponse"></a>
+
+### GetIdentityBalanceResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityBalanceResponse.GetIdentityBalanceResponseV0](#org-dash-platform-dapi-v0-GetIdentityBalanceResponse-GetIdentityBalanceResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityBalanceResponse-GetIdentityBalanceResponseV0"></a>
+
+### GetIdentityBalanceResponse.GetIdentityBalanceResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| balance | [uint64](#uint64) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashRequest"></a>
+
+### GetIdentityByPublicKeyHashRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityByPublicKeyHashRequest.GetIdentityByPublicKeyHashRequestV0](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashRequest-GetIdentityByPublicKeyHashRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashRequest-GetIdentityByPublicKeyHashRequestV0"></a>
+
+### GetIdentityByPublicKeyHashRequest.GetIdentityByPublicKeyHashRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| public_key_hash | [bytes](#bytes) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashResponse"></a>
+
+### GetIdentityByPublicKeyHashResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityByPublicKeyHashResponse.GetIdentityByPublicKeyHashResponseV0](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashResponse-GetIdentityByPublicKeyHashResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashResponse-GetIdentityByPublicKeyHashResponseV0"></a>
+
+### GetIdentityByPublicKeyHashResponse.GetIdentityByPublicKeyHashResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identity | [bytes](#bytes) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityKeysRequest"></a>
+
+### GetIdentityKeysRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityKeysRequest.GetIdentityKeysRequestV0](#org-dash-platform-dapi-v0-GetIdentityKeysRequest-GetIdentityKeysRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityKeysRequest-GetIdentityKeysRequestV0"></a>
+
+### GetIdentityKeysRequest.GetIdentityKeysRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identity_id | [bytes](#bytes) |  |  |
+| request_type | [KeyRequestType](#org-dash-platform-dapi-v0-KeyRequestType) |  |  |
+| limit | [google.protobuf.UInt32Value](#google-protobuf-UInt32Value) |  |  |
+| offset | [google.protobuf.UInt32Value](#google-protobuf-UInt32Value) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityKeysResponse"></a>
+
+### GetIdentityKeysResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityKeysResponse.GetIdentityKeysResponseV0](#org-dash-platform-dapi-v0-GetIdentityKeysResponse-GetIdentityKeysResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityKeysResponse-GetIdentityKeysResponseV0"></a>
+
+### GetIdentityKeysResponse.GetIdentityKeysResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| keys | [GetIdentityKeysResponse.GetIdentityKeysResponseV0.Keys](#org-dash-platform-dapi-v0-GetIdentityKeysResponse-GetIdentityKeysResponseV0-Keys) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityKeysResponse-GetIdentityKeysResponseV0-Keys"></a>
+
+### GetIdentityKeysResponse.GetIdentityKeysResponseV0.Keys
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| keys_bytes | [bytes](#bytes) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityRequest"></a>
+
+### GetIdentityRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityRequest.GetIdentityRequestV0](#org-dash-platform-dapi-v0-GetIdentityRequest-GetIdentityRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityRequest-GetIdentityRequestV0"></a>
+
+### GetIdentityRequest.GetIdentityRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [bytes](#bytes) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityResponse"></a>
+
+### GetIdentityResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetIdentityResponse.GetIdentityResponseV0](#org-dash-platform-dapi-v0-GetIdentityResponse-GetIdentityResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetIdentityResponse-GetIdentityResponseV0"></a>
+
+### GetIdentityResponse.GetIdentityResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identity | [bytes](#bytes) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsRequest"></a>
+
+### GetProofsRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetProofsRequest.GetProofsRequestV0](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0"></a>
+
+### GetProofsRequest.GetProofsRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identities | [GetProofsRequest.GetProofsRequestV0.IdentityRequest](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-IdentityRequest) | repeated |  |
+| contracts | [GetProofsRequest.GetProofsRequestV0.ContractRequest](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-ContractRequest) | repeated |  |
+| documents | [GetProofsRequest.GetProofsRequestV0.DocumentRequest](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-DocumentRequest) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-ContractRequest"></a>
+
+### GetProofsRequest.GetProofsRequestV0.ContractRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contract_id | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-DocumentRequest"></a>
+
+### GetProofsRequest.GetProofsRequestV0.DocumentRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contract_id | [bytes](#bytes) |  |  |
+| document_type | [string](#string) |  |  |
+| document_type_keeps_history | [bool](#bool) |  |  |
+| document_id | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-IdentityRequest"></a>
+
+### GetProofsRequest.GetProofsRequestV0.IdentityRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| identity_id | [bytes](#bytes) |  |  |
+| request_type | [GetProofsRequest.GetProofsRequestV0.IdentityRequest.Type](#org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-IdentityRequest-Type) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsResponse"></a>
+
+### GetProofsResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetProofsResponse.GetProofsResponseV0](#org-dash-platform-dapi-v0-GetProofsResponse-GetProofsResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsResponse-GetProofsResponseV0"></a>
+
+### GetProofsResponse.GetProofsResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateRequest"></a>
+
+### GetProtocolVersionUpgradeStateRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetProtocolVersionUpgradeStateRequest.GetProtocolVersionUpgradeStateRequestV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateRequest-GetProtocolVersionUpgradeStateRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateRequest-GetProtocolVersionUpgradeStateRequestV0"></a>
+
+### GetProtocolVersionUpgradeStateRequest.GetProtocolVersionUpgradeStateRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse"></a>
+
+### GetProtocolVersionUpgradeStateResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0"></a>
+
+### GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| versions | [GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0.Versions](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0-Versions) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0-VersionEntry"></a>
+
+### GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0.VersionEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| version_number | [uint32](#uint32) |  |  |
+| vote_count | [uint32](#uint32) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0-Versions"></a>
+
+### GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0.Versions
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| versions | [GetProtocolVersionUpgradeStateResponse.GetProtocolVersionUpgradeStateResponseV0.VersionEntry](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse-GetProtocolVersionUpgradeStateResponseV0-VersionEntry) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusRequest"></a>
+
+### GetProtocolVersionUpgradeVoteStatusRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetProtocolVersionUpgradeVoteStatusRequest.GetProtocolVersionUpgradeVoteStatusRequestV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusRequest-GetProtocolVersionUpgradeVoteStatusRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusRequest-GetProtocolVersionUpgradeVoteStatusRequestV0"></a>
+
+### GetProtocolVersionUpgradeVoteStatusRequest.GetProtocolVersionUpgradeVoteStatusRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| start_pro_tx_hash | [bytes](#bytes) |  |  |
+| count | [uint32](#uint32) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse"></a>
+
+### GetProtocolVersionUpgradeVoteStatusResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0"></a>
+
+### GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| versions | [GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0.VersionSignals](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0-VersionSignals) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0-VersionSignal"></a>
+
+### GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0.VersionSignal
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| pro_tx_hash | [bytes](#bytes) |  |  |
+| version | [uint32](#uint32) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0-VersionSignals"></a>
+
+### GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0.VersionSignals
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| version_signals | [GetProtocolVersionUpgradeVoteStatusResponse.GetProtocolVersionUpgradeVoteStatusResponseV0.VersionSignal](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse-GetProtocolVersionUpgradeVoteStatusResponseV0-VersionSignal) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-KeyRequestType"></a>
+
+### KeyRequestType
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| all_keys | [AllKeys](#org-dash-platform-dapi-v0-AllKeys) |  |  |
+| specific_keys | [SpecificKeys](#org-dash-platform-dapi-v0-SpecificKeys) |  |  |
+| search_key | [SearchKey](#org-dash-platform-dapi-v0-SearchKey) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-Proof"></a>
+
+### Proof
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| grovedb_proof | [bytes](#bytes) |  |  |
+| quorum_hash | [bytes](#bytes) |  |  |
+| signature | [bytes](#bytes) |  |  |
+| round | [uint32](#uint32) |  |  |
+| block_id_hash | [bytes](#bytes) |  |  |
+| quorum_type | [uint32](#uint32) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-ResponseMetadata"></a>
+
+### ResponseMetadata
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| height | [uint64](#uint64) |  |  |
+| core_chain_locked_height | [uint32](#uint32) |  |  |
+| epoch | [uint32](#uint32) |  |  |
+| time_ms | [uint64](#uint64) |  |  |
+| protocol_version | [uint32](#uint32) |  |  |
+| chain_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-SearchKey"></a>
+
+### SearchKey
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| purpose_map | [SearchKey.PurposeMapEntry](#org-dash-platform-dapi-v0-SearchKey-PurposeMapEntry) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-SearchKey-PurposeMapEntry"></a>
+
+### SearchKey.PurposeMapEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [uint32](#uint32) |  |  |
+| value | [SecurityLevelMap](#org-dash-platform-dapi-v0-SecurityLevelMap) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-SecurityLevelMap"></a>
+
+### SecurityLevelMap
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| security_level_map | [SecurityLevelMap.SecurityLevelMapEntry](#org-dash-platform-dapi-v0-SecurityLevelMap-SecurityLevelMapEntry) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-SecurityLevelMap-SecurityLevelMapEntry"></a>
+
+### SecurityLevelMap.SecurityLevelMapEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [uint32](#uint32) |  |  |
+| value | [SecurityLevelMap.KeyKindRequestType](#org-dash-platform-dapi-v0-SecurityLevelMap-KeyKindRequestType) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-SpecificKeys"></a>
+
+### SpecificKeys
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key_ids | [uint32](#uint32) | repeated |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-StateTransitionBroadcastError"></a>
+
+### StateTransitionBroadcastError
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| code | [uint32](#uint32) |  |  |
+| message | [string](#string) |  |  |
+| data | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-WaitForStateTransitionResultRequest"></a>
+
+### WaitForStateTransitionResultRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [WaitForStateTransitionResultRequest.WaitForStateTransitionResultRequestV0](#org-dash-platform-dapi-v0-WaitForStateTransitionResultRequest-WaitForStateTransitionResultRequestV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-WaitForStateTransitionResultRequest-WaitForStateTransitionResultRequestV0"></a>
+
+### WaitForStateTransitionResultRequest.WaitForStateTransitionResultRequestV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| state_transition_hash | [bytes](#bytes) |  |  |
+| prove | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-WaitForStateTransitionResultResponse"></a>
+
+### WaitForStateTransitionResultResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| v0 | [WaitForStateTransitionResultResponse.WaitForStateTransitionResultResponseV0](#org-dash-platform-dapi-v0-WaitForStateTransitionResultResponse-WaitForStateTransitionResultResponseV0) |  |  |
+
+
+
+
+
+
+<a name="org-dash-platform-dapi-v0-WaitForStateTransitionResultResponse-WaitForStateTransitionResultResponseV0"></a>
+
+### WaitForStateTransitionResultResponse.WaitForStateTransitionResultResponseV0
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| error | [StateTransitionBroadcastError](#org-dash-platform-dapi-v0-StateTransitionBroadcastError) |  |  |
+| proof | [Proof](#org-dash-platform-dapi-v0-Proof) |  |  |
+| metadata | [ResponseMetadata](#org-dash-platform-dapi-v0-ResponseMetadata) |  |  |
+
+
+
+
+
+ 
+
+
+<a name="org-dash-platform-dapi-v0-GetProofsRequest-GetProofsRequestV0-IdentityRequest-Type"></a>
+
+### GetProofsRequest.GetProofsRequestV0.IdentityRequest.Type
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| FULL_IDENTITY | 0 |  |
+| BALANCE | 1 |  |
+| KEYS | 2 |  |
+
+
+
+<a name="org-dash-platform-dapi-v0-SecurityLevelMap-KeyKindRequestType"></a>
+
+### SecurityLevelMap.KeyKindRequestType
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| CURRENT_KEY_OF_KIND_REQUEST | 0 |  |
+| ALL_KEYS_OF_KIND_REQUEST | 1 |  |
+
+
+ 
+
+ 
+
+
+<a name="org-dash-platform-dapi-v0-Platform"></a>
+
+### Platform
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| broadcastStateTransition | [BroadcastStateTransitionRequest](#org-dash-platform-dapi-v0-BroadcastStateTransitionRequest) | [BroadcastStateTransitionResponse](#org-dash-platform-dapi-v0-BroadcastStateTransitionResponse) |  |
+| getIdentity | [GetIdentityRequest](#org-dash-platform-dapi-v0-GetIdentityRequest) | [GetIdentityResponse](#org-dash-platform-dapi-v0-GetIdentityResponse) |  |
+| getIdentities | [GetIdentitiesRequest](#org-dash-platform-dapi-v0-GetIdentitiesRequest) | [GetIdentitiesResponse](#org-dash-platform-dapi-v0-GetIdentitiesResponse) |  |
+| getIdentityKeys | [GetIdentityKeysRequest](#org-dash-platform-dapi-v0-GetIdentityKeysRequest) | [GetIdentityKeysResponse](#org-dash-platform-dapi-v0-GetIdentityKeysResponse) |  |
+| getIdentityBalance | [GetIdentityBalanceRequest](#org-dash-platform-dapi-v0-GetIdentityBalanceRequest) | [GetIdentityBalanceResponse](#org-dash-platform-dapi-v0-GetIdentityBalanceResponse) |  |
+| getIdentityBalanceAndRevision | [GetIdentityBalanceAndRevisionRequest](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionRequest) | [GetIdentityBalanceAndRevisionResponse](#org-dash-platform-dapi-v0-GetIdentityBalanceAndRevisionResponse) |  |
+| getProofs | [GetProofsRequest](#org-dash-platform-dapi-v0-GetProofsRequest) | [GetProofsResponse](#org-dash-platform-dapi-v0-GetProofsResponse) |  |
+| getDataContract | [GetDataContractRequest](#org-dash-platform-dapi-v0-GetDataContractRequest) | [GetDataContractResponse](#org-dash-platform-dapi-v0-GetDataContractResponse) |  |
+| getDataContractHistory | [GetDataContractHistoryRequest](#org-dash-platform-dapi-v0-GetDataContractHistoryRequest) | [GetDataContractHistoryResponse](#org-dash-platform-dapi-v0-GetDataContractHistoryResponse) |  |
+| getDataContracts | [GetDataContractsRequest](#org-dash-platform-dapi-v0-GetDataContractsRequest) | [GetDataContractsResponse](#org-dash-platform-dapi-v0-GetDataContractsResponse) |  |
+| getDocuments | [GetDocumentsRequest](#org-dash-platform-dapi-v0-GetDocumentsRequest) | [GetDocumentsResponse](#org-dash-platform-dapi-v0-GetDocumentsResponse) |  |
+| getIdentitiesByPublicKeyHashes | [GetIdentitiesByPublicKeyHashesRequest](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesRequest) | [GetIdentitiesByPublicKeyHashesResponse](#org-dash-platform-dapi-v0-GetIdentitiesByPublicKeyHashesResponse) |  |
+| getIdentityByPublicKeyHash | [GetIdentityByPublicKeyHashRequest](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashRequest) | [GetIdentityByPublicKeyHashResponse](#org-dash-platform-dapi-v0-GetIdentityByPublicKeyHashResponse) |  |
+| waitForStateTransitionResult | [WaitForStateTransitionResultRequest](#org-dash-platform-dapi-v0-WaitForStateTransitionResultRequest) | [WaitForStateTransitionResultResponse](#org-dash-platform-dapi-v0-WaitForStateTransitionResultResponse) |  |
+| getConsensusParams | [GetConsensusParamsRequest](#org-dash-platform-dapi-v0-GetConsensusParamsRequest) | [GetConsensusParamsResponse](#org-dash-platform-dapi-v0-GetConsensusParamsResponse) |  |
+| getProtocolVersionUpgradeState | [GetProtocolVersionUpgradeStateRequest](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateRequest) | [GetProtocolVersionUpgradeStateResponse](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeStateResponse) |  |
+| getProtocolVersionUpgradeVoteStatus | [GetProtocolVersionUpgradeVoteStatusRequest](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusRequest) | [GetProtocolVersionUpgradeVoteStatusResponse](#org-dash-platform-dapi-v0-GetProtocolVersionUpgradeVoteStatusResponse) |  |
+| getEpochsInfo | [GetEpochsInfoRequest](#org-dash-platform-dapi-v0-GetEpochsInfoRequest) | [GetEpochsInfoResponse](#org-dash-platform-dapi-v0-GetEpochsInfoResponse) |  |
+
+ 
+
+
+
+## Scalar Value Types
+
+| .proto Type | Notes | C++ | Java | Python | Go | C# | PHP | Ruby |
+| ----------- | ----- | --- | ---- | ------ | -- | -- | --- | ---- |
+| <a name="double" /> double |  | double | double | float | float64 | double | float | Float |
+| <a name="float" /> float |  | float | float | float | float32 | float | float | Float |
+| <a name="int32" /> int32 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
+| <a name="int64" /> int64 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead. | int64 | long | int/long | int64 | long | integer/string | Bignum |
+| <a name="uint32" /> uint32 | Uses variable-length encoding. | uint32 | int | int/long | uint32 | uint | integer | Bignum or Fixnum (as required) |
+| <a name="uint64" /> uint64 | Uses variable-length encoding. | uint64 | long | int/long | uint64 | ulong | integer/string | Bignum or Fixnum (as required) |
+| <a name="sint32" /> sint32 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
+| <a name="sint64" /> sint64 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s. | int64 | long | int/long | int64 | long | integer/string | Bignum |
+| <a name="fixed32" /> fixed32 | Always four bytes. More efficient than uint32 if values are often greater than 2^28. | uint32 | int | int | uint32 | uint | integer | Bignum or Fixnum (as required) |
+| <a name="fixed64" /> fixed64 | Always eight bytes. More efficient than uint64 if values are often greater than 2^56. | uint64 | long | int/long | uint64 | ulong | integer/string | Bignum |
+| <a name="sfixed32" /> sfixed32 | Always four bytes. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
+| <a name="sfixed64" /> sfixed64 | Always eight bytes. | int64 | long | int/long | int64 | long | integer/string | Bignum |
+| <a name="bool" /> bool |  | bool | boolean | boolean | bool | bool | boolean | TrueClass/FalseClass |
+| <a name="string" /> string | A string must always contain UTF-8 encoded or 7-bit ASCII text. | string | String | str/unicode | string | string | string | String (UTF-8) |
+| <a name="bytes" /> bytes | May contain any arbitrary sequence of bytes. | string | ByteString | str | []byte | ByteString | string | String (ASCII-8BIT) |
+
