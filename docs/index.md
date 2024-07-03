@@ -202,3 +202,12 @@ dapi-client-js/overview
 dapi-client-js/quick-start
 dapi-client-js/usage/usage
 ```
+
+```{toctree}
+:maxdepth: 2
+:titlesonly:
+:caption: Rust SDK
+:hidden:
+
+sdk-rs/quick-start
+```
