@@ -42,28 +42,30 @@ The identity balance topup process works in a similar way to the initial identit
 
 ### Identity Update Process
 
-> 👍
->
-> Added in Dash Platform Protocol v0.23
-
 Identity owners may find it necessary to update their identity keys periodically for security purposes. The [identity update state transition](https://github.com/dashpay/dips/blob/master/dip-0011.md#identity-update-transition) enables users to add new keys and disable existing ones.
 
 Identity updates only require the creation of a state transition that includes a list of keys being added and/or disabled. Platform retains disabled keys so that any existing data they signed can still be verified while preventing them from signing new data.
 
 ### Masternode Identities
 
-Dash Platform v0.22 introduced identities for masternode owners and operators, and a future release will introduce identities for masternode voters. The system automatically creates and updates these identities based on information in the layer 1 masternode registration transactions. For example, owner/operator withdraw keys on Platform are aligned with the keys assigned on the Core blockchain.
+Several features, including voting and reward distribution, are dependent on masternodes reliably having identities. Thus, Dash Platform automatically creates identities for all masternodes using information from Core chain masternode registration transactions.
 
-In a future release, the credits paid as fees for state transitions will be distributed to masternode-related identities similar to how rewards are currently distributed to masternodes on the core blockchain. Credits will be split between owner and operator in the same ratio as on layer 1, and masternode owners will also have the flexibility to further split their portion between multiple identities to support reward-sharing use cases.
+Unique identities are created for the owner, operator, and voting roles, with each one assigned the respective keys found in the masternode list. For example, owner and operator withdraw keys on Platform are set to their payout keys assigned on the Core blockchain. Since these identities are created automatically, their keys can only be modified using [Core masternode update transactions](inv:user:std#update-dip3-config).
+
+#### Voting
+
+All masternodes can use their identities to vote on Platform polls for contested resources. In Platform v1.0, masternode voting is used to resolve cases where multiple identities attempt to register the same [DPNS name](./dpns.md).
+
+#### Reward distribution
+
+Evonodes receive their Platform-specific block rewards and Platform fees with their masternode identity. The credits paid as state transition fees are distributed to masternode-related identities similar to how rewards are currently distributed to masternodes on the core blockchain. Credits are split between owner and operator in the same ratio as on layer 1, and masternode owners have the flexibility to further split their portion between multiple identities to support reward-sharing use cases.
+
+Note: the payout key is associated with the masternode owner identity, so both the owner and payout keys should be controlled by the same party.
 
 ## Credits
 
-> 👍  Added in Dash Platform Protocol v0.13
->
-> DPP v0.13 introduced the initial implementation of credits. Future releases will expand the functionality available.
-
-As mentioned above, credits provide the mechanism for paying fees that cover the cost of platform usage. Once a user locks Dash on the core blockchain and proves ownership of the locked value in an identity create or topup transaction, their credit balance increases by that amount. As they perform platform actions, these credits are deducted to pay the associated fees.
+DPP v0.13 introduced the initial implementation of credits. As mentioned above, credits provide the mechanism for paying fees that cover the cost of platform usage. Once a user locks Dash on the core blockchain and proves ownership of the locked value in an identity create or topup transaction, their credit balance increases by that amount. As they perform platform actions, these credits are deducted to pay the associated fees.
 
 > 📘
 >
-> As of Dash Platform Protocol v0.13, credits deducted to pay state transition fees cannot be converted by masternodes back into Dash. This aspect of the credit system will come in a future release.
+> As of Dash Platform Protocol v1.0, credits deducted to pay state transition fees cannot be converted by masternodes back into Dash. This aspect of the credit system will come in a future release.
