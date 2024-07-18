@@ -29,13 +29,28 @@ To prevent [front-running](https://en.wikipedia.org/wiki/Domain_name_front_runni
 1. Pre-ordering the domain name
 2. Registering the domain name
 
+#### Domain pre-order
+
 In the pre-order phase, the domain name is salted to obscure the actual domain name being registered (e.g. `hash('alice.dash' + salt)`) and submitted to platform. This is done to prevent masternodes from seeing the names being registered and "stealing" them for later resale. Once the pre-order receives a sufficient number of confirmations, the registration can proceed.
+
+#### Domain registration
 
 In the registration phase, the domain name (e.g. `alice.dash`) is once again submitted along with the salt used in the pre-order. The salt serves as proof that the registration is from the user that submitted the pre-order. This registration also references the identity being associated with the domain name to complete the identity-domain link.
 
+### Conflict resolution
+
+Since some names may be popular, the registration process includes a voting mechanism to resolve conflicts when multiple identities request the same name. This is only done for names that meet both of the following conditions:
+
+* Less than 20 characters long (i.e. "alice", "quantumexplorer")
+* Contains no numbers or only contains the number(s) 0 and/or 1 (i.e. "bob", "carol01")
+
+If only one identity requests the name, they will receive it after a one week waiting period. If multiple identities request the name, a weeklong voting period will begin one week after the first request was received. Masternodes and evonodes can vote for one of the identities or vote to lock the request. After voting concludes, the name is either awarded to one of the identities or locked. In Dash Platform v1.0, locked names can no longer be requested or awarded.
+
+Identities requesting contested names must pay a fee (200 credits) to request ownership. This fee is used to cover the masternode voting costs.
+
 ### Implementation
 
-DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashevo/platform/blob/master/packages/dpns-contract/schema/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
+DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashpay/platform/blob/v1.0.0-beta.3/packages/dpns-contract/schema/v1/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
 
 * Maximum length - 63 characters
 * Character set - `0-9`, `-` (hyphen), and `A-Z` (case insensitive)
@@ -44,18 +59,28 @@ DPNS names have several constraints as defined in the [DPNS data contract](https
 
 Additional validation rules related to the `domain` document are enforced by the DPNS [data triggers](../explanations/platform-protocol-data-trigger.md) defined in [rs-drive-abci](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/documents_batch/data_triggers/triggers).
 
-### Contract Diagram
-
-This is a visualization of the JSON data contract as UML class diagram for better understanding of the structure. The left side shows the `domain` document and the right side shows the `preorder` document:
-
 ```{eval-rst}
-.. figure:: ./img/dpns-uml.png
-   :class: no-scaled-link
-   :align: center
-   :width: 90%
-   :alt: DPNS Contract Diagram
+..
+  Commented out info
+  ### Contract Diagram
 
-   DPNS Contract Diagram
+  This is a visualization of the JSON data contract as UML class diagram for better understanding of the structure. The left side shows the `domain` document and the right side shows the `preorder` document:
 ```
 
-View [a full-size copy of this diagram](./img/dpns-uml.png).
+```{eval-rst}
+..
+  Commented out info - obsolete
+  .. figure:: ./img/dpns-uml.png
+    :class: no-scaled-link
+    :align: center
+    :width: 90%
+    :alt: DPNS Contract Diagram
+
+    DPNS Contract Diagram
+```
+
+```{eval-rst}
+..
+  Commented out info - obsolete
+  View [a full-size copy of this diagram](./img/dpns-uml.png).
+```
