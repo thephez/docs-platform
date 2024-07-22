@@ -44,9 +44,11 @@ Since some names may be popular, the registration process includes a voting mech
 * Less than 20 characters long (i.e. "alice", "quantumexplorer")
 * Contains no numbers or only contains the number(s) 0 and/or 1 (i.e. "bob", "carol01")
 
-If only one identity requests the name, they will receive it after a one week waiting period. If multiple identities request the name, a weeklong voting period will begin one week after the first request was received. Masternodes and evonodes can vote for one of the identities or vote to lock the request. After voting concludes, the name is either awarded to one of the identities or locked. In Dash Platform v1.0, locked names can no longer be requested or awarded.
+Identities requesting contested names must pay a fee (200 credits) to cover the masternode voting costs. The voting window begins when a name matching the criteria above is requested and ends after two weeks. Additional identities can request the same name during the first week. Masternodes and evonodes can vote for one of the identities, abstain, or vote to lock the request.
 
-Identities requesting contested names must pay a fee (200 credits) to request ownership. This fee is used to cover the masternode voting costs.
+After voting concludes, the name is either awarded to one of the identities or locked. If the vote locks the name, no identity receives it. Locked names can no longer be requested or awarded in Dash Platform v1.0, but future updates may add unlock capabilities.
+
+Assuming masternodes do not vote to lock, the identity receiving the most votes takes ownership of the name. If only one identity requests the name, they will receive it even if no masternodes vote.
 
 ### Implementation
 
