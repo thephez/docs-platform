@@ -117,6 +117,7 @@ tutorials/contracts-and-documents
 tutorials/send-funds
 tutorials/use-dapi-client-methods
 tutorials/setup-a-node
+tutorials/tui/index
 ```
 
 ```{toctree}
