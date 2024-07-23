@@ -96,10 +96,9 @@ Add the following dependencies to `Cargo.toml`:
 ``` toml
 [dependencies]
 dash-sdk = { git = "https://github.com/dashpay/platform" }
-tokio = { version = "1", features = ["full"] }
-dapi-grpc = { git = "https://github.com/dashpay/platform", features = ["client",] }
-rs-dapi-client = { git = "https://github.com/dashpay/platform" }
 dpp = { git = "https://github.com/dashpay/platform", features = ["client",] }
+rs-dapi-client = { git = "https://github.com/dashpay/platform" }
+tokio = { version = "1", features = ["full"] }
 ```
 
 Open `src/main.rs` and replace the contents with this code:
@@ -107,18 +106,20 @@ Open `src/main.rs` and replace the contents with this code:
 ```rust
 use dash_sdk::{
     platform::{Fetch, Identifier},
+    sdk::Uri,
     Sdk, SdkBuilder,
 };
 use dpp::{
     identity::accessors::IdentityGettersV0, platform_value::string_encoding::Encoding,
     prelude::Identity,
 };
-use rs_dapi_client::{AddressList, Uri};
+use rs_dapi_client::AddressList;
 use std::error::Error;
 
 pub fn setup_sdk() -> Result<Sdk, Box<dyn Error>> {
     let dapi_addresses = "https://52.42.202.128:1443";
     let sdk = SdkBuilder::new(AddressList::from_iter([dapi_addresses.parse::<Uri>()?]))
+        // Update the username and password parameters to match your Core dash.conf values
         .with_core("127.0.0.1", 19998, "user", "pass")
         .build()
         .expect("Failed to build SDK");
@@ -131,7 +132,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let sdk = setup_sdk()?;
 
     let identity_id = Identifier::from_string(
-        "2rEwrPmMBqdYzFwtofrPd8RtMCotcKFxRoATkqqQeW7P",
+        // Replace with the ID of a previously created identity
+        "HiCs4fEtVPQgGETMR5Fy8TnXmidPCV7YqhiH19Q6z8Kf",
         Encoding::Base58,
     )?;
 
@@ -161,7 +163,7 @@ cargo run
 You should see output similar to:
 
 ```text
-Identity id: 2rEwrPmMBqdYzFwtofrPd8RtMCotcKFxRoATkqqQeW7P
+Identity id: HiCs4fEtVPQgGETMR5Fy8TnXmidPCV7YqhiH19Q6z8Kf
 Identity balance: 932523994
 ```
 
@@ -213,7 +215,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     .expect("Failed to build SDK");
 
     let identity_id = Identifier::from_string(
-        "2rEwrPmMBqdYzFwtofrPd8RtMCotcKFxRoATkqqQeW7P",
+        // Replace with the ID of a previously created identity
+        "HiCs4fEtVPQgGETMR5Fy8TnXmidPCV7YqhiH19Q6z8Kf",
         Encoding::Base58,
     )?;
 
@@ -266,9 +269,9 @@ cargo run
 
 You should see output similar to:
 
-```
-Identity fetch result: Ok(GetIdentityResponse { version: Some(V0(GetIdentityResponseV0 { metadata: Some(ResponseMetadata { height: 3545, core_chain_locked_height: 1057533, epoch: 194, time_ms: 1720037818812, protocol_version: 1, chain_id: "dash-testnet-46" }), result: Some(Identity([0, 27, 120, 234, 64, 77, 128, 39, 95, 97, 84, 3, 190, 94, 195, 152, 119, 222, 62, 61, 205, 74, 127, 72, 225, 59, 150, 72, 50, 141, 143, 28, 62, 5, 0, 0, 0, 0, 0, 0, 0, 0, 33, 3, 245, 177, 206, 91, 24, 183, 208, 204, 116, 210, 242, 219, 243, 121, 210, 10, 68, 97, 215, 187, 132, 58, 19, 181, 158, 50, 100, 15, 176, 234, 25, 217, 0, 1, 0, 1, 0, 2, 0, 0, 0, 33, 2, 104, 172, 93, 255, 84, 19, 139, 70, 252, 113, 120, 50, 176, 83, 194, 52, 126, 43, 96, 84, 254, 37, 130, 85, 104, 52, 185, 24, 91, 113, 235, 178, 0, 2, 0, 2, 0, 1, 0, 0, 0, 33, 3, 249, 77, 70, 255, 0, 223, 110, 197, 2, 109, 8, 113, 134, 141, 168, 174, 23, 211, 232, 222, 88, 59, 226, 189, 73, 43, 85, 11, 157, 27, 65, 199, 0, 3, 0, 3, 3, 1, 0, 0, 0, 33, 2, 244, 30, 16, 91, 151, 102, 49, 150, 212, 147, 93, 14, 112, 139, 176, 68, 241, 49, 95, 207, 238, 146, 176, 115, 53, 108, 7, 228, 237, 103, 13, 227, 0, 4, 0, 4, 0, 3, 0, 0, 0, 33, 3, 178, 111, 125, 30, 123, 61, 172, 86, 142, 6, 184, 161, 236, 83, 52, 10, 100, 169, 210, 150, 84, 61, 164, 190, 201, 62, 104, 218, 191, 7, 118, 57, 1, 253, 0, 0, 1, 144, 85, 175, 57, 216, 252, 55, 149, 47, 218, 2])) })) })
-Identity bytes: [0, 27, 120, 234, 64, 77, 128, 39, 95, 97, 84, 3, 190, 94, 195, 152, 119, 222, 62, 61, 205, 74, 127, 72, 225, 59, 150, 72, 50, 141, 143, 28, 62, 5, 0, 0, 0, 0, 0, 0, 0, 0, 33, 3, 245, 177, 206, 91, 24, 183, 208, 204, 116, 210, 242, 219, 243, 121, 210, 10, 68, 97, 215, 187, 132, 58, 19, 181, 158, 50, 100, 15, 176, 234, 25, 217, 0, 1, 0, 1, 0, 2, 0, 0, 0, 33, 2, 104, 172, 93, 255, 84, 19, 139, 70, 252, 113, 120, 50, 176, 83, 194, 52, 126, 43, 96, 84, 254, 37, 130, 85, 104, 52, 185, 24, 91, 113, 235, 178, 0, 2, 0, 2, 0, 1, 0, 0, 0, 33, 3, 249, 77, 70, 255, 0, 223, 110, 197, 2, 109, 8, 113, 134, 141, 168, 174, 23, 211, 232, 222, 88, 59, 226, 189, 73, 43, 85, 11, 157, 27, 65, 199, 0, 3, 0, 3, 3, 1, 0, 0, 0, 33, 2, 244, 30, 16, 91, 151, 102, 49, 150, 212, 147, 93, 14, 112, 139, 176, 68, 241, 49, 95, 207, 238, 146, 176, 115, 53, 108, 7, 228, 237, 103, 13, 227, 0, 4, 0, 4, 0, 3, 0, 0, 0, 33, 3, 178, 111, 125, 30, 123, 61, 172, 86, 142, 6, 184, 161, 236, 83, 52, 10, 100, 169, 210, 150, 84, 61, 164, 190, 201, 62, 104, 218, 191, 7, 118, 57, 1, 253, 0, 0, 1, 144, 85, 175, 57, 216, 252, 55, 149, 47, 218, 2]
+```text
+Identity fetch result: Ok(GetIdentityResponse { version: Some(V0(GetIdentityResponseV0 { metadata: Some(ResponseMetadata { height: 2708, core_chain_locked_height: 1069713, epoch: 141, time_ms: 1721747660363, protocol_version: 1, chain_id: "dash-testnet-47" }), result: Some(Identity([0, 248, 73, 55, 187, 179, 2, 208, 226, 193, 60, 251, 127, 202, 201, 181, 51, 29, 158, 220, 75, 231, 210, 170, 54, 27, 19, 61, 159, 186, 248, 97, 206, 5, 0, 0, 0, 0, 0, 0, 0, 0, 33, 3, 119, 203, 119, 226, 18, 167, 211, 196, 50, 203, 3, 117, 225, 31, 76, 160, 111, 140, 92, 52, 83, 2, 96, 212, 249, 71, 123, 87, 205, 27, 192, 182, 0, 1, 0, 1, 0, 2, 0, 0, 0, 33, 3, 56, 77, 243, 20, 16, 105, 69, 199, 84, 119, 140, 151, 231, 62, 18, 193, 89, 84, 185, 46, 126, 190, 107, 62, 183, 53, 188, 133, 165, 16, 151, 154, 0, 2, 0, 2, 0, 1, 0, 0, 0, 33, 2, 208, 58, 73, 170, 43, 52, 241, 248, 142, 48, 230, 54, 102, 106, 97, 182, 10, 206, 0, 55, 247, 88, 45, 205, 119, 209, 194, 234, 99, 203, 147, 8, 0, 3, 0, 3, 3, 1, 0, 0, 0, 33, 3, 84, 46, 195, 16, 171, 134, 40, 27, 101, 183, 31, 2, 16, 139, 184, 51, 3, 58, 166, 201, 181, 27, 217, 255, 58, 198, 35, 61, 29, 76, 211, 97, 0, 4, 0, 4, 0, 3, 0, 0, 0, 33, 3, 175, 53, 236, 245, 214, 227, 67, 39, 97, 215, 166, 6, 153, 198, 188, 132, 160, 227, 138, 114, 206, 39, 232, 215, 38, 230, 130, 85, 129, 71, 90, 153, 1, 253, 0, 0, 1, 144, 219, 194, 139, 188, 252, 59, 62, 20, 78, 2])) })) })
+Identity bytes: [0, 248, 73, 55, 187, 179, 2, 208, 226, 193, 60, 251, 127, 202, 201, 181, 51, 29, 158, 220, 75, 231, 210, 170, 54, 27, 19, 61, 159, 186, 248, 97, 206, 5, 0, 0, 0, 0, 0, 0, 0, 0, 33, 3, 119, 203, 119, 226, 18, 167, 211, 196, 50, 203, 3, 117, 225, 31, 76, 160, 111, 140, 92, 52, 83, 2, 96, 212, 249, 71, 123, 87, 205, 27, 192, 182, 0, 1, 0, 1, 0, 2, 0, 0, 0, 33, 3, 56, 77, 243, 20, 16, 105, 69, 199, 84, 119, 140, 151, 231, 62, 18, 193, 89, 84, 185, 46, 126, 190, 107, 62, 183, 53, 188, 133, 165, 16, 151, 154, 0, 2, 0, 2, 0, 1, 0, 0, 0, 33, 2, 208, 58, 73, 170, 43, 52, 241, 248, 142, 48, 230, 54, 102, 106, 97, 182, 10, 206, 0, 55, 247, 88, 45, 205, 119, 209, 194, 234, 99, 203, 147, 8, 0, 3, 0, 3, 3, 1, 0, 0, 0, 33, 3, 84, 46, 195, 16, 171, 134, 40, 27, 101, 183, 31, 2, 16, 139, 184, 51, 3, 58, 166, 201, 181, 27, 217, 255, 58, 198, 35, 61, 29, 76, 211, 97, 0, 4, 0, 4, 0, 3, 0, 0, 0, 33, 3, 175, 53, 236, 245, 214, 227, 67, 39, 97, 215, 166, 6, 153, 198, 188, 132, 160, 227, 138, 114, 206, 39, 232, 215, 38, 230, 130, 85, 129, 71, 90, 153, 1, 253, 0, 0, 1, 144, 219, 194, 139, 188, 252, 59, 62, 20, 78, 2]
 Protocol version: 1
 Identity fetched successfully.
 ```
