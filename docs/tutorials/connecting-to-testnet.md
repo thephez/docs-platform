@@ -21,7 +21,7 @@ Platform services are provided via a combination of HTTP and gRPC connections to
 The JavaScript SDK package is available from npmjs.com and can be installed by running `npm install dash` from the command line:
 
 ```shell
-npm install dash@4.0.0-beta.3
+npm install dash@4.0.0-rc
 ```
 
 ### 2. Connect to Dash Platform
