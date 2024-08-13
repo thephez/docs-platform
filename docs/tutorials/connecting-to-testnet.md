@@ -8,7 +8,7 @@ The purpose of this tutorial is to walk through the steps necessary to access th
 
 ## Overview
 
-Platform services are provided via a combination of HTTP and gRPC connections to DAPI, and some connections to an Insight API. Although one could interact with DAPI by connecting to these directly, or by using [DAPI-client](https://github.com/dashevo/platform/tree/master/packages/js-dapi-client), the easiest approach is to use the [JavaScript Dash SDK](https://github.com/dashevo/platform/tree/master/packages/js-dash-sdk). The Dash SDK connects to the testnet by default.
+Platform services are provided via a combination of HTTP and gRPC connections to DAPI, and some connections to an Insight API. Although one could interact with DAPI by connecting to these directly, or by using [DAPI-client](https://github.com/dashpay/platform/tree/master/packages/js-dapi-client), the easiest approach is to use the [JavaScript Dash SDK](https://github.com/dashpay/platform/tree/master/packages/js-dash-sdk). The Dash SDK connects to the testnet by default.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ Platform services are provided via a combination of HTTP and gRPC connections to
 The JavaScript SDK package is available from npmjs.com and can be installed by running `npm install dash` from the command line:
 
 ```shell
-npm install dash@4.0.0-rc
+npm install dash@~4.0.0
 ```
 
 ### 2. Connect to Dash Platform
@@ -98,9 +98,9 @@ connect()
 
 ## Connect Directly to DAPI (Optional)
 
-> 🚧 Advanced Topic
->
-> Normally, the Dash SDK, dapi-client, or another library should be used to interact with DAPI. This may be helpful for debugging in some cases, but generally is not required.
+:::{attention}
+Normally, the Dash SDK, dapi-client, or another library should be used to interact with DAPI. Connecting directly may be helpful for debugging in some cases, but generally is not required.
+:::
 
 The example below demonstrates retrieving the hash of the best block hash directly from a DAPI node via command line and several languages:
 
