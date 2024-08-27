@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Version"],"mod":["get_prefunded_specialized_balance_response_v0"],"struct":["GetPrefundedSpecializedBalanceResponseV0"]};

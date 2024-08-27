@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["document_request","identity_request","vote_status_request"],"struct":["ContractRequest","DocumentRequest","IdentityRequest","VoteStatusRequest"]};

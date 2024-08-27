@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Version"],"mod":["get_total_credits_in_platform_response_v0"],"struct":["GetTotalCreditsInPlatformResponseV0"]};

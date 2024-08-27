@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Result"],"mod":["resource_vote_choice"],"struct":["ContestedResourceIdentityVote","ContestedResourceIdentityVotes","ResourceVoteChoice"]};
