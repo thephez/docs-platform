@@ -77,10 +77,15 @@
 <a href="#76" id="76">76</a>
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Definitions of errors
 </span><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::time::Duration;
 
+<span class="kw">use </span>dapi_grpc::mock::Mockable;
 <span class="kw">use </span>dpp::version::PlatformVersionError;
 <span class="kw">use </span>dpp::ProtocolError;
 <span class="kw">use </span>rs_dapi_client::DapiClientError;
@@ -124,8 +129,11 @@
     <span class="doccomment">/// Dependency not found, for example data contract for a document not found
     </span><span class="attr">#[error(<span class="string">"Required {0} not found: {1}"</span>)]
     </span>MissingDependency(String, String),
+    <span class="doccomment">/// Total credits in Platform are not found; we must always have credits in Platform
+    </span><span class="attr">#[error(<span class="string">"Total credits in Platform are not found; it should never happen"</span>)]
+    </span>TotalCreditsNotFound,
     <span class="doccomment">/// Epoch not found; we must have at least one epoch
-    </span><span class="attr">#[error(<span class="string">"No epoch found on the Platform; it should never happen"</span>)]
+    </span><span class="attr">#[error(<span class="string">"No epoch found on Platform; it should never happen"</span>)]
     </span>EpochNotFound,
     <span class="doccomment">/// SDK operation timeout reached error
     </span><span class="attr">#[error(<span class="string">"SDK operation timeout {} secs reached: {1}"</span>, .<span class="number">0</span>.as_secs())]
@@ -144,7 +152,7 @@
     </span>Cancelled(String),
 }
 
-<span class="kw">impl</span>&lt;T: Debug&gt; From&lt;DapiClientError&lt;T&gt;&gt; <span class="kw">for </span>Error {
+<span class="kw">impl</span>&lt;T: Debug + Mockable&gt; From&lt;DapiClientError&lt;T&gt;&gt; <span class="kw">for </span>Error {
     <span class="kw">fn </span>from(value: DapiClientError&lt;T&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::DapiClientError(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, value))
     }

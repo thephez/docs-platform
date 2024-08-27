@@ -88,40 +88,23 @@
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Epoch-related types and helpers
 </span><span class="kw">use </span>async_trait::async_trait;
-<span class="kw">use </span>dapi_grpc::platform::v0::{GetEpochsInfoRequest, ResponseMetadata};
+<span class="kw">use </span>dapi_grpc::platform::v0::{GetEpochsInfoRequest, Proof, ResponseMetadata};
 <span class="kw">use </span>dpp::block::{epoch::EpochIndex, extended_epoch_info::ExtendedEpochInfo};
 
+<span class="kw">use </span><span class="kw">crate</span>::platform::fetch_current_no_parameters::FetchCurrent;
 <span class="kw">use crate</span>::{
     platform::{Fetch, LimitQuery, Query},
     Error, Sdk,
 };
 
 <span class="attr">#[async_trait]
-
-</span><span class="doccomment">/// Helper trait for managing Epoch information
-</span><span class="kw">pub trait </span>ExtendedEpochInfoEx: Sized {
-    <span class="doccomment">/// Fetch current (the latest) epoch from the platform.
-    </span><span class="kw">async fn </span>fetch_current(sdk: <span class="kw-2">&amp;</span>Sdk) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt;;
-    <span class="doccomment">/// Fetch current (the latest) epoch from the platform with metadata.
-    </span><span class="kw">async fn </span>fetch_current_with_metadata(sdk: <span class="kw-2">&amp;</span>Sdk) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, ResponseMetadata), Error&gt;;
-}
-
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ExtendedEpochInfoEx <span class="kw">for </span>ExtendedEpochInfo {
+</span><span class="kw">impl </span>FetchCurrent <span class="kw">for </span>ExtendedEpochInfo {
     <span class="kw">async fn </span>fetch_current(sdk: <span class="kw-2">&amp;</span>Sdk) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
-        <span class="kw">let </span>query = LimitQuery {
-            query: EpochQuery {
-                start: <span class="prelude-val">None</span>,
-                ascending: <span class="bool-val">false</span>,
-            },
-            limit: <span class="prelude-val">Some</span>(<span class="number">1</span>),
-        };
-
-        <span class="kw">let </span>epoch = <span class="self">Self</span>::fetch(sdk, query).<span class="kw">await</span><span class="question-mark">?</span>;
-
-        epoch.ok_or(Error::EpochNotFound)
+        <span class="kw">let </span>(epoch, <span class="kw">_</span>) = <span class="self">Self</span>::fetch_current_with_metadata(sdk).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(epoch)
     }
 
     <span class="kw">async fn </span>fetch_current_with_metadata(sdk: <span class="kw-2">&amp;</span>Sdk) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, ResponseMetadata), Error&gt; {
@@ -131,14 +114,33 @@
                 ascending: <span class="bool-val">false</span>,
             },
             limit: <span class="prelude-val">Some</span>(<span class="number">1</span>),
+            start_info: <span class="prelude-val">None</span>,
         };
 
         <span class="kw">let </span>(epoch, metadata) = <span class="self">Self</span>::fetch_with_metadata(sdk, query, <span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>((epoch.ok_or(Error::EpochNotFound)<span class="question-mark">?</span>, metadata))
     }
+
+    <span class="kw">async fn </span>fetch_current_with_metadata_and_proof(
+        sdk: <span class="kw-2">&amp;</span>Sdk,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, ResponseMetadata, Proof), Error&gt; {
+        <span class="kw">let </span>query = LimitQuery {
+            query: EpochQuery {
+                start: <span class="prelude-val">None</span>,
+                ascending: <span class="bool-val">false</span>,
+            },
+            limit: <span class="prelude-val">Some</span>(<span class="number">1</span>),
+            start_info: <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">let </span>(epoch, metadata, proof) =
+            <span class="self">Self</span>::fetch_with_metadata_and_proof(sdk, query, <span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>((epoch.ok_or(Error::EpochNotFound)<span class="question-mark">?</span>, metadata, proof))
+    }
 }
-<span class="doccomment">/// Query used to fetch multiple epochs from the platform.
+<span class="doccomment">/// Query used to fetch multiple epochs from Platform.
 </span><span class="attr">#[derive(Clone, Debug)]
 </span><span class="kw">pub struct </span>EpochQuery {
     <span class="doccomment">/// Starting number of epoch to fetch.
@@ -147,8 +149,8 @@
     ///
     /// Value of `None` has the following meaning:
     ///
-    /// * if ascending is true, then it is the first epoch on the Platform (eg. epoch 0).
-    /// * if ascending is false, then it is the last epoch on the Platform (eg. most recent epoch).
+    /// * if ascending is true, then it is the first epoch on Platform (eg. epoch 0).
+    /// * if ascending is false, then it is the last epoch on Platform (eg. most recent epoch).
     </span><span class="kw">pub </span>start: <span class="prelude-ty">Option</span>&lt;EpochIndex&gt;,
     <span class="doccomment">/// Sort order. Default is ascending (true), which means that the first returned epoch is the oldest one.
     </span><span class="kw">pub </span>ascending: bool,

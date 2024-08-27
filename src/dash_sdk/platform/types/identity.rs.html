@@ -145,10 +145,14 @@
 <a href="#144" id="144">144</a>
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
-<a href="#147" id="147">147</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Identity related types and functions
 
-</span><span class="kw">use </span>dapi_grpc::platform::v0::get_identity_balance_and_revision_request::GetIdentityBalanceAndRevisionRequestV0;
+</span><span class="kw">use </span><span class="kw">crate</span>::delegate_enum;
+<span class="kw">use crate</span>::{
+    platform::{proto, Query},
+    Error,
+};
+<span class="kw">use </span>dapi_grpc::platform::v0::get_identity_balance_and_revision_request::GetIdentityBalanceAndRevisionRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_balance_request::GetIdentityBalanceRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_by_public_key_hash_request::GetIdentityByPublicKeyHashRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_contract_nonce_request::GetIdentityContractNonceRequestV0;
@@ -162,12 +166,6 @@
     GetIdentityNonceRequest, GetIdentityRequest, ResponseMetadata,
 };
 <span class="kw">use </span>dpp::prelude::Identity;
-
-<span class="kw">use </span><span class="kw">crate</span>::delegate_enum;
-<span class="kw">use crate</span>::{
-    platform::{proto, Query},
-    Error,
-};
 
 <span class="comment">// Create enum [IdentityRequest] and [IdentityResponse] that will wrap all possible
 // request/response types for [Identity] object.

@@ -755,13 +755,119 @@
 <a href="#754" id="754">754</a>
 <a href="#755" id="755">755</a>
 <a href="#756" id="756">756</a>
+<a href="#757" id="757">757</a>
+<a href="#758" id="758">758</a>
+<a href="#759" id="759">759</a>
+<a href="#760" id="760">760</a>
+<a href="#761" id="761">761</a>
+<a href="#762" id="762">762</a>
+<a href="#763" id="763">763</a>
+<a href="#764" id="764">764</a>
+<a href="#765" id="765">765</a>
+<a href="#766" id="766">766</a>
+<a href="#767" id="767">767</a>
+<a href="#768" id="768">768</a>
+<a href="#769" id="769">769</a>
+<a href="#770" id="770">770</a>
+<a href="#771" id="771">771</a>
+<a href="#772" id="772">772</a>
+<a href="#773" id="773">773</a>
+<a href="#774" id="774">774</a>
+<a href="#775" id="775">775</a>
+<a href="#776" id="776">776</a>
+<a href="#777" id="777">777</a>
+<a href="#778" id="778">778</a>
+<a href="#779" id="779">779</a>
+<a href="#780" id="780">780</a>
+<a href="#781" id="781">781</a>
+<a href="#782" id="782">782</a>
+<a href="#783" id="783">783</a>
+<a href="#784" id="784">784</a>
+<a href="#785" id="785">785</a>
+<a href="#786" id="786">786</a>
+<a href="#787" id="787">787</a>
+<a href="#788" id="788">788</a>
+<a href="#789" id="789">789</a>
+<a href="#790" id="790">790</a>
+<a href="#791" id="791">791</a>
+<a href="#792" id="792">792</a>
+<a href="#793" id="793">793</a>
+<a href="#794" id="794">794</a>
+<a href="#795" id="795">795</a>
+<a href="#796" id="796">796</a>
+<a href="#797" id="797">797</a>
+<a href="#798" id="798">798</a>
+<a href="#799" id="799">799</a>
+<a href="#800" id="800">800</a>
+<a href="#801" id="801">801</a>
+<a href="#802" id="802">802</a>
+<a href="#803" id="803">803</a>
+<a href="#804" id="804">804</a>
+<a href="#805" id="805">805</a>
+<a href="#806" id="806">806</a>
+<a href="#807" id="807">807</a>
+<a href="#808" id="808">808</a>
+<a href="#809" id="809">809</a>
+<a href="#810" id="810">810</a>
+<a href="#811" id="811">811</a>
+<a href="#812" id="812">812</a>
+<a href="#813" id="813">813</a>
+<a href="#814" id="814">814</a>
+<a href="#815" id="815">815</a>
+<a href="#816" id="816">816</a>
+<a href="#817" id="817">817</a>
+<a href="#818" id="818">818</a>
+<a href="#819" id="819">819</a>
+<a href="#820" id="820">820</a>
+<a href="#821" id="821">821</a>
+<a href="#822" id="822">822</a>
+<a href="#823" id="823">823</a>
+<a href="#824" id="824">824</a>
+<a href="#825" id="825">825</a>
+<a href="#826" id="826">826</a>
+<a href="#827" id="827">827</a>
+<a href="#828" id="828">828</a>
+<a href="#829" id="829">829</a>
+<a href="#830" id="830">830</a>
+<a href="#831" id="831">831</a>
+<a href="#832" id="832">832</a>
+<a href="#833" id="833">833</a>
+<a href="#834" id="834">834</a>
+<a href="#835" id="835">835</a>
+<a href="#836" id="836">836</a>
+<a href="#837" id="837">837</a>
+<a href="#838" id="838">838</a>
+<a href="#839" id="839">839</a>
+<a href="#840" id="840">840</a>
+<a href="#841" id="841">841</a>
+<a href="#842" id="842">842</a>
+<a href="#843" id="843">843</a>
+<a href="#844" id="844">844</a>
+<a href="#845" id="845">845</a>
+<a href="#846" id="846">846</a>
+<a href="#847" id="847">847</a>
+<a href="#848" id="848">848</a>
+<a href="#849" id="849">849</a>
+<a href="#850" id="850">850</a>
+<a href="#851" id="851">851</a>
+<a href="#852" id="852">852</a>
+<a href="#853" id="853">853</a>
+<a href="#854" id="854">854</a>
+<a href="#855" id="855">855</a>
+<a href="#856" id="856">856</a>
+<a href="#857" id="857">857</a>
+<a href="#858" id="858">858</a>
+<a href="#859" id="859">859</a>
+<a href="#860" id="860">860</a>
+<a href="#861" id="861">861</a>
+<a href="#862" id="862">862</a>
+<a href="#863" id="863">863</a>
+<a href="#864" id="864">864</a>
+<a href="#865" id="865">865</a>
+<a href="#866" id="866">866</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! [Sdk] entrypoint to Dash Platform.
 
-</span><span class="kw">use </span>std::collections::btree_map::Entry;
-<span class="kw">use </span>std::sync::Arc;
-<span class="kw">use </span>std::{fmt::Debug, num::NonZeroUsize};
-
-<span class="kw">use </span><span class="kw">crate</span>::error::Error;
+</span><span class="kw">use </span><span class="kw">crate</span>::error::Error;
 <span class="kw">use </span><span class="kw">crate</span>::internal_cache::InternalSdkCache;
 <span class="kw">use </span><span class="kw">crate</span>::mock::MockResponse;
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
@@ -769,10 +875,14 @@
 <span class="kw">use </span><span class="kw">crate</span>::platform::transition::put_settings::PutSettings;
 <span class="kw">use </span><span class="kw">crate</span>::platform::{Fetch, Identifier};
 <span class="kw">use </span>dapi_grpc::mock::Mockable;
-<span class="kw">use </span>dapi_grpc::platform::v0::ResponseMetadata;
+<span class="kw">use </span>dapi_grpc::platform::v0::{Proof, ResponseMetadata};
+<span class="kw">use </span>dpp::bincode;
+<span class="kw">use </span>dpp::bincode::error::DecodeError;
+<span class="kw">use </span>dpp::dashcore::Network;
 <span class="kw">use </span>dpp::identity::identity_nonce::IDENTITY_NONCE_VALUE_FILTER;
 <span class="kw">use </span>dpp::prelude::IdentityNonce;
 <span class="kw">use </span>dpp::version::{PlatformVersion, PlatformVersionCurrentVersion};
+<span class="kw">use </span>drive::grovedb::operations::proof::GroveDBProof;
 <span class="kw">use </span>drive_proof_verifier::types::{IdentityContractNonceFetcher, IdentityNonceFetcher};
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
 </span><span class="kw">use </span>drive_proof_verifier::MockContextProvider;
@@ -786,8 +896,13 @@
     transport::{TransportClient, TransportRequest},
     DapiClient, DapiClientError, DapiRequestExecutor,
 };
+<span class="kw">use </span>std::collections::btree_map::Entry;
+<span class="kw">use </span>std::fmt::Debug;
+<span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
+</span><span class="kw">use </span>std::num::NonZeroUsize;
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
 </span><span class="kw">use </span>std::path::{Path, PathBuf};
+<span class="kw">use </span>std::sync::Arc;
 <span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
 </span><span class="kw">use </span>tokio::sync::{Mutex, MutexGuard};
@@ -833,8 +948,10 @@
 /// See tests/ for examples of using the SDK.
 </span><span class="attr">#[derive(Clone)]
 </span><span class="kw">pub struct </span>Sdk {
+    <span class="doccomment">/// The network that the sdk is configured for (Dash (mainnet), Testnet, Devnet, Regtest)  
+    </span><span class="kw">pub </span>network: Network,
     inner: SdkInstance,
-    <span class="doccomment">/// Use proofs when retrieving data from the platform.
+    <span class="doccomment">/// Use proofs when retrieving data from Platform.
     ///
     /// This is set to `true` by default. `false` is not implemented yet.
     </span>proofs: bool,
@@ -958,15 +1075,62 @@
             .ok_or(drive_proof_verifier::Error::ContextProviderNotSet)<span class="question-mark">?</span>;
 
         <span class="kw">match </span><span class="self">self</span>.inner {
-            SdkInstance::Dapi { .. } =&gt; {
-                O::maybe_from_proof_with_metadata(request, response, <span class="self">self</span>.version(), <span class="kw-2">&amp;</span>provider)
+            SdkInstance::Dapi { .. } =&gt; O::maybe_from_proof_with_metadata(
+                request,
+                response,
+                <span class="self">self</span>.network,
+                <span class="self">self</span>.version(),
+                <span class="kw-2">&amp;</span>provider,
+            )
+            .map(|(a, b, <span class="kw">_</span>)| (a, b)),
+            <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
+            </span>SdkInstance::Mock { <span class="kw-2">ref </span>mock, .. } =&gt; {
+                <span class="kw">let </span>guard = mock.lock().<span class="kw">await</span>;
+                guard
+                    .parse_proof_with_metadata(request, response)
+                    .map(|(a, b, <span class="kw">_</span>)| (a, b))
             }
+        }
+    }
+
+    <span class="doccomment">/// Retrieve object `O` from proof contained in `request` (of type `R`) and `response`.
+    ///
+    /// This method is used to retrieve objects from proofs returned by Dash Platform.
+    ///
+    /// ## Generic Parameters
+    ///
+    /// - `R`: Type of the request that was used to fetch the proof.
+    /// - `O`: Type of the object to be retrieved from the proof.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">async fn </span>parse_proof_with_metadata_and_proof&lt;R, O: FromProof&lt;R&gt; + MockResponse&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        request: O::Request,
+        response: O::Response,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;O&gt;, ResponseMetadata, Proof), drive_proof_verifier::Error&gt;
+    <span class="kw">where
+        </span>O::Request: Mockable,
+    {
+        <span class="kw">let </span>provider = <span class="self">self
+            </span>.context_provider
+            .as_ref()
+            .ok_or(drive_proof_verifier::Error::ContextProviderNotSet)<span class="question-mark">?</span>;
+
+        <span class="kw">match </span><span class="self">self</span>.inner {
+            SdkInstance::Dapi { .. } =&gt; O::maybe_from_proof_with_metadata(
+                request,
+                response,
+                <span class="self">self</span>.network,
+                <span class="self">self</span>.version(),
+                <span class="kw-2">&amp;</span>provider,
+            ),
             <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
             </span>SdkInstance::Mock { <span class="kw-2">ref </span>mock, .. } =&gt; {
                 <span class="kw">let </span>guard = mock.lock().<span class="kw">await</span>;
                 guard.parse_proof_with_metadata(request, response)
             }
         }
+    }
+    <span class="kw">pub fn </span>context_provider(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>ContextProvider&gt; {
+        <span class="self">self</span>.context_provider.as_ref().map(Arc::clone)
     }
 
     <span class="doccomment">/// Returns a mutable reference to the `MockDashPlatformSdk` instance.
@@ -1230,17 +1394,6 @@
     }
 }
 
-<span class="attr">#[async_trait::async_trait]
-</span><span class="kw">impl </span>DapiRequestExecutor <span class="kw">for </span><span class="kw-2">&amp;</span>Sdk {
-    <span class="kw">async fn </span>execute&lt;R: TransportRequest&gt;(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        request: R,
-        settings: RequestSettings,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;R::Response, DapiClientError&lt;&lt;R::Client <span class="kw">as </span>TransportClient&gt;::Error&gt;&gt; {
-        DapiRequestExecutor::execute(<span class="self">self</span>, request, settings).<span class="kw">await
-    </span>}
-}
-
 <span class="doccomment">/// Dash Platform SDK Builder, used to configure and [`SdkBuilder::build()`] the [Sdk].
 ///
 /// [SdkBuilder] implements a "builder" design pattern to allow configuration of the Sdk before it is instantiated.
@@ -1260,6 +1413,8 @@
     </span>addresses: <span class="prelude-ty">Option</span>&lt;AddressList&gt;,
     settings: RequestSettings,
 
+    network: Network,
+
     core_ip: String,
     core_port: u16,
     core_user: String,
@@ -1271,9 +1426,13 @@
     <span class="doccomment">/// Platform version to use in this Sdk
     </span>version: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>PlatformVersion,
 
-    <span class="doccomment">/// Cache settings
+    <span class="doccomment">/// Cache size for data contracts. Used by mock [GrpcContextProvider].
+    </span><span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
     </span>data_contract_cache_size: NonZeroUsize,
-    quorum_public_keys_cache_size: NonZeroUsize,
+
+    <span class="doccomment">/// Cache size for quorum public keys. Used by mock [GrpcContextProvider].
+    </span><span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
+    </span>quorum_public_keys_cache_size: NonZeroUsize,
 
     <span class="doccomment">/// Context provider used by the SDK.
     </span>context_provider: <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>ContextProvider&gt;&gt;,
@@ -1292,6 +1451,7 @@
         <span class="self">Self </span>{
             addresses: <span class="prelude-val">None</span>,
             settings: RequestSettings::default(),
+            network: Network::Dash,
             core_ip: <span class="string">""</span>.to_string(),
             core_port: <span class="number">0</span>,
             core_password: <span class="string">""</span>.to_string(),
@@ -1299,9 +1459,11 @@
 
             proofs: <span class="bool-val">true</span>,
 
-            data_contract_cache_size: NonZeroUsize::new(DEFAULT_CONTRACT_CACHE_SIZE)
+            <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
+            </span>data_contract_cache_size: NonZeroUsize::new(DEFAULT_CONTRACT_CACHE_SIZE)
                 .expect(<span class="string">"data conttact cache size must be positive"</span>),
-            quorum_public_keys_cache_size: NonZeroUsize::new(DEFAULT_QUORUM_PUBLIC_KEYS_CACHE_SIZE)
+            <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
+            </span>quorum_public_keys_cache_size: NonZeroUsize::new(DEFAULT_QUORUM_PUBLIC_KEYS_CACHE_SIZE)
                 .expect(<span class="string">"quorum public keys cache size must be positive"</span>),
 
             context_provider: <span class="prelude-val">None</span>,
@@ -1350,6 +1512,14 @@
             <span class="string">"Mainnet address list not implemented yet. Use new() and provide address list."
         </span>)
     }
+
+    <span class="doccomment">/// Configure network type.
+    ///
+    /// Defaults to Network::Dash which is mainnet.
+    </span><span class="kw">pub fn </span>with_network(<span class="kw-2">mut </span><span class="self">self</span>, network: Network) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.network = network;
+        <span class="self">self
+    </span>}
 
     <span class="doccomment">/// Configure request settings.
     ///
@@ -1418,8 +1588,7 @@
     /// This function will create the directory if it does not exist and save dumps of
     /// * all requests and responses - in files named `msg-*.json`
     /// * retrieved quorum public keys - in files named `quorum_pubkey-*.json`
-    ///
-    /// Data is saved in JSON format.
+    /// * retrieved data contracts - in files named `data_contract-*.json`
     ///
     /// These files can be used together with [MockDashPlatformSdk] to replay the requests and responses.
     /// See [MockDashPlatformSdk::load_expectations()] for more information.
@@ -1448,7 +1617,9 @@
                 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
                 </span><span class="kw">let </span>dapi = dapi.dump_dir(<span class="self">self</span>.dump_dir.clone());
 
-                <span class="kw">let </span><span class="kw-2">mut </span>sdk= Sdk{
+                <span class="attr">#[allow(unused_mut)] </span><span class="comment">// needs to be mutable for #[cfg(feature = "mocks")]
+                </span><span class="kw">let </span><span class="kw-2">mut </span>sdk= Sdk{
+                    network: <span class="self">self</span>.network,
                     inner:SdkInstance::Dapi { dapi,  version:<span class="self">self</span>.version },
                     proofs:<span class="self">self</span>.proofs,
                     context_provider: <span class="self">self</span>.context_provider.map(Arc::new),
@@ -1464,15 +1635,18 @@
                         <span class="macro">tracing::warn!</span>(<span class="string">"ContextProvider not set; mocking with Dash Core. \
                         Please provide your own ContextProvider with SdkBuilder::with_context_provider()."</span>);
 
-                        <span class="kw">let </span><span class="kw-2">mut </span>context_provider = GrpcContextProvider::new(<span class="prelude-val">Some</span>(sdk.clone()),
-                        <span class="kw-2">&amp;</span><span class="self">self</span>.core_ip, <span class="self">self</span>.core_port, <span class="kw-2">&amp;</span><span class="self">self</span>.core_user, <span class="kw-2">&amp;</span><span class="self">self</span>.core_password,
-                        <span class="self">self</span>.data_contract_cache_size, <span class="self">self</span>.quorum_public_keys_cache_size)<span class="question-mark">?</span>;
+                        <span class="kw">let </span><span class="kw-2">mut </span>context_provider = GrpcContextProvider::new(<span class="prelude-val">None</span>,
+                            <span class="kw-2">&amp;</span><span class="self">self</span>.core_ip, <span class="self">self</span>.core_port, <span class="kw-2">&amp;</span><span class="self">self</span>.core_user, <span class="kw-2">&amp;</span><span class="self">self</span>.core_password,
+                            <span class="self">self</span>.data_contract_cache_size, <span class="self">self</span>.quorum_public_keys_cache_size)<span class="question-mark">?</span>;
                         <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
                         </span><span class="kw">if </span>sdk.dump_dir.is_some() {
                             context_provider.set_dump_dir(sdk.dump_dir.clone());
                         }
-
-                        sdk.context_provider.replace(Arc::new(Box::new(context_provider)));
+                        <span class="comment">// We have cyclical dependency Sdk &lt;-&gt; GrpcContextProvider, so we just do some
+                        // workaround using additional Arc.
+                        </span><span class="kw">let </span>context_provider= Arc::new(context_provider);
+                        sdk.context_provider.replace(Arc::new(Box::new(context_provider.clone())));
+                        context_provider.set_sdk(<span class="prelude-val">Some</span>(sdk.clone()));
                     } <span class="kw">else</span>{
                         <span class="macro">tracing::warn!</span>(
                             <span class="string">"Configure ContextProvider with Sdk::with_context_provider(); otherwise Sdk will fail"</span>);
@@ -1489,20 +1663,37 @@
             </span><span class="prelude-val">None </span>=&gt; {
                 <span class="kw">let </span>dapi =Arc::new(tokio::sync::Mutex::new(  MockDapiClient::new()));
                 <span class="comment">// We create mock context provider that will use the mock DAPI client to retrieve data contracts.
-                </span><span class="kw">let  </span>context_provider = <span class="self">self</span>.context_provider.unwrap_or(Box::new(MockContextProvider::new()));
-
-                Sdk {
+                </span><span class="kw">let  </span>context_provider = <span class="self">self</span>.context_provider.unwrap_or_else(||{
+                    <span class="kw">let </span><span class="kw-2">mut </span>cp=MockContextProvider::new();
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>dump_dir) = <span class="self">self</span>.dump_dir {
+                        cp.quorum_keys_dir(<span class="prelude-val">Some</span>(dump_dir.clone()));
+                    }
+                    Box::new(cp)
+                }
+                );
+                <span class="kw">let </span>mock_sdk = MockDashPlatformSdk::new(<span class="self">self</span>.version, Arc::clone(<span class="kw-2">&amp;</span>dapi));
+                <span class="kw">let </span>mock_sdk = Arc::new(Mutex::new(mock_sdk));
+                <span class="kw">let </span>sdk= Sdk {
+                    network: <span class="self">self</span>.network,
                     inner:SdkInstance::Mock {
-                        mock:Arc::new(Mutex::new( MockDashPlatformSdk::new(<span class="self">self</span>.version, Arc::clone(<span class="kw-2">&amp;</span>dapi), <span class="self">self</span>.proofs))),
+                        mock:mock_sdk.clone(),
                         dapi,
                         version:<span class="self">self</span>.version,
+
                     },
-                    dump_dir: <span class="self">self</span>.dump_dir,
+                    dump_dir: <span class="self">self</span>.dump_dir.clone(),
                     proofs:<span class="self">self</span>.proofs,
                     internal_cache: Default::default(),
                     context_provider:<span class="prelude-val">Some</span>(Arc::new(context_provider)),
                     cancel_token: <span class="self">self</span>.cancel_token,
-                }
+                };
+                <span class="kw">let </span><span class="kw-2">mut </span>guard = mock_sdk.try_lock().expect(<span class="string">"mock sdk is in use by another thread and connot be reconfigured"</span>);
+                guard.set_sdk(sdk.clone());
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>dump_dir) = <span class="self">self</span>.dump_dir {
+                    pollster::block_on(   guard.load_expectations(dump_dir))<span class="question-mark">?</span>;
+                };
+
+                sdk
             },
             <span class="attr">#[cfg(not(feature = <span class="string">"mocks"</span>))]
             </span><span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Config(<span class="string">"Mock mode is not available. Please enable `mocks` feature or provide address list."</span>.to_string())),
@@ -1510,5 +1701,34 @@
 
         <span class="prelude-val">Ok</span>(sdk)
     }
+}
+
+<span class="kw">pub fn </span>prettify_proof(proof: <span class="kw-2">&amp;</span>Proof) -&gt; String {
+    <span class="kw">let </span>config = bincode::config::standard()
+        .with_big_endian()
+        .with_no_limit();
+    <span class="kw">let </span>grovedb_proof: <span class="prelude-ty">Result</span>&lt;GroveDBProof, DecodeError&gt; =
+        bincode::decode_from_slice(<span class="kw-2">&amp;</span>proof.grovedb_proof, config).map(|(a, <span class="kw">_</span>)| a);
+
+    <span class="kw">let </span>grovedb_proof_string = <span class="kw">match </span>grovedb_proof {
+        <span class="prelude-val">Ok</span>(proof) =&gt; <span class="macro">format!</span>(<span class="string">"{}"</span>, proof),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="string">"Invalid GroveDBProof"</span>.to_string(),
+    };
+    <span class="macro">format!</span>(
+        <span class="string">"Proof {{
+            grovedb_proof: {},
+            quorum_hash: 0x{},
+            signature: 0x{},
+            round: {},
+            block_id_hash: 0x{},
+            quorum_type: {},
+        }}"</span>,
+        grovedb_proof_string,
+        hex::encode(<span class="kw-2">&amp;</span>proof.quorum_hash),
+        hex::encode(<span class="kw-2">&amp;</span>proof.signature),
+        proof.round,
+        hex::encode(<span class="kw-2">&amp;</span>proof.block_id_hash),
+        proof.quorum_type,
+    )
 }
 </code></pre></div></section></main></body></html>

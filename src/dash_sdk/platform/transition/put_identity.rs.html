@@ -121,6 +121,13 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::platform::transition::broadcast_identity::BroadcastRequestForNewIdentity;
 <span class="kw">use </span><span class="kw">crate</span>::platform::transition::broadcast_request::BroadcastRequestForStateTransition;
 <span class="kw">use </span><span class="kw">crate</span>::platform::Fetch;
@@ -131,6 +138,8 @@
 <span class="kw">use </span>dpp::dashcore::PrivateKey;
 <span class="kw">use </span>dpp::identity::signer::Signer;
 <span class="kw">use </span>dpp::prelude::{AssetLockProof, Identity};
+<span class="kw">use </span>drive_proof_verifier::error::ContextProviderError;
+<span class="kw">use </span>drive_proof_verifier::DataContractProvider;
 
 <span class="kw">use </span><span class="kw">crate</span>::platform::block_info_from_metadata::block_info_from_metadata;
 <span class="kw">use </span>dpp::state_transition::proof_result::StateTransitionProofResult;
@@ -226,12 +235,17 @@
 
         <span class="kw">let </span>block_info = block_info_from_metadata(response.metadata()<span class="question-mark">?</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span>proof = response.proof_owned()<span class="question-mark">?</span>;
+        <span class="kw">let </span>context_provider =
+            sdk.context_provider()
+                .ok_or(Error::from(ContextProviderError::Config(
+                    <span class="string">"Context provider not initialized"</span>.to_string(),
+                )))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>(<span class="kw">_</span>, result) = Drive::verify_state_transition_was_executed_with_proof(
             <span class="kw-2">&amp;</span>state_transition,
             <span class="kw-2">&amp;</span>block_info,
             proof.grovedb_proof.as_slice(),
-            <span class="kw-2">&amp;</span>|<span class="kw">_</span>| <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="kw-2">&amp;</span>context_provider.as_contract_lookup_fn(),
             sdk.version(),
         )<span class="question-mark">?</span>;
 

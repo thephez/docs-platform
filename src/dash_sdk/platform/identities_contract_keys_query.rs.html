@@ -88,6 +88,7 @@
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>dapi_grpc::platform::v0::get_identities_contract_keys_request::GetIdentitiesContractKeysRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identities_contract_keys_request::Version::V0;
 <span class="kw">use </span>dapi_grpc::platform::v0::GetIdentitiesContractKeysRequest;
@@ -100,7 +101,8 @@
 <span class="kw">use </span><span class="kw">crate</span>::Error;
 
 <span class="doccomment">/// Request that is used to query identities' contract keys
-</span><span class="attr">#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, dapi_grpc_macros::Mockable)]
+</span><span class="attr">#[derive(Debug, Clone, dapi_grpc_macros::Mockable)]
+#[cfg_attr(feature = <span class="string">"mocks"</span>, derive(serde::Serialize, serde::Deserialize))]
 </span><span class="kw">pub struct </span>IdentitiesContractKeysQuery {
     <span class="doccomment">/// The identities' identifiers that we want to query
     </span><span class="kw">pub </span>identities_ids: Vec&lt;Identifier&gt;,

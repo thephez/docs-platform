@@ -352,6 +352,19 @@
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
 <a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Method to query documents from the Drive.
 
 </span><span class="kw">use </span>std::sync::Arc;
@@ -362,8 +375,10 @@
 <span class="kw">use </span>dapi_grpc::platform::v0::{
     <span class="self">self </span><span class="kw">as </span>platform_proto,
     get_documents_request::{get_documents_request_v0::Start, GetDocumentsRequestV0},
-    GetDocumentsRequest, ResponseMetadata,
+    GetDocumentsRequest, Proof, ResponseMetadata,
 };
+<span class="kw">use </span>dpp::dashcore::Network;
+<span class="kw">use </span>dpp::version::PlatformVersion;
 <span class="kw">use </span>dpp::{
     data_contract::{
         accessors::v0::DataContractV0Getters, document_type::accessors::DocumentTypeV0Getters,
@@ -373,8 +388,8 @@
     prelude::{DataContract, Identifier},
     ProtocolError,
 };
-<span class="kw">use </span>drive::query::{DriveQuery, InternalClauses, OrderClause, WhereClause, WhereOperator};
-<span class="kw">use </span>drive_proof_verifier::{types::Documents, FromProof};
+<span class="kw">use </span>drive::query::{DriveDocumentQuery, InternalClauses, OrderClause, WhereClause, WhereOperator};
+<span class="kw">use </span>drive_proof_verifier::{types::Documents, ContextProvider, FromProof};
 <span class="kw">use </span>rs_dapi_client::transport::{
     AppliedRequestSettings, BoxFuture, TransportClient, TransportRequest,
 };
@@ -388,7 +403,7 @@
 /// This is an abstraction layer built on top of [GetDocumentsRequest] to address issues with missing details
 /// required to correctly verify proofs returned by the Dash Platform.
 ///
-/// Conversions are implemented between this type, [GetDocumentsRequest] and [DriveQuery] using [TryFrom] trait.
+/// Conversions are implemented between this type, [GetDocumentsRequest] and [DriveDocumentQuery] using [TryFrom] trait.
 </span><span class="attr">#[derive(Debug, Clone, dapi_grpc_macros::Mockable)]
 #[cfg_attr(feature = <span class="string">"mocks"</span>, derive(serde::Serialize, serde::Deserialize))]
 </span><span class="kw">pub struct </span>DocumentQuery {
@@ -428,8 +443,8 @@
         })
     }
 
-    <span class="doccomment">/// Create new document query based on a [DriveQuery].
-    </span><span class="kw">pub fn </span>new_with_drive_query(d: <span class="kw-2">&amp;</span>DriveQuery) -&gt; <span class="self">Self </span>{
+    <span class="doccomment">/// Create new document query based on a [DriveDocumentQuery].
+    </span><span class="kw">pub fn </span>new_with_drive_query(d: <span class="kw-2">&amp;</span>DriveDocumentQuery) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::from(d)
     }
 
@@ -514,23 +529,32 @@
     <span class="kw">fn </span>maybe_from_proof_with_metadata&lt;<span class="lifetime">'a</span>, I: Into&lt;<span class="self">Self</span>::Request&gt;, O: Into&lt;<span class="self">Self</span>::Response&gt;&gt;(
         request: I,
         response: O,
-        version: <span class="kw-2">&amp;</span>dpp::version::PlatformVersion,
-        provider: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">dyn </span>drive_proof_verifier::ContextProvider,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata), drive_proof_verifier::Error&gt;
+        network: Network,
+        platform_version: <span class="kw-2">&amp;</span>PlatformVersion,
+        provider: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">dyn </span>ContextProvider,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata, Proof), drive_proof_verifier::Error&gt;
     <span class="kw">where
         </span><span class="self">Self</span>: Sized + <span class="lifetime">'a</span>,
     {
         <span class="kw">let </span>request: <span class="self">Self</span>::Request = request.into();
 
-        <span class="kw">let </span>(documents, metadata): (<span class="prelude-ty">Option</span>&lt;Documents&gt;, ResponseMetadata) =
+        <span class="kw">let </span>(documents, metadata, proof): (<span class="prelude-ty">Option</span>&lt;Documents&gt;, ResponseMetadata, Proof) =
             &lt;Documents <span class="kw">as </span>FromProof&lt;<span class="self">Self</span>::Request&gt;&gt;::maybe_from_proof_with_metadata(
-                request, response, version, provider,
+                request,
+                response,
+                network,
+                platform_version,
+                provider,
             )<span class="question-mark">?</span>;
 
         <span class="kw">match </span>documents {
-            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, metadata)),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, metadata, proof)),
             <span class="prelude-val">Some</span>(docs) =&gt; <span class="kw">match </span>docs.len() {
-                <span class="number">0 </span>| <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>((docs.into_iter().next().and_then(|(<span class="kw">_</span>, v)| v), metadata)),
+                <span class="number">0 </span>| <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>((
+                    docs.into_iter().next().and_then(|(<span class="kw">_</span>, v)| v),
+                    metadata,
+                    proof,
+                )),
                 n =&gt; <span class="prelude-val">Err</span>(drive_proof_verifier::Error::ResponseDecodeError {
                     error: <span class="macro">format!</span>(<span class="string">"expected 1 element, got {}"</span>, n),
                 }),
@@ -545,24 +569,26 @@
     <span class="kw">fn </span>maybe_from_proof_with_metadata&lt;<span class="lifetime">'a</span>, I: Into&lt;<span class="self">Self</span>::Request&gt;, O: Into&lt;<span class="self">Self</span>::Response&gt;&gt;(
         request: I,
         response: O,
-        version: <span class="kw-2">&amp;</span>dpp::version::PlatformVersion,
-        provider: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">dyn </span>drive_proof_verifier::ContextProvider,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata), drive_proof_verifier::Error&gt;
+        network: Network,
+        platform_version: <span class="kw-2">&amp;</span>PlatformVersion,
+        provider: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">dyn </span>ContextProvider,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata, Proof), drive_proof_verifier::Error&gt;
     <span class="kw">where
         </span><span class="self">Self</span>: Sized + <span class="lifetime">'a</span>,
     {
         <span class="kw">let </span>request: <span class="self">Self</span>::Request = request.into();
-        <span class="kw">let </span>drive_query: DriveQuery =
+        <span class="kw">let </span>drive_query: DriveDocumentQuery =
             (<span class="kw-2">&amp;</span>request)
                 .try_into()
-                .map_err(|e| drive_proof_verifier::Error::RequestDecodeError {
+                .map_err(|e| drive_proof_verifier::Error::RequestError {
                     error: <span class="macro">format!</span>(<span class="string">"Failed to convert DocumentQuery to DriveQuery: {}"</span>, e),
                 })<span class="question-mark">?</span>;
 
-        &lt;drive_proof_verifier::types::Documents <span class="kw">as </span>FromProof&lt;DriveQuery&gt;&gt;::maybe_from_proof_with_metadata(
+        &lt;drive_proof_verifier::types::Documents <span class="kw">as </span>FromProof&lt;DriveDocumentQuery&gt;&gt;::maybe_from_proof_with_metadata(
             drive_query,
             response,
-            version,
+            network,
+            platform_version,
             provider,
         )
     }
@@ -593,8 +619,8 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>DriveQuery&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>DocumentQuery {
-    <span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>DriveQuery&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>DriveDocumentQuery&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>DocumentQuery {
+    <span class="kw">fn </span>from(value: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>DriveDocumentQuery&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>data_contract = value.contract.clone();
         <span class="kw">let </span>document_type_name = value.document_type.name();
         <span class="kw">let </span>where_clauses = value.internal_clauses.clone().into();
@@ -621,8 +647,8 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;DriveQuery&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>DocumentQuery {
-    <span class="kw">fn </span>from(value: DriveQuery&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;DriveDocumentQuery&lt;<span class="lifetime">'a</span>&gt;&gt; <span class="kw">for </span>DocumentQuery {
+    <span class="kw">fn </span>from(value: DriveDocumentQuery&lt;<span class="lifetime">'a</span>&gt;) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>data_contract = value.contract.clone();
         <span class="kw">let </span>document_type_name = value.document_type.name();
         <span class="kw">let </span>where_clauses = value.internal_clauses.clone().into();
@@ -649,7 +675,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TryFrom&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>DocumentQuery&gt; <span class="kw">for </span>DriveQuery&lt;<span class="lifetime">'a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TryFrom&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>DocumentQuery&gt; <span class="kw">for </span>DriveDocumentQuery&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">type </span>Error = <span class="kw">crate</span>::error::Error;
 
     <span class="kw">fn </span>try_from(request: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>DocumentQuery) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {

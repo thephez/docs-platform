@@ -94,6 +94,14 @@
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>dapi_grpc::platform::VersionedGrpcResponse;
 <span class="kw">use </span>dpp::dashcore::Address;
 <span class="kw">use </span>dpp::identity::accessors::IdentityGettersV0;
@@ -104,6 +112,8 @@
 <span class="kw">use </span>dpp::prelude::UserFeeIncrease;
 
 <span class="kw">use </span>dpp::state_transition::identity_credit_withdrawal_transition::IdentityCreditWithdrawalTransition;
+<span class="kw">use </span>drive_proof_verifier::error::ContextProviderError;
+<span class="kw">use </span>drive_proof_verifier::DataContractProvider;
 
 <span class="kw">use </span><span class="kw">crate</span>::platform::block_info_from_metadata::block_info_from_metadata;
 <span class="kw">use </span><span class="kw">crate</span>::platform::transition::broadcast_request::BroadcastRequestForStateTransition;
@@ -145,6 +155,7 @@
         <span class="kw">let </span>new_identity_nonce = sdk.get_identity_nonce(<span class="self">self</span>.id(), <span class="bool-val">true</span>, settings).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>state_transition = IdentityCreditWithdrawalTransition::try_from_identity(
             <span class="self">self</span>,
+            <span class="prelude-val">None</span>,
             CoreScript::new(address.script_pubkey()),
             amount,
             Pooling::Never,
@@ -170,12 +181,17 @@
         <span class="kw">let </span>block_info = block_info_from_metadata(response.metadata()<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>proof = response.proof_owned()<span class="question-mark">?</span>;
+        <span class="kw">let </span>context_provider =
+            sdk.context_provider()
+                .ok_or(Error::from(ContextProviderError::Config(
+                    <span class="string">"Context provider not initialized"</span>.to_string(),
+                )))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>(<span class="kw">_</span>, result) = Drive::verify_state_transition_was_executed_with_proof(
             <span class="kw-2">&amp;</span>state_transition,
             <span class="kw-2">&amp;</span>block_info,
             proof.grovedb_proof.as_slice(),
-            <span class="kw-2">&amp;</span>|<span class="kw">_</span>| <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="kw-2">&amp;</span>context_provider.as_contract_lookup_fn(),
             sdk.version(),
         )<span class="question-mark">?</span>;
 

@@ -180,6 +180,7 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Macros to delegate TransportRequest and FromProof to an enum wrapper.
 //!
 //! Two enum wrappers are created using [delegate_enum!](crate::delegate_enum!):
@@ -263,9 +264,10 @@
             <span class="kw">fn </span>maybe_from_proof_with_metadata&lt;<span class="lifetime">'a</span>, I: Into&lt;<span class="self">Self</span>::Request&gt;, O: Into&lt;<span class="self">Self</span>::Response&gt;&gt;(
                 request: I,
                 response: O,
+                network: dpp::dashcore::Network,
                 version: <span class="kw-2">&amp;</span>dpp::version::PlatformVersion,
                 provider: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw">dyn </span>drive_proof_verifier::ContextProvider,
-            ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata), drive_proof_verifier::Error&gt;
+            ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata, dapi_grpc::platform::v0::Proof), drive_proof_verifier::Error&gt;
             <span class="kw">where
                 </span><span class="self">Self</span>: Sized + <span class="lifetime">'a</span>,
             {
@@ -279,7 +281,7 @@
                     req::<span class="macro-nonterminal">$variant</span>(request) =&gt; {
                         <span class="kw">if let </span>resp::<span class="macro-nonterminal">$variant</span>(response) = response {
                             &lt;<span class="self">Self </span><span class="kw">as </span>drive_proof_verifier::FromProof&lt;<span class="macro-nonterminal">$req</span>&gt;&gt;::maybe_from_proof_with_metadata(
-                                request, response, version, provider,
+                                request, response, network, version, provider,
                             )
                         } <span class="kw">else </span>{
                             <span class="prelude-val">Err</span>(drive_proof_verifier::Error::ResponseDecodeError {
@@ -290,7 +292,7 @@
                                 ),
                             })
                         }
-                    },
+                    }
                 )*
                 }
             }

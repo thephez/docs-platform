@@ -224,25 +224,36 @@
 <a href="#223" id="223">223</a>
 <a href="#224" id="224">224</a>
 <a href="#225" id="225">225</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeMap;
-
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::MockDashPlatformSdk;
 <span class="kw">use </span>dpp::{
+    bincode,
     block::extended_epoch_info::ExtendedEpochInfo,
-    document::serialization_traits::DocumentCborMethodsV0,
-    document::Document,
-    platform_serialization::{
-        platform_encode_to_vec, platform_versioned_decode_from_slice, PlatformVersionEncode,
-        PlatformVersionedDecode,
-    },
+    dashcore::{hashes::Hash, ProTxHash},
+    document::{serialization_traits::DocumentCborMethodsV0, Document},
+    identifier::Identifier,
+    identity::IdentityPublicKey,
+    platform_serialization::{platform_encode_to_vec, platform_versioned_decode_from_slice},
     prelude::{DataContract, Identity},
     serialization::{
         PlatformDeserializableWithPotentialValidationFromVersionedStructure,
         PlatformSerializableWithPlatformVersion,
     },
+    voting::votes::{resource_vote::ResourceVote, Vote},
 };
-<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>drive_proof_verifier::types::{
+    Contenders, ContestedResources, ElementFetchRequestItem, IdentityBalanceAndRevision,
+    MasternodeProtocolVote, PrefundedSpecializedBalance, TotalCreditsInPlatform,
+    VotePollsGroupedByTimestamp, Voters,
+};
+<span class="kw">use </span>std::collections::BTreeMap;
 
-<span class="kw">use </span><span class="kw">super</span>::MockDashPlatformSdk;
+<span class="kw">static </span>BINCODE_CONFIG: bincode::config::Configuration = bincode::config::standard();
 
 <span class="doccomment">/// Trait implemented by objects that can be used in mock expectation responses.
 ///
@@ -291,7 +302,7 @@
     </span><span class="kw">where
         </span><span class="self">Self</span>: Sized,
     {
-        <span class="kw">let </span>items: Vec&lt;Vec&lt;u8&gt;&gt; = bincode::decode_from_slice(buf, bincode::config::standard())
+        <span class="kw">let </span>items: Vec&lt;Vec&lt;u8&gt;&gt; = bincode::decode_from_slice(buf, BINCODE_CONFIG)
             .expect(<span class="string">"decode vec of data"</span>)
             .<span class="number">0</span>;
         items
@@ -306,42 +317,52 @@
             .map(|item| item.mock_serialize(mock_sdk))
             .collect();
 
-        bincode::encode_to_vec(data, bincode::config::standard()).expect(<span class="string">"encode vec of data"</span>)
+        bincode::encode_to_vec(data, BINCODE_CONFIG).expect(<span class="string">"encode vec of data"</span>)
     }
 }
-<span class="kw">impl</span>&lt;K: Ord + Serialize + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt;, V: Serialize + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt;&gt;
-    MockResponse <span class="kw">for </span>BTreeMap&lt;K, V&gt;
-{
-    <span class="kw">fn </span>mock_deserialize(_sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self
+
+<span class="kw">impl</span>&lt;K: Ord + MockResponse, V: MockResponse&gt; MockResponse <span class="kw">for </span>BTreeMap&lt;K, V&gt; {
+    <span class="kw">fn </span>mock_deserialize(sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span><span class="self">Self</span>: Sized,
     {
-        serde_json::from_slice(buf).expect(<span class="string">"decode vec of data"</span>)
+        <span class="kw">let </span>(data, <span class="kw">_</span>): (BTreeMap&lt;Vec&lt;u8&gt;, Vec&lt;u8&gt;&gt;, <span class="kw">_</span>) =
+            bincode::decode_from_slice(buf, BINCODE_CONFIG).expect(<span class="string">"decode BTreeMap"</span>);
+
+        data.into_iter()
+            .map(|(k, v)| (K::mock_deserialize(sdk, <span class="kw-2">&amp;</span>k), V::mock_deserialize(sdk, <span class="kw-2">&amp;</span>v)))
+            .collect()
     }
 
-    <span class="kw">fn </span>mock_serialize(<span class="kw-2">&amp;</span><span class="self">self</span>, _sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk) -&gt; Vec&lt;u8&gt; {
-        serde_json::to_vec(<span class="self">self</span>).expect(<span class="string">"encode vec of data"</span>)
+    <span class="kw">fn </span>mock_serialize(<span class="kw-2">&amp;</span><span class="self">self</span>, sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk) -&gt; Vec&lt;u8&gt; {
+        <span class="kw">let </span>data: BTreeMap&lt;Vec&lt;u8&gt;, Vec&lt;u8&gt;&gt; = <span class="self">self
+            </span>.iter()
+            .map(|(k, v)| (k.mock_serialize(sdk), v.mock_serialize(sdk)))
+            .collect();
+
+        bincode::encode_to_vec(data, BINCODE_CONFIG).expect(<span class="string">"encode BTreeMap"</span>)
     }
 }
 
-<span class="kw">impl </span>MockResponse <span class="kw">for </span>Identity
-<span class="kw">where
-    </span><span class="self">Self</span>: PlatformVersionedDecode + PlatformVersionEncode,
-{
-    <span class="kw">fn </span>mock_serialize(<span class="kw-2">&amp;</span><span class="self">self</span>, sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk) -&gt; Vec&lt;u8&gt; {
-        <span class="comment">// self.clone().serialize_to_bytes().expect("serialize data")
-        </span>platform_encode_to_vec(<span class="self">self</span>, bincode::config::standard(), sdk.version())
-            .expect(<span class="string">"serialize data"</span>)
-    }
-
-    <span class="kw">fn </span>mock_deserialize(sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self
-    </span><span class="kw">where
-        </span><span class="self">Self</span>: Sized + PlatformVersionedDecode,
-    {
-        <span class="comment">// Self::deserialize_from_bytes(buf).expect("deserialize data")
-        </span>platform_versioned_decode_from_slice(buf, bincode::config::standard(), sdk.version())
-            .expect(<span class="string">"deserialize data"</span>)
-    }
+<span class="doccomment">/// Serialize and deserialize the object for mocking using bincode.
+///
+/// Use this macro when the object implements platform serialization.
+</span><span class="macro">macro_rules! </span>impl_mock_response {
+    (<span class="macro-nonterminal">$name</span>:ident) =&gt; {
+        <span class="kw">impl </span>MockResponse <span class="kw">for </span><span class="macro-nonterminal">$name </span>{
+            <span class="kw">fn </span>mock_serialize(<span class="kw-2">&amp;</span><span class="self">self</span>, sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk) -&gt; Vec&lt;u8&gt; {
+                platform_encode_to_vec(<span class="self">self</span>, BINCODE_CONFIG, sdk.version())
+                    .expect(<span class="macro">concat!</span>(<span class="string">"encode "</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$name</span>)))
+            }
+            <span class="kw">fn </span>mock_deserialize(sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self
+            </span><span class="kw">where
+                </span><span class="self">Self</span>: Sized,
+            {
+                platform_versioned_decode_from_slice(buf, BINCODE_CONFIG, sdk.version())
+                    .expect(<span class="macro">concat!</span>(<span class="string">"decode "</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$name</span>)))
+            }
+        }
+    };
 }
 
 <span class="comment">// FIXME: Seems that DataContract doesn't implement PlatformVersionedDecode + PlatformVersionEncode,
@@ -372,19 +393,6 @@
         </span><span class="self">Self</span>: Sized,
     {
         <span class="self">Self</span>::from_cbor(buf, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, sdk.version()).expect(<span class="string">"decode data"</span>)
-    }
-}
-
-<span class="kw">impl </span>MockResponse <span class="kw">for </span>drive_proof_verifier::types::IdentityBalance {
-    <span class="kw">fn </span>mock_serialize(<span class="kw-2">&amp;</span><span class="self">self</span>, _sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk) -&gt; Vec&lt;u8&gt; {
-        (<span class="kw-2">*</span><span class="self">self</span>).to_be_bytes().to_vec()
-    }
-
-    <span class="kw">fn </span>mock_deserialize(_sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self
-    </span><span class="kw">where
-        </span><span class="self">Self</span>: Sized,
-    {
-        <span class="self">Self</span>::from_be_bytes(buf.try_into().expect(<span class="string">"balance should be 8 bytes"</span>))
     }
 }
 
@@ -419,34 +427,38 @@
         ))
     }
 }
-
-<span class="kw">impl </span>MockResponse <span class="kw">for </span>drive_proof_verifier::types::IdentityBalanceAndRevision {
-    <span class="kw">fn </span>mock_serialize(<span class="kw-2">&amp;</span><span class="self">self</span>, _sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk) -&gt; Vec&lt;u8&gt; {
-        bincode::encode_to_vec(<span class="self">self</span>, bincode::config::standard())
-            .expect(<span class="string">"encode IdentityBalanceAndRevision"</span>)
-    }
-
-    <span class="kw">fn </span>mock_deserialize(_sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self
-    </span><span class="kw">where
-        </span><span class="self">Self</span>: Sized,
-    {
-        <span class="kw">let </span>(item, _len) = bincode::decode_from_slice(buf, bincode::config::standard())
-            .expect(<span class="string">"decode IdentityBalanceAndRevision"</span>);
-        item
-    }
-}
-
-<span class="kw">impl </span>MockResponse <span class="kw">for </span>ExtendedEpochInfo {
+<span class="kw">impl </span>MockResponse <span class="kw">for </span>ProTxHash {
     <span class="kw">fn </span>mock_serialize(<span class="kw-2">&amp;</span><span class="self">self</span>, sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk) -&gt; Vec&lt;u8&gt; {
-        platform_encode_to_vec(<span class="self">self</span>, bincode::config::standard(), sdk.version())
-            .expect(<span class="string">"encode ExtendedEpochInfo"</span>)
+        <span class="kw">let </span>data = <span class="self">self</span>.as_raw_hash().as_byte_array();
+        platform_encode_to_vec(data, BINCODE_CONFIG, sdk.version()).expect(<span class="string">"encode ProTxHash"</span>)
     }
     <span class="kw">fn </span>mock_deserialize(sdk: <span class="kw-2">&amp;</span>MockDashPlatformSdk, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span><span class="self">Self</span>: Sized,
     {
-        platform_versioned_decode_from_slice(buf, bincode::config::standard(), sdk.version())
-            .expect(<span class="string">"decode ExtendedEpochInfo"</span>)
+        <span class="kw">let </span>data = platform_versioned_decode_from_slice(buf, BINCODE_CONFIG, sdk.version())
+            .expect(<span class="string">"decode ProTxHash"</span>);
+        ProTxHash::from_raw_hash(Hash::from_byte_array(data))
     }
 }
+
+<span class="macro">impl_mock_response!</span>(Identity);
+<span class="macro">impl_mock_response!</span>(IdentityPublicKey);
+<span class="macro">impl_mock_response!</span>(Identifier);
+<span class="macro">impl_mock_response!</span>(MasternodeProtocolVote);
+<span class="macro">impl_mock_response!</span>(ResourceVote);
+<span class="macro">impl_mock_response!</span>(u8);
+<span class="macro">impl_mock_response!</span>(u16);
+<span class="macro">impl_mock_response!</span>(u32);
+<span class="macro">impl_mock_response!</span>(u64);
+<span class="macro">impl_mock_response!</span>(Vote);
+<span class="macro">impl_mock_response!</span>(ExtendedEpochInfo);
+<span class="macro">impl_mock_response!</span>(ContestedResources);
+<span class="macro">impl_mock_response!</span>(IdentityBalanceAndRevision);
+<span class="macro">impl_mock_response!</span>(Contenders);
+<span class="macro">impl_mock_response!</span>(Voters);
+<span class="macro">impl_mock_response!</span>(VotePollsGroupedByTimestamp);
+<span class="macro">impl_mock_response!</span>(PrefundedSpecializedBalance);
+<span class="macro">impl_mock_response!</span>(TotalCreditsInPlatform);
+<span class="macro">impl_mock_response!</span>(ElementFetchRequestItem);
 </code></pre></div></section></main></body></html>

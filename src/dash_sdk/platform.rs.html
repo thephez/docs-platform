@@ -33,6 +33,7 @@
 <a href="#32" id="32">32</a>
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Platform DAPI requests.
 
 </span><span class="comment">// TODO: dash-platform-sdk should define a proper user-facing API hiding transport and serialization
@@ -44,6 +45,7 @@
 <span class="kw">mod </span>delegate;
 <span class="kw">mod </span>document_query;
 <span class="kw">mod </span>fetch;
+<span class="kw">pub mod </span>fetch_current_no_parameters;
 <span class="kw">mod </span>fetch_many;
 <span class="kw">mod </span>identities_contract_keys_query;
 <span class="kw">mod </span>query;
@@ -56,7 +58,7 @@
     document::Document,
     prelude::{DataContract, Identifier, Identity, IdentityPublicKey, Revision},
 };
-<span class="kw">pub use </span>drive::query::DriveQuery;
+<span class="kw">pub use </span>drive::query::DriveDocumentQuery;
 <span class="kw">pub use </span>drive_proof_verifier::ContextProvider;
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
 </span><span class="kw">pub use </span>drive_proof_verifier::MockContextProvider;
@@ -65,6 +67,6 @@
     document_query::DocumentQuery,
     fetch::Fetch,
     fetch_many::FetchMany,
-    query::{LimitQuery, Query, DEFAULT_EPOCH_QUERY_LIMIT},
+    query::{LimitQuery, Query, QueryStartInfo, DEFAULT_EPOCH_QUERY_LIMIT},
 };
 </code></pre></div></section></main></body></html>

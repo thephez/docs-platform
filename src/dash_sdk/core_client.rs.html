@@ -128,19 +128,65 @@
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
 <a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Core RPC client used to retrieve quorum keys from core.
 //!
 //! TODO: This is a temporary implementation, effective until we integrate SPV
 //! into dash-platform-sdk.
 
-</span><span class="kw">use </span>dashcore_rpc::{
+</span><span class="kw">use </span><span class="kw">crate</span>::error::Error;
+<span class="kw">use </span>dashcore_rpc::{
     dashcore::{hashes::Hash, Amount, QuorumHash},
-    dashcore_rpc_json <span class="kw">as </span>json, Auth, Client, RpcApi,
+    dashcore_rpc_json <span class="kw">as </span>json,
+    json::{ProTxList, ProTxListType},
+    Auth, Client, RpcApi,
 };
+<span class="kw">use </span>dpp::dashcore::ProTxHash;
+<span class="kw">use </span>dpp::prelude::CoreBlockHeight;
 <span class="kw">use </span>drive_proof_verifier::error::ContextProviderError;
 <span class="kw">use </span>std::{fmt::Debug, sync::Mutex};
-
-<span class="kw">use </span><span class="kw">crate</span>::error::Error;
 
 <span class="doccomment">/// Core RPC client that can be used to retrieve quorum keys from core.
 ///
@@ -247,7 +293,7 @@
         <span class="kw">let </span>core = <span class="self">self</span>.core.lock().expect(<span class="string">"Core lock poisoned"</span>);
         <span class="kw">let </span>quorum_info = core
             .get_quorum_info(json::QuorumType::from(quorum_type), <span class="kw-2">&amp;</span>quorum_hash, <span class="prelude-val">None</span>)
-            .map_err(|e: dashcore_rpc::Error| ContextProviderError::InvalidQuorum(e.to_string()))<span class="question-mark">?</span>;
+            .map_err(|e: dashcore_rpc::Error| ContextProviderError::Generic(e.to_string()))<span class="question-mark">?</span>;
         <span class="kw">let </span>key = quorum_info.quorum_public_key;
         <span class="kw">let </span>pubkey = &lt;Vec&lt;u8&gt; <span class="kw">as </span>TryInto&lt;[u8; <span class="number">48</span>]&gt;&gt;::try_into(key).map_err(|_e| {
             ContextProviderError::InvalidQuorum(
@@ -255,6 +301,46 @@
             )
         })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(pubkey)
+    }
+
+    <span class="doccomment">/// Retrieve platform activation height from core.
+    </span><span class="kw">pub fn </span>get_platform_activation_height(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;CoreBlockHeight, ContextProviderError&gt; {
+        <span class="kw">let </span>core = <span class="self">self</span>.core.lock().expect(<span class="string">"Core lock poisoned"</span>);
+
+        <span class="kw">let </span>fork_info = core
+            .get_blockchain_info()
+            .map(|blockchain_info| blockchain_info.softforks.get(<span class="string">"mn_rr"</span>).cloned())
+            .map_err(|e: dashcore_rpc::Error| ContextProviderError::Generic(e.to_string()))<span class="question-mark">?
+            </span>.ok_or(ContextProviderError::ActivationForkError(
+                <span class="string">"no fork info for mn_rr"</span>.to_string(),
+            ))<span class="question-mark">?</span>;
+
+        fork_info
+            .height
+            .ok_or(ContextProviderError::ActivationForkError(
+                <span class="string">"unknown fork height"</span>.to_string(),
+            ))
+    }
+
+    <span class="doccomment">/// Require list of validators from Core.
+    ///
+    /// See also [Dash Core documentation](https://docs.dash.org/projects/core/en/stable/docs/api/remote-procedure-calls-evo.html#protx-list)
+    </span><span class="attr">#[allow(unused)]
+    </span><span class="kw">pub fn </span>protx_list(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        height: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+        protx_type: <span class="prelude-ty">Option</span>&lt;ProTxListType&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProTxHash&gt;, Error&gt; {
+        <span class="kw">let </span>core = <span class="self">self</span>.core.lock().expect(<span class="string">"Core lock poisoned"</span>);
+
+        <span class="kw">let </span>pro_tx_hashes =
+            core.get_protx_list(protx_type, <span class="prelude-val">Some</span>(<span class="bool-val">false</span>), height)
+                .map(|x| <span class="kw">match </span>x {
+                    ProTxList::Hex(hex) =&gt; hex,
+                    ProTxList::Info(info) =&gt; info.into_iter().map(|v| v.pro_tx_hash).collect(),
+                })<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(pro_tx_hashes)
     }
 }
 </code></pre></div></section></main></body></html>

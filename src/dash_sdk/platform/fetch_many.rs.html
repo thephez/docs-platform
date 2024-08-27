@@ -312,13 +312,74 @@
 <a href="#311" id="311">311</a>
 <a href="#312" id="312">312</a>
 <a href="#313" id="313">313</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! Fetch multiple objects from the Platform.
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+</pre></div><pre class="rust"><code><span class="doccomment">//! Fetch multiple objects from Platform.
 //!
-//! This module provides a trait to fetch multiple objects from the platform.
+//! This module provides a trait to fetch multiple objects from Platform.
 //!
 //! ## Traits
-//! - `[FetchMany]`: An async trait that fetches multiple items of a specific type from the platform.
-
+//! - `[FetchMany]`: An async trait that fetches multiple items of a specific type from Platform.
 </span><span class="kw">use crate</span>::{
     error::Error,
     mock::MockResponse,
@@ -326,29 +387,37 @@
     Sdk,
 };
 <span class="kw">use </span>dapi_grpc::platform::v0::{
-    GetDataContractsRequest, GetDocumentsResponse, GetEpochsInfoRequest,
-    GetIdentitiesContractKeysRequest, GetIdentityKeysRequest,
+    GetContestedResourceIdentityVotesRequest, GetContestedResourceVoteStateRequest,
+    GetContestedResourceVotersForIdentityRequest, GetContestedResourcesRequest,
+    GetDataContractsRequest, GetDocumentsResponse, GetEpochsInfoRequest, GetIdentityKeysRequest,
     GetProtocolVersionUpgradeStateRequest, GetProtocolVersionUpgradeVoteStatusRequest,
+    GetVotePollsByEndDateRequest,
 };
 <span class="kw">use </span>dashcore_rpc::dashcore::ProTxHash;
-<span class="kw">use </span>dpp::block::epoch::EpochIndex;
-<span class="kw">use </span>dpp::block::extended_epoch_info::ExtendedEpochInfo;
 <span class="kw">use </span>dpp::data_contract::DataContract;
-<span class="kw">use </span>dpp::document::Document;
 <span class="kw">use </span>dpp::identity::KeyID;
 <span class="kw">use </span>dpp::prelude::{Identifier, IdentityPublicKey};
 <span class="kw">use </span>dpp::util::deserializer::ProtocolVersion;
 <span class="kw">use </span>dpp::version::ProtocolVersionVoteCount;
-<span class="kw">use </span>drive_proof_verifier::types::{MasternodeProtocolVote, RetrievedObjects};
+<span class="kw">use </span>dpp::{block::epoch::EpochIndex, prelude::TimestampMillis, voting::vote_polls::VotePoll};
+<span class="kw">use </span>dpp::{
+    block::extended_epoch_info::ExtendedEpochInfo, voting::votes::resource_vote::ResourceVote,
+};
+<span class="kw">use </span>dpp::{document::Document, voting::contender_structs::ContenderWithSerializedDocument};
+<span class="kw">use </span>drive_proof_verifier::types::{
+    Contenders, ContestedResource, ContestedResources, DataContracts, ExtendedEpochInfos,
+    IdentityPublicKeys, MasternodeProtocolVote, MasternodeProtocolVotes, ProtocolVersionUpgrades,
+    ResourceVotesByIdentity, VotePollsGroupedByTimestamp, Voter, Voters,
+};
 <span class="kw">use </span>drive_proof_verifier::{types::Documents, FromProof};
 <span class="kw">use </span>rs_dapi_client::{transport::TransportRequest, DapiRequest, RequestSettings};
 <span class="kw">use </span>std::collections::BTreeMap;
 
 <span class="kw">use </span><span class="kw">super</span>::LimitQuery;
 
-<span class="doccomment">/// Fetch multiple objects from the Platform.
+<span class="doccomment">/// Fetch multiple objects from Platform.
 ///
-/// To fetch multiple objects from the platform, you need to define some query (criteria that fetched objects must match)
+/// To fetch multiple objects from Platform, you need to define some query (criteria that fetched objects must match)
 /// and use [FetchMany::fetch_many()] for your object type.
 ///
 /// You can also use convenience methods:
@@ -358,6 +427,7 @@
 /// ## Generic Parameters
 ///
 /// - `K`: The type of the key used to index the object
+/// - `O`: The type of returned container (eg. map) that holds the fetched objects
 ///
 /// ## Example
 ///
@@ -383,23 +453,24 @@
 /// let data_contract = DataContract::fetch_many(&amp;sdk, query);
 /// ```
 </span><span class="attr">#[async_trait::async_trait]
-</span><span class="kw">pub trait </span>FetchMany&lt;K: Ord&gt;
+</span><span class="kw">pub trait </span>FetchMany&lt;K: Ord, O: FromIterator&lt;(K, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;)&gt;&gt;
 <span class="kw">where
     </span><span class="self">Self</span>: Sized,
-    BTreeMap&lt;K, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;&gt;: MockResponse
+    O: MockResponse
         + FromProof&lt;
             <span class="self">Self</span>::Request,
             Request = <span class="self">Self</span>::Request,
-            Response = &lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response,
-        &gt; + Sync,
+            Response = &lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response,
+        &gt; + Send
+        + Default,
 {
-    <span class="doccomment">/// Type of request used to fetch multiple objects from the platform.
+    <span class="doccomment">/// Type of request used to fetch multiple objects from Platform.
     ///
     /// Most likely, one of the types defined in [`dapi_grpc::platform::v0`].
     ///
     /// This type must implement [`TransportRequest`] and [`MockRequest`](crate::mock::MockRequest).
     </span><span class="kw">type </span>Request: TransportRequest
-        + Into&lt;&lt;BTreeMap&lt;K, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;&gt; <span class="kw">as </span>FromProof&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request&gt;&gt;::Request&gt;;
+        + Into&lt;&lt;O <span class="kw">as </span>FromProof&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request&gt;&gt;::Request&gt;;
 
     <span class="doccomment">/// Fetch (or search) multiple objects on the Dash Platform
     ///
@@ -415,7 +486,7 @@
     ///
     /// ## Generic Parameters
     ///
-    /// - `K`: The type of the key used to index the object in the returned collection
+    /// - `Q`: The type of [Query] used to generate a request
     ///
     /// ## Parameters
     ///
@@ -424,7 +495,7 @@
     ///
     /// ## Returns
     ///
-    /// Returns a `Result` containing either :
+    /// Returns a `Result` containing either:
     ///
     /// * list of objects matching the [Query] indexed by a key type `K`, where an item can be None of
     /// the object was not found for provided key
@@ -439,10 +510,10 @@
     /// ## Error Handling
     ///
     /// Any errors encountered during the execution are returned as [`Error`](crate::error::Error) instances.
-    </span><span class="kw">async fn </span>fetch_many&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request&gt;&gt;(
+    </span><span class="kw">async fn </span>fetch_many&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request&gt;&gt;(
         sdk: <span class="kw-2">&amp;</span>Sdk,
         query: Q,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;RetrievedObjects&lt;K, <span class="self">Self</span>&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
         <span class="kw">let </span>request = query.query(sdk.prove())<span class="question-mark">?</span>;
 
         <span class="kw">let </span>response = request
@@ -453,17 +524,15 @@
         <span class="kw">let </span>object_type = std::any::type_name::&lt;<span class="self">Self</span>&gt;().to_string();
         <span class="macro">tracing::trace!</span>(request = <span class="question-mark">?</span>request, response = <span class="question-mark">?</span>response, object_type, <span class="string">"fetched object from platform"</span>);
 
-        <span class="kw">let </span>object: BTreeMap&lt;K, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;&gt; = sdk
-            .parse_proof::&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request, BTreeMap&lt;K, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;&gt;&gt;(
-                request, response,
-            )
+        <span class="kw">let </span>object: O = sdk
+            .parse_proof::&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request, O&gt;(request, response)
             .<span class="kw">await</span><span class="question-mark">?
             </span>.unwrap_or_default();
 
         <span class="prelude-val">Ok</span>(object)
     }
 
-    <span class="doccomment">/// Fetch multiple objects from the Platform by their identifiers.
+    <span class="doccomment">/// Fetch multiple objects from Platform by their identifiers.
     ///
     /// Convenience method to fetch multiple objects by their identifiers.
     /// See [FetchMany] and [FetchMany::fetch_many()] for more detailed documentation.
@@ -479,15 +548,15 @@
     </span><span class="kw">async fn </span>fetch_by_identifiers&lt;I: IntoIterator&lt;Item = Identifier&gt; + Send&gt;(
         sdk: <span class="kw-2">&amp;</span>Sdk,
         identifiers: I,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;RetrievedObjects&lt;K, <span class="self">Self</span>&gt;, Error&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;
     <span class="kw">where
-        </span>Vec&lt;Identifier&gt;: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request&gt;,
+        </span>Vec&lt;Identifier&gt;: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request&gt;,
     {
         <span class="kw">let </span>ids = identifiers.into_iter().collect::&lt;Vec&lt;Identifier&gt;&gt;();
         <span class="self">Self</span>::fetch_many(sdk, ids).<span class="kw">await
     </span>}
 
-    <span class="doccomment">/// Fetch multiple objects from the Platform with limit.
+    <span class="doccomment">/// Fetch multiple objects from Platform with limit.
     ///
     /// Fetches up to `limit` objects matching the `query`.    
     /// See [FetchMany] and [FetchMany::fetch_many()] for more detailed documentation.
@@ -497,41 +566,42 @@
     /// - `sdk`: An instance of [Sdk].
     /// - `query`: A query parameter implementing [`Query`](crate::platform::query::Query) to specify the data to be retrieved.
     /// - `limit`: Maximum number of objects to fetch.
-    </span><span class="kw">async fn </span>fetch_many_with_limit&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request&gt;&gt;(
+    </span><span class="kw">async fn </span>fetch_many_with_limit&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request&gt;&gt;(
         sdk: <span class="kw-2">&amp;</span>Sdk,
         query: Q,
         limit: u32,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;RetrievedObjects&lt;K, <span class="self">Self</span>&gt;, Error&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt;
     <span class="kw">where
-        </span>LimitQuery&lt;Q&gt;: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request&gt;,
+        </span>LimitQuery&lt;Q&gt;: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request&gt;,
     {
         <span class="kw">let </span>limit_query = LimitQuery {
             limit: <span class="prelude-val">Some</span>(limit),
             query,
+            start_info: <span class="prelude-val">None</span>,
         };
 
         <span class="self">Self</span>::fetch_many(sdk, limit_query).<span class="kw">await
     </span>}
 }
 
-<span class="doccomment">/// Fetch documents from the Platform.
+<span class="doccomment">/// Fetch documents from Platform.
 ///
 /// Returns [Documents](dpp::document::Document) indexed by their [Identifier](dpp::prelude::Identifier).
 ///
 /// ## Supported query types
 ///
-/// * [DriveQuery](crate::platform::DriveQuery) - query that specifies document matching criteria
-/// * [DocumentQuery](crate::platform::document_query::DocumentQuery) -
+/// * [DriveQuery](crate::platform::DriveDocumentQuery) - query that specifies document matching criteria
+/// * [DocumentQuery](crate::platform::document_query::DocumentQuery)
 </span><span class="attr">#[async_trait::async_trait]
-</span><span class="kw">impl </span>FetchMany&lt;Identifier&gt; <span class="kw">for </span>Document {
+</span><span class="kw">impl </span>FetchMany&lt;Identifier, Documents&gt; <span class="kw">for </span>Document {
     <span class="comment">// We need to use the DocumentQuery type here because the DocumentQuery
     // type stores full contract, which is missing in the GetDocumentsRequest type.
     // TODO: Refactor to use ContextProvider
     </span><span class="kw">type </span>Request = DocumentQuery;
-    <span class="kw">async fn </span>fetch_many&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;Identifier&gt;&gt;::Request&gt;&gt;(
+    <span class="kw">async fn </span>fetch_many&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;Identifier, Documents&gt;&gt;::Request&gt;&gt;(
         sdk: <span class="kw-2">&amp;</span>Sdk,
         query: Q,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;Identifier, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Documents, Error&gt; {
         <span class="kw">let </span>document_query: DocumentQuery = query.query(sdk.prove())<span class="question-mark">?</span>;
 
         <span class="kw">let </span>request = document_query.clone();
@@ -558,7 +628,7 @@
 /// ## Supported query types
 ///
 /// * [Identifier] - [Identity](crate::platform::Identity) ID for which to retrieve keys
-</span><span class="kw">impl </span>FetchMany&lt;KeyID&gt; <span class="kw">for </span>IdentityPublicKey {
+</span><span class="kw">impl </span>FetchMany&lt;KeyID, IdentityPublicKeys&gt; <span class="kw">for </span>IdentityPublicKey {
     <span class="kw">type </span>Request = GetIdentityKeysRequest;
 }
 
@@ -573,7 +643,7 @@
 /// [DEFAULT_EPOCH_QUERY_LIMIT](super::query::DEFAULT_EPOCH_QUERY_LIMIT) objects starting from this index
 /// * [`LimitQuery&lt;EpochQuery&gt;`](super::LimitQuery), [`LimitQuery&lt;EpochIndex&gt;`](super::LimitQuery) - limit query
 /// that allows to specify maximum number of objects to fetch; see also [FetchMany::fetch_many_with_limit()].
-</span><span class="kw">impl </span>FetchMany&lt;EpochIndex&gt; <span class="kw">for </span>ExtendedEpochInfo {
+</span><span class="kw">impl </span>FetchMany&lt;EpochIndex, ExtendedEpochInfos&gt; <span class="kw">for </span>ExtendedEpochInfo {
     <span class="kw">type </span>Request = GetEpochsInfoRequest;
 }
 
@@ -597,7 +667,7 @@
 /// let result = ProtocolVersionVoteCount::fetch_many(&amp;sdk, ()).await;
 /// # });
 /// ```
-</span><span class="kw">impl </span>FetchMany&lt;ProtocolVersion&gt; <span class="kw">for </span>ProtocolVersionVoteCount {
+</span><span class="kw">impl </span>FetchMany&lt;ProtocolVersion, ProtocolVersionUpgrades&gt; <span class="kw">for </span>ProtocolVersionVoteCount {
     <span class="kw">type </span>Request = GetProtocolVersionUpgradeStateRequest;
 }
 
@@ -615,14 +685,68 @@
 /// the query will return all objects
 /// * [`LimitQuery&lt;ProTxHash&gt;`](super::LimitQuery) - limit query that allows to specify maximum number of objects
 /// to fetch; see also [FetchMany::fetch_many_with_limit()].
-</span><span class="kw">impl </span>FetchMany&lt;ProTxHash&gt; <span class="kw">for </span>MasternodeProtocolVote {
+</span><span class="kw">impl </span>FetchMany&lt;ProTxHash, MasternodeProtocolVotes&gt; <span class="kw">for </span>MasternodeProtocolVote {
     <span class="kw">type </span>Request = GetProtocolVersionUpgradeVoteStatusRequest;
 }
 
 <span class="doccomment">/// Fetch multiple data contracts.
 ///
 /// Returns [DataContracts](drive_proof_verifier::types::DataContracts) indexed by [Identifier](dpp::prelude::Identifier).
-</span><span class="kw">impl </span>FetchMany&lt;Identifier&gt; <span class="kw">for </span>DataContract {
+///
+/// ## Supported query types
+///
+/// * [Vec&lt;Identifier&gt;](dpp::prelude::Identifier) - list of identifiers of data contracts to fetch
+///
+</span><span class="kw">impl </span>FetchMany&lt;Identifier, DataContracts&gt; <span class="kw">for </span>DataContract {
     <span class="kw">type </span>Request = GetDataContractsRequest;
+}
+
+<span class="doccomment">/// Fetch multiple [ContestedResource], indexed by Identifier.
+///
+/// ## Supported query types
+///
+/// * [VotePollsByDocumentTypeQuery]
+</span><span class="kw">impl </span>FetchMany&lt;Identifier, ContestedResources&gt; <span class="kw">for </span>ContestedResource {
+    <span class="kw">type </span>Request = GetContestedResourcesRequest;
+}
+
+<span class="doccomment">/// Fetch multiple contenders for a contested document resource vote poll.
+///
+/// Returns [Contender](drive_proof_verifier::types::Contenders) indexed by [Identifier](dpp::prelude::Identifier).
+///
+/// ## Supported query types
+///
+/// * [ContestedDocumentVotePollDriveQuery]
+</span><span class="attr">#[async_trait::async_trait]
+</span><span class="kw">impl </span>FetchMany&lt;Identifier, Contenders&gt; <span class="kw">for </span>ContenderWithSerializedDocument {
+    <span class="kw">type </span>Request = GetContestedResourceVoteStateRequest;
+}
+
+<span class="doccomment">///  Fetch voters
+/// ## Supported query types
+///
+/// * [ContestedDocumentVotePollVotesDriveQuery]
+</span><span class="kw">impl </span>FetchMany&lt;usize, Voters&gt; <span class="kw">for </span>Voter {
+    <span class="kw">type </span>Request = GetContestedResourceVotersForIdentityRequest;
+}
+
+<span class="comment">//   GetContestedResourceIdentityVoteStatus
+</span><span class="doccomment">/// Fetch votes of some identity for a contested document resource vote poll.
+///
+/// ## Supported query types
+///
+/// * [ContestedResourceVotesGivenByIdentityQuery]
+</span><span class="kw">impl </span>FetchMany&lt;Identifier, ResourceVotesByIdentity&gt; <span class="kw">for </span>ResourceVote {
+    <span class="kw">type </span>Request = GetContestedResourceIdentityVotesRequest;
+}
+
+<span class="comment">//
+</span><span class="doccomment">/// Fetch multiple vote polls grouped by timestamp.
+///
+/// ## Supported query types
+///
+/// * [VotePollsByEndDateDriveQuery]
+</span><span class="kw">impl </span>FetchMany&lt;TimestampMillis, VotePollsGroupedByTimestamp&gt; <span class="kw">for </span>VotePoll {
+    <span class="kw">type </span>Request = GetVotePollsByEndDateRequest;
 }
 </code></pre></div></section></main></body></html>

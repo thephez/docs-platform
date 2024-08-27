@@ -61,6 +61,7 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Helpers for managing platform version votes
 
 </span><span class="kw">use </span><span class="kw">crate</span>::platform::fetch_many::FetchMany;
@@ -74,7 +75,7 @@
 </span><span class="doccomment">/// Helper trait for managing MasternodeProtocolVote objects
 </span><span class="attr">#[async_trait]
 </span><span class="kw">pub trait </span>MasternodeProtocolVoteEx&lt;K: Ord&gt; {
-    <span class="doccomment">/// Fetch masternode votes for version update from the platform.
+    <span class="doccomment">/// Fetch masternode votes for version update from Platform.
     ///
     /// ## Parameters
     ///
@@ -107,6 +108,7 @@
             LimitQuery {
                 query: start_protxhash,
                 limit,
+                start_info: <span class="prelude-val">None</span>,
             },
         )
         .<span class="kw">await

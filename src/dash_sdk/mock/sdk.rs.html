@@ -367,16 +367,83 @@
 <a href="#366" id="366">366</a>
 <a href="#367" id="367">367</a>
 <a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Mocking mechanisms for Dash Platform SDK.
 //!
 //! See [MockDashPlatformSdk] for more details.
-</span><span class="kw">use </span>dapi_grpc::platform::v0::ResponseMetadata;
+</span><span class="kw">use crate</span>::{
+    platform::{types::identity::IdentityRequest, DocumentQuery, Fetch, FetchMany, Query},
+    Error, Sdk,
+};
+<span class="kw">use </span>arc_swap::ArcSwapOption;
+<span class="kw">use </span>dapi_grpc::platform::v0::{Proof, ResponseMetadata};
 <span class="kw">use </span>dapi_grpc::{
     mock::Mockable,
     platform::v0::{<span class="self">self </span><span class="kw">as </span>proto},
 };
+<span class="kw">use </span>dpp::dashcore::Network;
 <span class="kw">use </span>dpp::version::PlatformVersion;
-<span class="kw">use </span>drive_proof_verifier::{error::ContextProviderError, FromProof, MockContextProvider};
+<span class="kw">use </span>drive_proof_verifier::{error::ContextProviderError, ContextProvider, FromProof};
 <span class="kw">use </span>rs_dapi_client::mock::MockError;
 <span class="kw">use </span>rs_dapi_client::{
     mock::{Key, MockDapiClient},
@@ -385,11 +452,6 @@
 };
 <span class="kw">use </span>std::{collections::BTreeMap, path::PathBuf, sync::Arc};
 <span class="kw">use </span>tokio::sync::Mutex;
-
-<span class="kw">use crate</span>::{
-    platform::{types::identity::IdentityRequest, DocumentQuery, Fetch, FetchMany, Query},
-    Error,
-};
 
 <span class="kw">use </span><span class="kw">super</span>::MockResponse;
 
@@ -403,47 +465,55 @@
 /// ## Panics
 ///
 /// Can panic on errors.
-</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>MockDashPlatformSdk {
     from_proof_expectations: BTreeMap&lt;Key, Vec&lt;u8&gt;&gt;,
     platform_version: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>PlatformVersion,
     dapi: Arc&lt;Mutex&lt;MockDapiClient&gt;&gt;,
-    prove: bool,
-    quorum_provider: <span class="prelude-ty">Option</span>&lt;Arc&lt;MockContextProvider&gt;&gt;,
+    sdk: ArcSwapOption&lt;Sdk&gt;,
 }
 
 <span class="kw">impl </span>MockDashPlatformSdk {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(
-        version: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>PlatformVersion,
-        dapi: Arc&lt;Mutex&lt;MockDapiClient&gt;&gt;,
-        prove: bool,
-    ) -&gt; <span class="self">Self </span>{
+    <span class="doccomment">/// Returns true when requests should use proofs.
+    ///
+    /// ## Panics
+    ///
+    /// Panics when sdk is not set during initialization.
+    </span><span class="kw">pub fn </span>prove(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(sdk) = <span class="self">self</span>.sdk.load().as_ref() {
+            sdk.prove()
+        } <span class="kw">else </span>{
+            <span class="macro">panic!</span>(<span class="string">"sdk must be set when creating mock "</span>)
+        }
+    }
+
+    <span class="doccomment">/// Create new mock SDK.
+    ///
+    /// ## Note
+    ///
+    /// You have to call [MockDashPlatformSdk::with_sdk()] to set sdk, otherwise Mock SDK will panic.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(version: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>PlatformVersion, dapi: Arc&lt;Mutex&lt;MockDapiClient&gt;&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             from_proof_expectations: Default::default(),
             platform_version: version,
             dapi,
-            prove,
-            quorum_provider: <span class="prelude-val">None</span>,
+            sdk: ArcSwapOption::new(<span class="prelude-val">None</span>),
         }
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_sdk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, sdk: Sdk) {
+        <span class="self">self</span>.sdk.store(<span class="prelude-val">Some</span>(Arc::new(sdk)));
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>version&lt;<span class="lifetime">'v</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'v </span>PlatformVersion {
         <span class="self">self</span>.platform_version
     }
-    <span class="doccomment">/// Define a directory where files containing quorum information, like quorum public keys, are stored.
-    ///
-    /// This directory will be used to load quorum information from files.
-    /// You can use [SdkBuilder::with_dump_dir()](crate::SdkBuilder::with_dump_dir()) to generate these files.
-    </span><span class="kw">pub fn </span>quorum_info_dir&lt;P: AsRef&lt;std::path::Path&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dir: P) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>provider = MockContextProvider::new();
-        provider.quorum_keys_dir(<span class="prelude-val">Some</span>(dir.as_ref().to_path_buf()));
-        <span class="self">self</span>.quorum_provider = <span class="prelude-val">Some</span>(Arc::new(provider));
-
-        <span class="self">self
-    </span>}
 
     <span class="doccomment">/// Load all expectations from files in a directory.
     ///
+    ///
+    /// By default, mock expectations are loaded when Sdk is built with [SdkBuilder::build()](crate::SdkBuilder::build()).
+    /// This function can be used to load expectations after the Sdk is created, or use alternative location.
     /// Expectation files must be prefixed with [DapiClient::DUMP_FILE_PREFIX] and
     /// have `.json` extension.
     </span><span class="kw">pub async fn </span>load_expectations&lt;P: AsRef&lt;std::path::Path&gt;&gt;(
@@ -473,7 +543,7 @@
 
         <span class="kw">for </span>filename <span class="kw">in </span><span class="kw-2">&amp;</span>files {
             <span class="kw">let </span>basename = filename.file_name().unwrap().to_str().unwrap();
-            <span class="kw">let </span>request_type = basename.split(<span class="string">'_'</span>).nth(<span class="number">2</span>).unwrap_or_default();
+            <span class="kw">let </span>request_type = basename.split(<span class="string">'_'</span>).nth(<span class="number">1</span>).unwrap_or_default();
 
             <span class="kw">match </span>request_type {
                 <span class="string">"DocumentQuery" </span>=&gt; <span class="self">self</span>.load_expectation::&lt;DocumentQuery&gt;(filename).<span class="kw">await</span><span class="question-mark">?</span>,
@@ -525,6 +595,42 @@
                     )
                     .<span class="kw">await</span><span class="question-mark">?
                 </span>}
+                <span class="string">"GetContestedResourcesRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourcesRequest&gt;(filename)
+                        .<span class="kw">await</span><span class="question-mark">?
+                </span>}
+                <span class="string">"GetContestedResourceVoteStateRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourceVoteStateRequest&gt;(filename)
+                        .<span class="kw">await</span><span class="question-mark">?
+                </span>}
+                <span class="string">"GetContestedResourceVotersForIdentityRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourceVotersForIdentityRequest&gt;(
+                        filename,
+                    )
+                    .<span class="kw">await</span><span class="question-mark">?
+                </span>}
+                <span class="string">"GetContestedResourceIdentityVotesRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourceIdentityVotesRequest&gt;(
+                        filename,
+                    )
+                    .<span class="kw">await</span><span class="question-mark">?
+                </span>}
+                <span class="string">"GetVotePollsByEndDateRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetVotePollsByEndDateRequest&gt;(filename)
+                        .<span class="kw">await</span><span class="question-mark">?
+                </span>}
+                <span class="string">"GetPrefundedSpecializedBalanceRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetPrefundedSpecializedBalanceRequest&gt;(filename)
+                        .<span class="kw">await</span><span class="question-mark">?
+                </span>}
+                <span class="string">"GetPathElementsRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetPathElementsRequest&gt;(filename)
+                        .<span class="kw">await</span><span class="question-mark">?
+                </span>}
+                <span class="string">"GetTotalCreditsInPlatformRequest" </span>=&gt; {
+                    <span class="self">self</span>.load_expectation::&lt;proto::GetTotalCreditsInPlatformRequest&gt;(filename)
+                        .<span class="kw">await</span><span class="question-mark">?
+                </span>}
                 <span class="kw">_ </span>=&gt; {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Config(<span class="macro">format!</span>(
                         <span class="string">"unknown request type {} in {}"</span>,
@@ -560,11 +666,11 @@
     /// ## Generic Parameters
     ///
     /// - `O`: Type of the object that will be returned in response to the query. Must implement [Fetch] and [MockResponse].
-    /// - `Q`: Type of the query that will be sent to the platform. Must implement [Query] and [Mockable].
+    /// - `Q`: Type of the query that will be sent to Platform. Must implement [Query] and [Mockable].
     ///
     /// ## Arguments
     ///
-    /// - `query`: Query that will be sent to the platform.
+    /// - `query`: Query that will be sent to Platform.
     /// - `object`: Object that will be returned in response to `query`, or None if the object is expected to not exist.
     ///
     /// ## Returns
@@ -611,7 +717,7 @@
     <span class="kw">where
         </span>&lt;&lt;O <span class="kw">as </span>Fetch&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response: Default,
     {
-        <span class="kw">let </span>grpc_request = query.query(<span class="self">self</span>.prove).expect(<span class="string">"query must be correct"</span>);
+        <span class="kw">let </span>grpc_request = query.query(<span class="self">self</span>.prove()).expect(<span class="string">"query must be correct"</span>);
         <span class="self">self</span>.expect(grpc_request, object).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
@@ -625,11 +731,11 @@
     ///
     /// - `O`: Type of the object that will be returned in response to the query.
     /// Must implement [FetchMany]. `Vec&lt;O&gt;` must implement [MockResponse].
-    /// - `Q`: Type of the query that will be sent to the platform. Must implement [Query] and [Mockable].
+    /// - `Q`: Type of the query that will be sent to Platform. Must implement [Query] and [Mockable].
     ///
     /// ## Arguments
     ///
-    /// - `query`: Query that will be sent to the platform.
+    /// - `query`: Query that will be sent to Platform.
     /// - `objects`: Vector of objects that will be returned in response to `query`, or None if no objects are expected.
     ///
     /// ## Returns
@@ -648,23 +754,24 @@
     /// object must be a vector of objects.
     </span><span class="kw">pub async fn </span>expect_fetch_many&lt;
         K: Ord,
-        O: FetchMany&lt;K&gt;,
-        Q: Query&lt;&lt;O <span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request&gt;,
+        O: FetchMany&lt;K, R&gt;,
+        Q: Query&lt;&lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request&gt;,
+        R: FromIterator&lt;(K, <span class="prelude-ty">Option</span>&lt;O&gt;)&gt; + MockResponse + Send + Default,
     &gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         query: Q,
-        objects: <span class="prelude-ty">Option</span>&lt;BTreeMap&lt;K, <span class="prelude-ty">Option</span>&lt;O&gt;&gt;&gt;,
+        objects: <span class="prelude-ty">Option</span>&lt;R&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, Error&gt;
     <span class="kw">where
-        </span>BTreeMap&lt;K, <span class="prelude-ty">Option</span>&lt;O&gt;&gt;: MockResponse,
-        &lt;&lt;O <span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response: Default,
-        BTreeMap&lt;K, <span class="prelude-ty">Option</span>&lt;O&gt;&gt;: FromProof&lt;
-                &lt;O <span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request,
-                Request = &lt;O <span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request,
-                Response = &lt;&lt;O <span class="kw">as </span>FetchMany&lt;K&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response,
+        </span>R: MockResponse,
+        &lt;&lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response: Default,
+        R: FromProof&lt;
+                &lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request,
+                Request = &lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request,
+                Response = &lt;&lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response,
             &gt; + Sync,
     {
-        <span class="kw">let </span>grpc_request = query.query(<span class="self">self</span>.prove).expect(<span class="string">"query must be correct"</span>);
+        <span class="kw">let </span>grpc_request = query.query(<span class="self">self</span>.prove()).expect(<span class="string">"query must be correct"</span>);
         <span class="self">self</span>.expect(grpc_request, objects).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
@@ -699,7 +806,7 @@
         <span class="comment">// This expectation will work for execute
         </span><span class="kw">let </span><span class="kw-2">mut </span>dapi_guard = <span class="self">self</span>.dapi.lock().<span class="kw">await</span>;
         <span class="comment">// We don't really care about the response, as it will be mocked by from_proof, so we provide default()
-        </span>dapi_guard.expect(<span class="kw-2">&amp;</span>grpc_request, <span class="kw-2">&amp;</span>Default::default())<span class="question-mark">?</span>;
+        </span>dapi_guard.expect(<span class="kw-2">&amp;</span>grpc_request, <span class="kw-2">&amp;</span><span class="prelude-val">Ok</span>(Default::default()))<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -709,7 +816,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: O::Request,
         response: O::Response,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;O&gt;, ResponseMetadata), drive_proof_verifier::Error&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;O&gt;, ResponseMetadata, Proof), drive_proof_verifier::Error&gt;
     <span class="kw">where
         </span>O::Request: Mockable,
         <span class="prelude-ty">Option</span>&lt;O&gt;: MockResponse,
@@ -721,18 +828,33 @@
             <span class="prelude-val">Some</span>(d) =&gt; (
                 <span class="prelude-ty">Option</span>::&lt;O&gt;::mock_deserialize(<span class="self">self</span>, d),
                 ResponseMetadata::default(),
+                Proof::default(),
             ),
             <span class="prelude-val">None </span>=&gt; {
                 <span class="kw">let </span>version = <span class="self">self</span>.version();
-                <span class="kw">let </span>provider = <span class="self">self</span>.quorum_provider.as_ref()
+                <span class="kw">let </span>provider = <span class="self">self</span>.context_provider()
                     .ok_or(ContextProviderError::InvalidQuorum(
                         <span class="string">"expectation not found and quorum info provider not initialized with sdk.mock().quorum_info_dir()"</span>.to_string()
                     ))<span class="question-mark">?</span>;
-                O::maybe_from_proof_with_metadata(request, response, version, provider)<span class="question-mark">?
+                O::maybe_from_proof_with_metadata(
+                    request,
+                    response,
+                    Network::Regtest,
+                    version,
+                    <span class="kw-2">&amp;</span>provider,
+                )<span class="question-mark">?
             </span>}
         };
 
         <span class="prelude-val">Ok</span>(data)
+    }
+    <span class="doccomment">/// Return context provider implementation defined for upstreeam Sdk object.
+    </span><span class="kw">fn </span>context_provider(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>ContextProvider&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(sdk) = <span class="self">self</span>.sdk.load_full() {
+            sdk.clone().context_provider()
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 </code></pre></div></section></main></body></html>

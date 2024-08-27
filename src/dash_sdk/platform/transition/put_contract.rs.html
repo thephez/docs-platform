@@ -137,6 +137,13 @@
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
 <a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::platform::transition::broadcast_request::BroadcastRequestForStateTransition;
 <span class="kw">use </span>std::collections::BTreeMap;
 
@@ -155,6 +162,8 @@
 <span class="kw">use </span>dpp::state_transition::proof_result::StateTransitionProofResult;
 <span class="kw">use </span>dpp::state_transition::StateTransition;
 <span class="kw">use </span>drive::drive::Drive;
+<span class="kw">use </span>drive_proof_verifier::error::ContextProviderError;
+<span class="kw">use </span>drive_proof_verifier::DataContractProvider;
 <span class="kw">use </span>rs_dapi_client::{DapiRequest, RequestSettings};
 
 <span class="attr">#[async_trait::async_trait]
@@ -242,12 +251,17 @@
         <span class="kw">let </span>block_info = block_info_from_metadata(response.metadata()<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>proof = response.proof_owned()<span class="question-mark">?</span>;
+        <span class="kw">let </span>context_provider =
+            sdk.context_provider()
+                .ok_or(Error::from(ContextProviderError::Config(
+                    <span class="string">"Context provider not initialized"</span>.to_string(),
+                )))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>(<span class="kw">_</span>, result) = Drive::verify_state_transition_was_executed_with_proof(
             <span class="kw-2">&amp;</span>state_transition,
             <span class="kw-2">&amp;</span>block_info,
             proof.grovedb_proof.as_slice(),
-            <span class="kw-2">&amp;</span>|<span class="kw">_</span>| <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="kw-2">&amp;</span>context_provider.as_contract_lookup_fn(),
             sdk.version(),
         )<span class="question-mark">?</span>;
 
