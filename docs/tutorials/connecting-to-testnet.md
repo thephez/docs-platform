@@ -8,7 +8,7 @@ The purpose of this tutorial is to walk through the steps necessary to access th
 
 ## Overview
 
-Platform services are provided via a combination of HTTP and gRPC connections to DAPI, and some connections to an Insight API. Although one could interact with DAPI by connecting to these directly, or by using [DAPI-client](https://github.com/dashpay/platform/tree/master/packages/js-dapi-client), the easiest approach is to use the [JavaScript Dash SDK](https://github.com/dashpay/platform/tree/master/packages/js-dash-sdk). The Dash SDK connects to the testnet by default.
+Platform services are provided via a combination of HTTP and gRPC connections to DAPI, and some connections to an Insight API. Although one could interact with DAPI by connecting to these directly, or by using [DAPI-client](https://github.com/dashpay/platform/tree/master/packages/js-dapi-client), the easiest approach is to use the [JavaScript Dash SDK](https://github.com/dashpay/platform/tree/master/packages/js-dash-sdk).
 
 ## Prerequisites
 
@@ -25,6 +25,10 @@ npm install dash
 ```
 
 ### 2. Connect to Dash Platform
+
+:::{attention}
+The JavaScript Dash SDK connects to testnet by default. Mainnet can only be accessed by [connecting via address](#connect-via-address).
+:::
 
 Create a file named `dashConnect.js` with the following contents. Then run it by typing `node dashConnect.js` from the command line:
 

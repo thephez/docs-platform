@@ -172,6 +172,7 @@ protocol-ref/errors
 :hidden:
 
 resources/repository-overview
+Platform Explorer <https://platform-explorer.com/>
 Testnet Block Explorer <https://insight.testnet.networks.dash.org:3002/insight/>
 Testnet Faucet <http://faucet.testnet.networks.dash.org/>
 JavaScript SDK <https://github.com/dashpay/platform/tree/master/packages/js-dash-sdk#readme>
