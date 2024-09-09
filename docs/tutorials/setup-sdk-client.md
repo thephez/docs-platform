@@ -1,5 +1,12 @@
 # Setup SDK Client
 
+:::{warning}
+The JavaScript SDK should only be used in production when connected to trusted nodes. While it
+provides easy access to Dash Platform without requiring a full node, it **_does not support Dash
+Platform's proofs or verify synchronized blockchain data_**. Therefore, it is less secure than the
+[Rust SDK](../sdk-rs/overview.md), which requests proofs for all queried data.
+:::
+
 In this tutorial we will show how to configure the client for use in the remaining tutorials.
 
 ## Prerequisites
@@ -10,7 +17,7 @@ In this tutorial we will show how to configure the client for use in the remaini
 
 ## Code
 
-:::{attention}
+:::{tip}
 The JavaScript Dash SDK connects to testnet by default. Mainnet can only be accessed by [connecting via address](./connecting-to-testnet.md#connect-to-a-network).
 :::
 
