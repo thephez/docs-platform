@@ -25,6 +25,35 @@ Some [additional metadata](https://github.com/dashpay/platform/blob/master/packa
 
 Dash Platform 0.25.16 included a [breaking change that added versioning](https://github.com/dashpay/platform/pull/1522) to these endpoints so future updates can be done without creating significant issues for API consumers.
 
+```{eval-rst}
+.. _mn-identity-id:
+```
+
+## Masternode identity IDs
+
+[Masternode identities](../explanations/identity.md#masternode-identities) are created automatically
+by the system based on the [Core masternode registration transaction (protx)
+hash](inv:core:std#ref-txs-proregtx). Masternode identity IDs are created by converting the protx
+hash to base58. This can be done using an [online base58
+encoder](https://appdevtools.com/base58-encoder-decoder) or through JavaScript using the [bs58
+package](https://www.npmjs.com/package/bs58) as shown below.
+
+```{eval-rst}
+.. _reference-dapi-endpoints-platform-grpc-protx-to-id:
+```
+
+:::{code-block} javascript
+:caption: Protx hash to identity ID
+
+const bs58 = require('bs58').default;
+
+const protx = 'b09cfb1d82a643408818d4a02f491a7ed2dc66f074618706221f2f49f2bae0de';
+const base58Protx = bs58.encode(Buffer.from(protx, 'hex'));
+console.log(`Masternode identity id (base58): ${base58Protx}`);
+// Output:
+//  Masternode identity id (base58): CtRbCAi9R5hhC9VdsgxtRMw7MSVrBCZNEELdkTxpy5Kj
+:::
+
 ## Endpoint Details
 
 ### broadcastStateTransition
@@ -147,7 +176,7 @@ Retrieves the voting record of a specific identity.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw="
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -162,16 +191,15 @@ grpcurl -proto protos/platform/v0/platform.proto \
 {
   "v0": {
     "votes": {
-      "contested_resource_identity_votes": [],
-      "finished_results": true
+      "finishedResults": true
     },
     "metadata": {
-      "height": "2874",
-      "core_chain_locked_height": 1086880,
-      "epoch": 761,
-      "time_ms": "1724093690163",
-      "protocol_version": 1,
-      "chain_id": "dash-testnet-50"
+      "height": "7762",
+      "coreChainLockedHeight": 1099677,
+      "epoch": 1260,
+      "timeMs": "1725889742454",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -230,12 +258,12 @@ grpcurl -proto protos/platform/v0/platform.proto \
       "finishedResults": true
     },
     "metadata": {
-      "height": "2746",
-      "coreChainLockedHeight": 1086784,
-      "epoch": 757,
-      "timeMs": "1724079623407",
+      "height": "7762",
+      "coreChainLockedHeight": 1099677,
+      "epoch": 1260,
+      "timeMs": "1725889742454",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -323,7 +351,7 @@ Retrieves the state of a vote for a specific contested resource.
 
 | Name    | Type    | Required | Description                                                           |
 | ------- | ------- | -------- | --------------------------------------------------------------------- |
-| `id`    | Bytes   | Yes      | An identity `id`                                                      |
+| `id`    | Bytes   | Yes      | An identity `id`<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity. The data requested will be encoded as part of the proof in the response.|
 
 **Example Request and Response**
@@ -343,7 +371,7 @@ loadDpp();
 const dpp = new DashPlatformProtocol();
 const client = new DAPIClient();
 
-const identityId = Identifier.from('EuzJmuZdBSJs2eTrxHEp6QqJztbp6FKDNGMeb4W2Ds7h');
+const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
 client.platform.getIdentity(identityId).then((response) => {
   const identity = dpp.identity.createFromBuffer(response.getIdentity());
   console.log(identity.toJSON());
@@ -369,7 +397,7 @@ const platformPromiseClient = new PlatformPromiseClient(
   'https://seed-1.testnet.networks.dash.org:1443',
 );
 
-const id = Identifier.from('EuzJmuZdBSJs2eTrxHEp6QqJztbp6FKDNGMeb4W2Ds7h');
+const id = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
 const idBuffer = Buffer.from(id);
 const getIdentityRequest = new GetIdentityRequest();
 getIdentityRequest.setId(idBuffer);
@@ -392,7 +420,7 @@ platformPromiseClient
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw="
+      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -443,14 +471,14 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "identity": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQLItHR7UoysX933psxjcC7gTtfRMykE4IUQND6gDc5UagABAAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA/QAAAAQrpPz8AA==",
+    "identity": "AB8VEmymhcW7r01Ka36+WtMlOruBGrE3Ulr0sTsCo5scBAAAAAAAAAAAIQMSQ7bd3xPfA+9xn2+FLl/AJrQTEhdW/OUafgjhbjs6qwABAAEAAgAAACED8nl3p8oFHACE5DGvv8Y9sBxWEVPLpUDUlSD7yICx0OoAAgACAAEAAAAhA9BQqn5pbKnveG+CTGpr+sheSghjJFEUYpm//gO1HPa1AAMAAwMBAAAAIQK7PbawzDv5oNWL3icaXEeAnv5xigN0gUMXRVzn6VgPQwD8J+gRAgA=",
     "metadata": {
-      "height": "6730",
-      "coreChainLockedHeight": 926904,
-      "epoch": 844,
-      "timeMs": "1701959872131",
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -466,7 +494,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ------------ |
-| `id`    | Bytes   | Yes      | An identity ID
+| `id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
 
 **Example Request and Response**
@@ -479,7 +507,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw="
+      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -494,14 +522,14 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "balance": "17912102140",
+    "balance": "669520130",
     "metadata": {
-      "height": "6858",
-      "coreChainLockedHeight": 927080,
-      "epoch": 850,
-      "timeMs": "1701983632299",
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -517,7 +545,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ------------ |
-| `id`    | Bytes   | Yes      | An identity ID
+| `id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
 
 **Example Request and Response**
@@ -530,7 +558,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw="
+      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -545,17 +573,16 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "balance_and_revision": {
-      "balance": "17912102140",
-      "revision": "0"
+    "balanceAndRevision": {
+      "balance": "669520130"
     },
     "metadata": {
-      "height": "6862",
-      "core_chain_locked_height": 927086,
-      "epoch": 851,
-      "time_ms": "1701984361792",
-      "protocol_version": 1,
-      "chain_id": "dash-testnet-37"
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -622,7 +649,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ------------ |
-| `identity_id`    | Bytes   | Yes      | An identity ID
+| `identity_id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
 | `contract_id`    | Bytes   | Yes      | A contract ID
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity contract nonce
 
@@ -643,7 +670,7 @@ loadDpp();
 const dpp = new DashPlatformProtocol(null);
 const client = new DAPIClient();
 
-const identityId = Identifier.from('EuzJmuZdBSJs2eTrxHEp6QqJztbp6FKDNGMeb4W2Ds7h');
+const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
 const contractId = Identifier.from('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec');
 client.platform.getIdentityContractNonce(identityId, contractId).then((response) => {
   console.log(`Current identity contract nonce: ${response.getIdentityContractNonce()}`);
@@ -658,7 +685,7 @@ client.platform.getIdentityContractNonce(identityId, contractId).then((response)
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw=",
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
       "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
     }
   }' \
@@ -681,14 +708,14 @@ Current identity contract nonce: 0
 ```json
 {
   "v0": {
-    "identityContractNonce": "0",
+    "identityContractNonce": "3",
     "metadata": {
-      "height": "4039",
-      "coreChainLockedHeight": 1021684,
-      "epoch": 200,
-      "timeMs": "1715111140075",
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-45"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -704,7 +731,7 @@ Current identity contract nonce: 0
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ------------ |
-| `identity_td`  | String | Yes | An identity ID
+| `identity_td`  | String | Yes | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
 | `request_type` | [KeyRequestType](#request-types) | Yes | Request all keys (`all_keys`), specific keys (`specific_keys`), search for keys (`search_key`)
 | `limit` | Integer  | Yes     | The maximum number of revisions to return |
 | `offset` | Integer | Yes     | The offset of the first revision to return |
@@ -741,7 +768,7 @@ To search for identity keys, use the `search_keys` request type. The options for
   "purpose_map": {
     "0": {
       "security_level_map": {
-        "0": "ALL_KEYS_OF_KIND_REQUEST"
+        "0": "CURRENT_KEY_OF_KIND_REQUEST"
       }
     }
   }
@@ -752,13 +779,16 @@ To search for identity keys, use the `search_keys` request type. The options for
 
 ::::{tab-set}
 :::{tab-item} gRPCurl (All keys)
+
+Request all identity keys
+
+Note: `identityId` must be represented in base64
+
 ```shell
-# Request all identity keys
-# `identityId` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw=",
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
       "request_type": {
         "allKeys": {}
       }
@@ -769,20 +799,24 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```
 :::
 :::{tab-item} gRPCurl (Specific keys)
+
+Request specific keys
+
+Note: `identityId` must be represented in base64
+
 ```shell
-# Request specific keys
-# `identityId` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw=",
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
       "request_type": {
         "specificKeys": {
           "keyIds": [
             1
           ]
         }
-      }
+      },
+      "limit": 1
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -791,24 +825,28 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 
 :::{tab-item} gRPCurl (Search keys)
+
+Search keys
+
+Note: `identityId` must be represented in base64
+
 ```shell
-# Search keys
-# `identityId` must be represented in base64
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw=",
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
       "request_type": {
         "search_key": {
           "purpose_map": {
             "0": {
               "security_level_map": {
-                "0": "ALL_KEYS_OF_KIND_REQUEST"
+                "0": "CURRENT_KEY_OF_KIND_REQUEST"
               }
             }
           }
         }
-      }
+      },
+      "limit": 1
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -820,23 +858,25 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ::::{tab-set}
 :::{tab-item} Response (gRPCurl)
 :sync: grpcurl
+All keys
 ```json
-// All keys
 {
   "v0": {
     "keys": {
       "keysBytes": [
-        "AAAAAAAAACECyLR0e1KMrF/d96bMY3Au4E7X0TMpBOCFEDQ+oA3OVGoA",
-        "AAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA"
+        "AAAAAAAAACEDEkO23d8T3wPvcZ9vhS5fwCa0ExIXVvzlGn4I4W47OqsA",
+        "AAEAAgAAACED8nl3p8oFHACE5DGvv8Y9sBxWEVPLpUDUlSD7yICx0OoA",
+        "AAIAAQAAACED0FCqfmlsqe94b4JMamv6yF5KCGMkURRimb/+A7Uc9rUA",
+        "AAMDAQAAACECuz22sMw7+aDVi94nGlxHgJ7+cYoDdIFDF0Vc5+lYD0MA"
       ]
     },
     "metadata": {
-      "height": "9240",
-      "coreChainLockedHeight": 929379,
-      "epoch": 941,
-      "timeMs": "1702309782764",
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -852,7 +892,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ------------ |
-| `identity_id`    | Bytes   | Yes      | An identity ID
+| `identity_id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity nonce
 
 **Example Request and Response**
@@ -872,7 +912,7 @@ loadDpp();
 const dpp = new DashPlatformProtocol(null);
 const client = new DAPIClient();
 
-const identityId = Identifier.from('EuzJmuZdBSJs2eTrxHEp6QqJztbp6FKDNGMeb4W2Ds7h');
+const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
 client.platform.getIdentityNonce(identityId).then((response) => {
   console.log(`Current identity nonce: ${response.getIdentityNonce()}`);
 });
@@ -886,7 +926,7 @@ client.platform.getIdentityNonce(identityId).then((response) => {
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw="
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -908,14 +948,14 @@ Current identity nonce: 0
 ```json
 {
   "v0": {
-    "identityNonce": "0",
+    "identityNonce": "3",
     "metadata": {
-      "height": "4035",
-      "coreChainLockedHeight": 1021681,
-      "epoch": 200,
-      "timeMs": "1715110406689",
+      "height": "5990",
+      "coreChainLockedHeight": 1097384,
+      "epoch": 1170,
+      "timeMs": "1725567663863",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-45"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -931,7 +971,7 @@ Current identity nonce: 0
 
 | Name                 | Type                    | Required | Description |
 |----------------------|-------------------------|----------|-------------|
-| `identities_ids`     | Array of Strings        | Yes      | An array of identity IDs |
+| `identities_ids`     | Array of Strings        | Yes      | An array of identity IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
 | `contract_id`        | String                  | Yes      | The ID of the contract |
 | `document_type_name` | String                  | No       | Name of the document type |
 | `purposes`           | Array of [KeyPurpose](#key-purposes) | No | Array of purposes for which keys are requested |
@@ -958,7 +998,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
       "identities_ids": [
-        "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw=",
+        "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
         "NBgQk65dTNttDYDGLZNLrb1QEAWB91jqkqXtK1KU4Dc="
       ],
       "purposes": [],
@@ -979,12 +1019,12 @@ grpcurl -proto protos/platform/v0/platform.proto \
   "v0": {
     "identitiesKeys": {},
     "metadata": {
-      "height": "3994",
-      "coreChainLockedHeight": 1021628,
-      "epoch": 198,
-      "timeMs": "1715102626945",
+      "height": "5990",
+      "coreChainLockedHeight": 1097384,
+      "epoch": 1170,
+      "timeMs": "1725567663863",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-45"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -1266,14 +1306,14 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "dataContract": "AOZoxlmvZq7h5ywYbd57W34KHXEqCcQNVyH2Ir9TxTFVAAAAAAABAAABMBLBm5jsADOt2zbNZLf1EGcPKjUaQwS19plBRChu/awAAgZkb21haW4WBhIEdHlwZRIGb2JqZWN0EgdpbmRpY2VzFQMWAxIEbmFtZRIScGFyZW50TmFtZUFuZExhYmVsEgpwcm9wZXJ0aWVzFQIWARIabm9ybWFsaXplZFBhcmVudERvbWFpbk5hbWUSA2FzYxYBEg9ub3JtYWxpemVkTGFiZWwSA2FzYxIGdW5pcXVlEwEWAxIEbmFtZRIOZGFzaElkZW50aXR5SWQSCnByb3BlcnRpZXMVARYBEhxyZWNvcmRzLmRhc2hVbmlxdWVJZGVudGl0eUlkEgNhc2MSBnVuaXF1ZRMBFgISBG5hbWUSCWRhc2hBbGlhcxIKcHJvcGVydGllcxUBFgESG3JlY29yZHMuZGFzaEFsaWFzSWRlbnRpdHlJZBIDYXNjEgpwcm9wZXJ0aWVzFgcSBWxhYmVsFgYSBHR5cGUSBnN0cmluZxIHcGF0dGVybhIqXlthLXpBLVowLTldW2EtekEtWjAtOS1dezAsNjF9W2EtekEtWjAtOV0kEgltaW5MZW5ndGgCAxIJbWF4TGVuZ3RoAj8SCHBvc2l0aW9uAgASC2Rlc2NyaXB0aW9uEhlEb21haW4gbGFiZWwuIGUuZy4gJ0JvYicuEg9ub3JtYWxpemVkTGFiZWwWBhIEdHlwZRIGc3RyaW5nEgdwYXR0ZXJuEjxeW2EtaGota20tbnAtejAtOV1bYS1oai1rbS1ucC16MC05LV17MCw2MX1bYS1oai1rbS1ucC16MC05XSQSCW1heExlbmd0aAI/Eghwb3NpdGlvbgIBEgtkZXNjcmlwdGlvbhKjRG9tYWluIGxhYmVsIGNvbnZlcnRlZCB0byBsb3dlcmNhc2UgZm9yIGNhc2UtaW5zZW5zaXRpdmUgdW5pcXVlbmVzcyB2YWxpZGF0aW9uLiAibyIsICJpIiBhbmQgImwiIHJlcGxhY2VkIHdpdGggIjAiIGFuZCAiMSIgdG8gbWl0aWdhdGUgaG9tb2dyYXBoIGF0dGFjay4gZS5nLiAnYjBiJxIIJGNvbW1lbnQSXE11c3QgYmUgZXF1YWwgdG8gdGhlIGxhYmVsIGluIGxvd2VyY2FzZS4gIm8iLCAiaSIgYW5kICJsIiBtdXN0IGJlIHJlcGxhY2VkIHdpdGggIjAiIGFuZCAiMSIuEhBwYXJlbnREb21haW5OYW1lFgYSBHR5cGUSBnN0cmluZxIHcGF0dGVybhItXiR8XlthLXpBLVowLTldW2EtekEtWjAtOS1dezAsNjF9W2EtekEtWjAtOV0kEgltaW5MZW5ndGgCABIJbWF4TGVuZ3RoAj8SCHBvc2l0aW9uAgISC2Rlc2NyaXB0aW9uEidBIGZ1bGwgcGFyZW50IGRvbWFpbiBuYW1lLiBlLmcuICdkYXNoJy4SGm5vcm1hbGl6ZWRQYXJlbnREb21haW5OYW1lFgcSBHR5cGUSBnN0cmluZxIHcGF0dGVybhJBXiR8XlthLWhqLWttLW5wLXowLTldW2EtaGota20tbnAtejAtOS1cLl17MCw2MX1bYS1oai1rbS1ucC16MC05XSQSCW1pbkxlbmd0aAIAEgltYXhMZW5ndGgCPxIIcG9zaXRpb24CAxILZGVzY3JpcHRpb24SokEgcGFyZW50IGRvbWFpbiBuYW1lIGluIGxvd2VyY2FzZSBmb3IgY2FzZS1pbnNlbnNpdGl2ZSB1bmlxdWVuZXNzIHZhbGlkYXRpb24uICJvIiwgImkiIGFuZCAibCIgcmVwbGFjZWQgd2l0aCAiMCIgYW5kICIxIiB0byBtaXRpZ2F0ZSBob21vZ3JhcGggYXR0YWNrLiBlLmcuICdkYXNoJxIIJGNvbW1lbnQSwE11c3QgZWl0aGVyIGJlIGVxdWFsIHRvIGFuIGV4aXN0aW5nIGRvbWFpbiBvciBlbXB0eSB0byBjcmVhdGUgYSB0b3AgbGV2ZWwgZG9tYWluLiAibyIsICJpIiBhbmQgImwiIG11c3QgYmUgcmVwbGFjZWQgd2l0aCAiMCIgYW5kICIxIi4gT25seSB0aGUgZGF0YSBjb250cmFjdCBvd25lciBjYW4gY3JlYXRlIHRvcCBsZXZlbCBkb21haW5zLhIMcHJlb3JkZXJTYWx0FgYSBHR5cGUSBWFycmF5EglieXRlQXJyYXkTARIIbWluSXRlbXMCIBIIbWF4SXRlbXMCIBIIcG9zaXRpb24CBBILZGVzY3JpcHRpb24SIlNhbHQgdXNlZCBpbiB0aGUgcHJlb3JkZXIgZG9jdW1lbnQSB3JlY29yZHMWBxIEdHlwZRIGb2JqZWN0Egpwcm9wZXJ0aWVzFgISFGRhc2hVbmlxdWVJZGVudGl0eUlkFggSBHR5cGUSBWFycmF5EglieXRlQXJyYXkTARIIbWluSXRlbXMCIBIIbWF4SXRlbXMCIBIIcG9zaXRpb24CABIQY29udGVudE1lZGlhVHlwZRIhYXBwbGljYXRpb24veC5kYXNoLmRwcC5pZGVudGlmaWVyEgtkZXNjcmlwdGlvbhI+SWRlbnRpdHkgSUQgdG8gYmUgdXNlZCB0byBjcmVhdGUgdGhlIHByaW1hcnkgbmFtZSB0aGUgSWRlbnRpdHkSCCRjb21tZW50EiNNdXN0IGJlIGVxdWFsIHRvIHRoZSBkb2N1bWVudCBvd25lchITZGFzaEFsaWFzSWRlbnRpdHlJZBYIEgR0eXBlEgVhcnJheRIJYnl0ZUFycmF5EwESCG1pbkl0ZW1zAiASCG1heEl0ZW1zAiASCHBvc2l0aW9uAgESEGNvbnRlbnRNZWRpYVR5cGUSIWFwcGxpY2F0aW9uL3guZGFzaC5kcHAuaWRlbnRpZmllchILZGVzY3JpcHRpb24SPUlkZW50aXR5IElEIHRvIGJlIHVzZWQgdG8gY3JlYXRlIGFsaWFzIG5hbWVzIGZvciB0aGUgSWRlbnRpdHkSCCRjb21tZW50EiNNdXN0IGJlIGVxdWFsIHRvIHRoZSBkb2N1bWVudCBvd25lchINbWluUHJvcGVydGllcwIBEg1tYXhQcm9wZXJ0aWVzAgESCHBvc2l0aW9uAgUSFGFkZGl0aW9uYWxQcm9wZXJ0aWVzEwASCCRjb21tZW50EpBDb25zdHJhaW50IHdpdGggbWF4IGFuZCBtaW4gcHJvcGVydGllcyBlbnN1cmUgdGhhdCBvbmx5IG9uZSBpZGVudGl0eSByZWNvcmQgaXMgdXNlZCAtIGVpdGhlciBhIGBkYXNoVW5pcXVlSWRlbnRpdHlJZGAgb3IgYSBgZGFzaEFsaWFzSWRlbnRpdHlJZGASDnN1YmRvbWFpblJ1bGVzFgYSBHR5cGUSBm9iamVjdBIKcHJvcGVydGllcxYBEg9hbGxvd1N1YmRvbWFpbnMWBBIEdHlwZRIHYm9vbGVhbhILZGVzY3JpcHRpb24SW1RoaXMgb3B0aW9uIGRlZmluZXMgd2hvIGNhbiBjcmVhdGUgc3ViZG9tYWluczogdHJ1ZSAtIGFueW9uZTsgZmFsc2UgLSBvbmx5IHRoZSBkb21haW4gb3duZXISCCRjb21tZW50Ek9Pbmx5IHRoZSBkb21haW4gb3duZXIgaXMgYWxsb3dlZCB0byBjcmVhdGUgc3ViZG9tYWlucyBmb3Igbm9uIHRvcC1sZXZlbCBkb21haW5zEghwb3NpdGlvbgIAEghwb3NpdGlvbgIGEgtkZXNjcmlwdGlvbhJCU3ViZG9tYWluIHJ1bGVzIGFsbG93IGRvbWFpbiBvd25lcnMgdG8gZGVmaW5lIHJ1bGVzIGZvciBzdWJkb21haW5zEhRhZGRpdGlvbmFsUHJvcGVydGllcxMAEghyZXF1aXJlZBUBEg9hbGxvd1N1YmRvbWFpbnMSCHJlcXVpcmVkFQYSBWxhYmVsEg9ub3JtYWxpemVkTGFiZWwSGm5vcm1hbGl6ZWRQYXJlbnREb21haW5OYW1lEgxwcmVvcmRlclNhbHQSB3JlY29yZHMSDnN1YmRvbWFpblJ1bGVzEhRhZGRpdGlvbmFsUHJvcGVydGllcxMAEggkY29tbWVudBL7ATdJbiBvcmRlciB0byByZWdpc3RlciBhIGRvbWFpbiB5b3UgbmVlZCB0byBjcmVhdGUgYSBwcmVvcmRlci4gVGhlIHByZW9yZGVyIHN0ZXAgaXMgbmVlZGVkIHRvIHByZXZlbnQgbWFuLWluLXRoZS1taWRkbGUgYXR0YWNrcy4gbm9ybWFsaXplZExhYmVsICsgJy4nICsgbm9ybWFsaXplZFBhcmVudERvbWFpbiBtdXN0IG5vdCBiZSBsb25nZXIgdGhhbiAyNTMgY2hhcnMgbGVuZ3RoIGFzIGRlZmluZWQgYnkgUkZDIDEwMzUuIERvbWFpbiBkb2N1bWVudHMgYXJlIGltbXV0YWJsZTogbW9kaWZpY2F0aW9uIGFuZCBkZWxldGlvbiBhcmUgcmVzdHJpY3RlZAhwcmVvcmRlchYGEgR0eXBlEgZvYmplY3QSB2luZGljZXMVARYDEgRuYW1lEgpzYWx0ZWRIYXNoEgpwcm9wZXJ0aWVzFQEWARIQc2FsdGVkRG9tYWluSGFzaBIDYXNjEgZ1bmlxdWUTARIKcHJvcGVydGllcxYBEhBzYWx0ZWREb21haW5IYXNoFgYSBHR5cGUSBWFycmF5EglieXRlQXJyYXkTARIIbWluSXRlbXMCIBIIbWF4SXRlbXMCIBIIcG9zaXRpb24CABILZGVzY3JpcHRpb24SWURvdWJsZSBzaGEtMjU2IG9mIHRoZSBjb25jYXRlbmF0aW9uIG9mIGEgMzIgYnl0ZSByYW5kb20gc2FsdCBhbmQgYSBub3JtYWxpemVkIGRvbWFpbiBuYW1lEghyZXF1aXJlZBUBEhBzYWx0ZWREb21haW5IYXNoEhRhZGRpdGlvbmFsUHJvcGVydGllcxMAEggkY29tbWVudBJKUHJlb3JkZXIgZG9jdW1lbnRzIGFyZSBpbW11dGFibGU6IG1vZGlmaWNhdGlvbiBhbmQgZGVsZXRpb24gYXJlIHJlc3RyaWN0ZWQ=",
+    "dataContract": "AOZoxlmvZq7h5ywYbd57W34KHXEqCcQNVyH2Ir9TxTFVAAAAAAABAQAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIGZG9tYWluFgsSEGRvY3VtZW50c011dGFibGUTABIMY2FuQmVEZWxldGVkEwESDHRyYW5zZmVyYWJsZQIBEgl0cmFkZU1vZGUCARIEdHlwZRIGb2JqZWN0EgdpbmRpY2VzFQIWBBIEbmFtZRIScGFyZW50TmFtZUFuZExhYmVsEgpwcm9wZXJ0aWVzFQIWARIabm9ybWFsaXplZFBhcmVudERvbWFpbk5hbWUSA2FzYxYBEg9ub3JtYWxpemVkTGFiZWwSA2FzYxIGdW5pcXVlEwESCWNvbnRlc3RlZBYDEgxmaWVsZE1hdGNoZXMVARYCEgVmaWVsZBIPbm9ybWFsaXplZExhYmVsEgxyZWdleFBhdHRlcm4SE15bYS16QS1aMDEtXXszLDE5fSQSCnJlc29sdXRpb24CABILZGVzY3JpcHRpb24SqklmIHRoZSBub3JtYWxpemVkIGxhYmVsIHBhcnQgb2YgdGhpcyBpbmRleCBpcyBsZXNzIHRoYW4gMjAgY2hhcmFjdGVycyAoYWxsIGFscGhhYmV0IGEteiwgQS1aLCAwLCAxLCBhbmQgLSkgdGhlbiBhIG1hc3Rlcm5vZGUgdm90ZSBjb250ZXN0IHRha2VzIHBsYWNlIHRvIGdpdmUgb3V0IHRoZSBuYW1lFgMSBG5hbWUSCmlkZW50aXR5SWQSDm51bGxTZWFyY2hhYmxlEwASCnByb3BlcnRpZXMVARYBEhByZWNvcmRzLmlkZW50aXR5EgNhc2MSCnByb3BlcnRpZXMWBxIFbGFiZWwWBhIEdHlwZRIGc3RyaW5nEgdwYXR0ZXJuEipeW2EtekEtWjAtOV1bYS16QS1aMC05LV17MCw2MX1bYS16QS1aMC05XSQSCW1pbkxlbmd0aAIDEgltYXhMZW5ndGgCPxIIcG9zaXRpb24CABILZGVzY3JpcHRpb24SGURvbWFpbiBsYWJlbC4gZS5nLiAnQm9iJy4SD25vcm1hbGl6ZWRMYWJlbBYGEgR0eXBlEgZzdHJpbmcSB3BhdHRlcm4SPF5bYS1oai1rbS1ucC16MC05XVthLWhqLWttLW5wLXowLTktXXswLDYxfVthLWhqLWttLW5wLXowLTldJBIJbWF4TGVuZ3RoAj8SCHBvc2l0aW9uAgESC2Rlc2NyaXB0aW9uEqNEb21haW4gbGFiZWwgY29udmVydGVkIHRvIGxvd2VyY2FzZSBmb3IgY2FzZS1pbnNlbnNpdGl2ZSB1bmlxdWVuZXNzIHZhbGlkYXRpb24uICJvIiwgImkiIGFuZCAibCIgcmVwbGFjZWQgd2l0aCAiMCIgYW5kICIxIiB0byBtaXRpZ2F0ZSBob21vZ3JhcGggYXR0YWNrLiBlLmcuICdiMGInEggkY29tbWVudBJcTXVzdCBiZSBlcXVhbCB0byB0aGUgbGFiZWwgaW4gbG93ZXJjYXNlLiAibyIsICJpIiBhbmQgImwiIG11c3QgYmUgcmVwbGFjZWQgd2l0aCAiMCIgYW5kICIxIi4SEHBhcmVudERvbWFpbk5hbWUWBhIEdHlwZRIGc3RyaW5nEgdwYXR0ZXJuEi1eJHxeW2EtekEtWjAtOV1bYS16QS1aMC05LV17MCw2MX1bYS16QS1aMC05XSQSCW1pbkxlbmd0aAIAEgltYXhMZW5ndGgCPxIIcG9zaXRpb24CAhILZGVzY3JpcHRpb24SJ0EgZnVsbCBwYXJlbnQgZG9tYWluIG5hbWUuIGUuZy4gJ2Rhc2gnLhIabm9ybWFsaXplZFBhcmVudERvbWFpbk5hbWUWBxIEdHlwZRIGc3RyaW5nEgdwYXR0ZXJuEkFeJHxeW2EtaGota20tbnAtejAtOV1bYS1oai1rbS1ucC16MC05LVwuXXswLDYxfVthLWhqLWttLW5wLXowLTldJBIJbWluTGVuZ3RoAgASCW1heExlbmd0aAI/Eghwb3NpdGlvbgIDEgtkZXNjcmlwdGlvbhKiQSBwYXJlbnQgZG9tYWluIG5hbWUgaW4gbG93ZXJjYXNlIGZvciBjYXNlLWluc2Vuc2l0aXZlIHVuaXF1ZW5lc3MgdmFsaWRhdGlvbi4gIm8iLCAiaSIgYW5kICJsIiByZXBsYWNlZCB3aXRoICIwIiBhbmQgIjEiIHRvIG1pdGlnYXRlIGhvbW9ncmFwaCBhdHRhY2suIGUuZy4gJ2Rhc2gnEggkY29tbWVudBLATXVzdCBlaXRoZXIgYmUgZXF1YWwgdG8gYW4gZXhpc3RpbmcgZG9tYWluIG9yIGVtcHR5IHRvIGNyZWF0ZSBhIHRvcCBsZXZlbCBkb21haW4uICJvIiwgImkiIGFuZCAibCIgbXVzdCBiZSByZXBsYWNlZCB3aXRoICIwIiBhbmQgIjEiLiBPbmx5IHRoZSBkYXRhIGNvbnRyYWN0IG93bmVyIGNhbiBjcmVhdGUgdG9wIGxldmVsIGRvbWFpbnMuEgxwcmVvcmRlclNhbHQWBhIEdHlwZRIFYXJyYXkSCWJ5dGVBcnJheRMBEghtaW5JdGVtcwIgEghtYXhJdGVtcwIgEghwb3NpdGlvbgIEEgtkZXNjcmlwdGlvbhIiU2FsdCB1c2VkIGluIHRoZSBwcmVvcmRlciBkb2N1bWVudBIHcmVjb3JkcxYFEgR0eXBlEgZvYmplY3QSCnByb3BlcnRpZXMWARIIaWRlbnRpdHkWBxIEdHlwZRIFYXJyYXkSCWJ5dGVBcnJheRMBEghtaW5JdGVtcwIgEghtYXhJdGVtcwIgEghwb3NpdGlvbgIBEhBjb250ZW50TWVkaWFUeXBlEiFhcHBsaWNhdGlvbi94LmRhc2guZHBwLmlkZW50aWZpZXISC2Rlc2NyaXB0aW9uEjFJZGVudGlmaWVyIG5hbWUgcmVjb3JkIHRoYXQgcmVmZXJzIHRvIGFuIElkZW50aXR5Eg1taW5Qcm9wZXJ0aWVzAgESCHBvc2l0aW9uAgUSFGFkZGl0aW9uYWxQcm9wZXJ0aWVzEwASDnN1YmRvbWFpblJ1bGVzFgYSBHR5cGUSBm9iamVjdBIKcHJvcGVydGllcxYBEg9hbGxvd1N1YmRvbWFpbnMWBBIEdHlwZRIHYm9vbGVhbhILZGVzY3JpcHRpb24SW1RoaXMgb3B0aW9uIGRlZmluZXMgd2hvIGNhbiBjcmVhdGUgc3ViZG9tYWluczogdHJ1ZSAtIGFueW9uZTsgZmFsc2UgLSBvbmx5IHRoZSBkb21haW4gb3duZXISCCRjb21tZW50Ek9Pbmx5IHRoZSBkb21haW4gb3duZXIgaXMgYWxsb3dlZCB0byBjcmVhdGUgc3ViZG9tYWlucyBmb3Igbm9uIHRvcC1sZXZlbCBkb21haW5zEghwb3NpdGlvbgIAEghwb3NpdGlvbgIGEgtkZXNjcmlwdGlvbhJCU3ViZG9tYWluIHJ1bGVzIGFsbG93IGRvbWFpbiBvd25lcnMgdG8gZGVmaW5lIHJ1bGVzIGZvciBzdWJkb21haW5zEhRhZGRpdGlvbmFsUHJvcGVydGllcxMAEghyZXF1aXJlZBUBEg9hbGxvd1N1YmRvbWFpbnMSCHJlcXVpcmVkFQkSCiRjcmVhdGVkQXQSCiR1cGRhdGVkQXQSDiR0cmFuc2ZlcnJlZEF0EgVsYWJlbBIPbm9ybWFsaXplZExhYmVsEhpub3JtYWxpemVkUGFyZW50RG9tYWluTmFtZRIMcHJlb3JkZXJTYWx0EgdyZWNvcmRzEg5zdWJkb21haW5SdWxlcxIJdHJhbnNpZW50FQESDHByZW9yZGVyU2FsdBIUYWRkaXRpb25hbFByb3BlcnRpZXMTABIIJGNvbW1lbnQS+wE3SW4gb3JkZXIgdG8gcmVnaXN0ZXIgYSBkb21haW4geW91IG5lZWQgdG8gY3JlYXRlIGEgcHJlb3JkZXIuIFRoZSBwcmVvcmRlciBzdGVwIGlzIG5lZWRlZCB0byBwcmV2ZW50IG1hbi1pbi10aGUtbWlkZGxlIGF0dGFja3MuIG5vcm1hbGl6ZWRMYWJlbCArICcuJyArIG5vcm1hbGl6ZWRQYXJlbnREb21haW4gbXVzdCBub3QgYmUgbG9uZ2VyIHRoYW4gMjUzIGNoYXJzIGxlbmd0aCBhcyBkZWZpbmVkIGJ5IFJGQyAxMDM1LiBEb21haW4gZG9jdW1lbnRzIGFyZSBpbW11dGFibGU6IG1vZGlmaWNhdGlvbiBhbmQgZGVsZXRpb24gYXJlIHJlc3RyaWN0ZWQIcHJlb3JkZXIWCBIQZG9jdW1lbnRzTXV0YWJsZRMAEgxjYW5CZURlbGV0ZWQTARIEdHlwZRIGb2JqZWN0EgdpbmRpY2VzFQEWAxIEbmFtZRIKc2FsdGVkSGFzaBIKcHJvcGVydGllcxUBFgESEHNhbHRlZERvbWFpbkhhc2gSA2FzYxIGdW5pcXVlEwESCnByb3BlcnRpZXMWARIQc2FsdGVkRG9tYWluSGFzaBYGEgR0eXBlEgVhcnJheRIJYnl0ZUFycmF5EwESCG1pbkl0ZW1zAiASCG1heEl0ZW1zAiASCHBvc2l0aW9uAgASC2Rlc2NyaXB0aW9uEllEb3VibGUgc2hhLTI1NiBvZiB0aGUgY29uY2F0ZW5hdGlvbiBvZiBhIDMyIGJ5dGUgcmFuZG9tIHNhbHQgYW5kIGEgbm9ybWFsaXplZCBkb21haW4gbmFtZRIIcmVxdWlyZWQVARIQc2FsdGVkRG9tYWluSGFzaBIUYWRkaXRpb25hbFByb3BlcnRpZXMTABIIJGNvbW1lbnQSSlByZW9yZGVyIGRvY3VtZW50cyBhcmUgaW1tdXRhYmxlOiBtb2RpZmljYXRpb24gYW5kIGRlbGV0aW9uIGFyZSByZXN0cmljdGVk",
     "metadata": {
-      "height": "6750",
-      "coreChainLockedHeight": 926935,
-      "epoch": 845,
-      "timeMs": "1701963780843",
+      "height": "5990",
+      "coreChainLockedHeight": 1097384,
+      "epoch": 1170,
+      "timeMs": "1725567663863",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -1699,19 +1739,19 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :sync: grpcurl
 ```json
 {
-  "v0":{
-    "documents":{
-      "documents":[
-        "AANHCCLI23JAM6yPcJwiyAaVouU4btv1kXxaMF0mfXTDOM4WaCQNLedQ0rpbl1UMTZhEbnVeMfL4941ZD08iyFwBAAAHQ2hyb25pYwdjaHIwbjFjAQRkYXNoBGRhc2jU/03mq/VbDbGS/r9demy/KbIZjJyFGwtcyEKq9bv0miIBOM4WaCQNLedQ0rpbl1UMTZhEbnVeMfL4941ZD08iyFwAAQA="
+  "v0": {
+    "documents": {
+      "documents": [
+        "AAZ1S7dbhY4VJrSCvjs2Z1DIwa9Qt9MAyjbJdh7gPu6oDsGC/h1Ayf+ZzXp2zLWDF4XB2qMLWZ0brsAKo0r/0sYBAAcAAAGRivixugAAAZGK+LG6AAABkYr4sboAF2F1ZzI1LTEyMzQ1Njc4OTAxMjM0NTY3F2F1ZzI1LTEyMzQ1Njc4OTAxMjM0NTY3AQRkYXNoBGRhc2gAIQEOwYL+HUDJ/5nNenbMtYMXhcHaowtZnRuuwAqjSv/SxgEA"
       ]
     },
-    "metadata":{
-      "height":"6755",
-      "coreChainLockedHeight":926945,
-      "epoch":845,
-      "timeMs":"1701964691399",
-      "protocolVersion":1,
-      "chainId":"dash-testnet-37"
+    "metadata": {
+      "height": "5991",
+      "coreChainLockedHeight": 1097384,
+      "epoch": 1170,
+      "timeMs": "1725567845055",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -1865,7 +1905,7 @@ Retrieves the pre-funded specialized balance for a specific identity.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw="
+      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -1943,7 +1983,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
         "identities": [
           {
             "request_type": "FULL_IDENTITY",
-            "identity_id": "zrrtwQwGj7NujFpg3a5OBjTg9AzrpL2XPEzmr+qN1Vw="
+            "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
           }
         ],
         "contracts": [
@@ -2100,6 +2140,85 @@ grpcurl -proto protos/platform/v0/platform.proto \
       "timeMs": "1702398582963",
       "protocolVersion": 1,
       "chainId": "dash-testnet-37"
+    }
+  }
+}
+```
+:::
+::::
+
+### getStatus
+
+Retrieves status information related to Dash Platform.
+
+**Returns**: Status details including version, node, chain, network, and state sync information, or a cryptographic proof.
+
+**Parameters**:
+
+This endpoint does not require any parameters.
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {}
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getStatus
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "version": {
+      "software": {
+        "dapi": "1.2.0",
+        "drive": "1.2.0",
+        "tenderdash": "1.2.1"
+      },
+      "protocol": {
+        "tenderdash": {
+          "p2p": 10,
+          "block": 14
+        },
+        "drive": {
+          "latest": 1,
+          "current": 1
+        }
+      }
+    },
+    "node": {
+      "id": "H/vx0yVB3Lj1VVMFKVcEqf+a3CQ=",
+      "proTxHash": "LkhlGi6cDLTy+3q4dAYapK8M0otZaVYx5qNa85UO9vs="
+    },
+    "chain": {
+      "latestBlockHash": "XY1U/Ay7DCdZqJJwM4sXSw1OFdBIbnVYFc9sJep1hNw=",
+      "latestAppHash": "9wq6IzU4AjuL27HybKqvWOOPCbnpBJQjk6q64nsd7i8=",
+      "latestBlockHeight": "7768",
+      "earliestBlockHash": "CPoCwn7AOQujAeT8fj1+rbNQyBk+PmKgk2iXBuOiC/o=",
+      "earliestAppHash": "vwzLnKBxugGubmegwJD5eAPSbVbWddzVExeBy8rI7I8=",
+      "earliestBlockHeight": "1",
+      "maxPeerBlockHeight": "7768",
+      "coreChainLockedHeight": 1099682
+    },
+    "network": {
+      "chainId": "dash-testnet-51",
+      "peersCount": 61,
+      "listening": true
+    },
+    "stateSync": {},
+    "time": {
+      "local": "1725890999274",
+      "block": "1725890829092",
+      "genesis": "0",
+      "epoch": 1260
     }
   }
 }
