@@ -132,19 +132,20 @@ The identity `id` is calculated by Base58 encoding the double sha256 hash of the
 
 The identity `publicKeys` array stores information regarding each public key associated with the identity. Multiple identities may use the same public key.
 
-**Note:** Since v0.23, each identity must have at least two public keys: a primary key (security level `0`) that is only used when updating the identity and an additional one (security level `2`) used to sign state transitions.
+**Note:** Each identity must have at least two public keys: a primary key (security level `0`) that is only used when updating the identity and an additional one (security level `2`) used to sign state transitions.
 
 Each item in the `publicKeys` array consists of an object containing:
 
-| Field         | Type           | Description                                                                                                                                                                     |
-| ------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id            | integer        | The key id (all public keys must be unique)                                                                                                                                     |
-| type          | integer        | Type of key (default: 0 - ECDSA)                                                                                                                                                |
+| Field         | Type           | Description |
+| ------------- | -------------- | ----------- |
+| id            | integer        | The key id (all public keys must be unique) |
+| purpose       | integer        | Public key purpose (0 - Authentication, 1 - Encryption, 2 - Decryption, 3 - Withdraw) |
+| securityLevel | integer        | Public key security level (0 - Master, 1 - Critical, 2 - High, 3 - Medium) |
+| contractBounds | integer | |
+| type          | integer        | Type of key (default: 0 - ECDSA) |
+| readonly      | boolean        | Identity public key can't be modified with `readOnly` set to `true`. This can’t be changed after adding a key. |
 | data          | array of bytes | Public key (0 - ECDSA: 33 bytes, 1 - BLS: 48 bytes, 2 - ECDSA Hash160: 20 bytes, 3 - [BIP13](https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki) Hash160: 20 bytes) |
-| purpose       | integer        | Public key purpose (0 - Authentication, 1 - Encryption, 2 - Decryption, 3 - Withdraw)                                                                                           |
-| securityLevel | integer        | Public key security level (0 - Master, 1 - Critical, 2 - High, 3 - Medium)                                                                                                      |
-| readonly      | boolean        | Identity public key can't be modified with `readOnly` set to `true`. This can’t be changed after adding a key.                                                                  |
-| disabledAt    | integer        | Timestamp indicating that the key was disabled at a specified time                                                                                                              |
+| disabledAt    | integer        | Timestamp indicating that the key was disabled at a specified time |
 
 Keys for some purposes must meet certain [security level criteria](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/methods/validate_identity_public_keys_structure/v0/mod.rs#L22-L37) as detailed below:
 
