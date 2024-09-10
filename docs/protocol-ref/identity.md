@@ -18,7 +18,7 @@ Identities consist of three components that are described in further detail in t
 | balance         | integer        | Credit balance associated with the identity |
 | revision        | integer        | Identity update revision                    |
 
-Each identity must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/identity/identity.json):
+Each identity must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/schema/identity/v0/identity.json):
 
 ```json
 {
@@ -27,6 +27,7 @@ Each identity must comply with this JSON-Schema definition established in [rs-dp
   "properties": {
     "protocolVersion": {
       "type": "integer",
+      "minimum": 0,
       "$comment": "Maximum is the latest protocol version"
     },
     "id": {
@@ -66,20 +67,56 @@ Each identity must comply with this JSON-Schema definition established in [rs-dp
 
 ```json
 {
-  "protocolVersion":1,
-  "id":"6YfP6tT9AK8HPVXMK7CQrhpc8VMg7frjEnXinSPvUmZC",
-  "publicKeys":[
+  "$version": "0",
+  "id": "36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm",
+  "publicKeys": [
     {
-      "id":0,
-      "type":0,
-      "purpose":0,
-      "securityLevel":0,
-      "data":"AkWRfl3DJiyyy6YPUDQnNx5KERRnR8CoTiFUvfdaYSDS",
-      "readOnly":false
+      "$version": "0",
+      "id": 0,
+      "purpose": 0,
+      "securityLevel": 0,
+      "contractBounds": null,
+      "type": 0,
+      "readOnly": false,
+      "data": "AxJDtt3fE98D73Gfb4UuX8AmtBMSF1b85Rp+COFuOzqr",
+      "disabledAt": null
+    },
+    {
+      "$version": "0",
+      "id": 1,
+      "purpose": 0,
+      "securityLevel": 2,
+      "contractBounds": null,
+      "type": 0,
+      "readOnly": false,
+      "data": "A/J5d6fKBRwAhOQxr7/GPbAcVhFTy6VA1JUg+8iAsdDq",
+      "disabledAt": null
+    },
+    {
+      "$version": "0",
+      "id": 2,
+      "purpose": 0,
+      "securityLevel": 1,
+      "contractBounds": null,
+      "type": 0,
+      "readOnly": false,
+      "data": "A9BQqn5pbKnveG+CTGpr+sheSghjJFEUYpm//gO1HPa1",
+      "disabledAt": null
+    },
+    {
+      "$version": "0",
+      "id": 3,
+      "purpose": 3,
+      "securityLevel": 1,
+      "contractBounds": null,
+      "type": 0,
+      "readOnly": false,
+      "data": "Ars9trDMO/mg1YveJxpcR4Ce/nGKA3SBQxdFXOfpWA9D",
+      "disabledAt": null
     }
   ],
-  "balance":0,
-  "revision":0
+  "balance": 669520130,
+  "revision": 0
 }
 ```
 
@@ -89,7 +126,7 @@ The identity `id` is calculated by Base58 encoding the double sha256 hash of the
 
 `id = base58(sha256(sha256(<identity create funding output>)))`
 
-**Note:** The identity `id` uses the Dash Platform specific `application/x.dash.dpp.identifier` content media type. For additional information, please refer to the [js-dpp PR 252](https://github.com/dashevo/js-dpp/pull/252) that introduced it and [identifier.rs](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-platform-value/src/types/identifier.rs).
+**Note:** The identity `id` uses the Dash Platform specific `application/x.dash.dpp.identifier` content media type. For additional information, please refer to the [js-dpp PR 252](https://github.com/dashevo/js-dpp/pull/252) that introduced it and [identifier.rs](https://github.com/dashpay/platform/blob/master/packages/rs-platform-value/src/types/identifier.rs).
 
 ### Identity publicKeys
 
@@ -109,7 +146,7 @@ Each item in the `publicKeys` array consists of an object containing:
 | readonly      | boolean        | Identity public key can't be modified with `readOnly` set to `true`. This can’t be changed after adding a key.                                                                  |
 | disabledAt    | integer        | Timestamp indicating that the key was disabled at a specified time                                                                                                              |
 
-Keys for some purposes must meet certain [security level criteria](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/identity/identity_public_key/security_level.rs#L62-L77) as detailed below:
+Keys for some purposes must meet certain [security level criteria](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/methods/validate_identity_public_keys_structure/v0/mod.rs#L22-L37) as detailed below:
 
 | Key Purpose    | Allowed Security Level(s) |
 | -------------- | ------------------------- |
@@ -118,7 +155,7 @@ Keys for some purposes must meet certain [security level criteria](https://githu
 | Decryption     | Medium                    |
 | Withdraw       | Critical                  |
 
-Each identity public key must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/identity/publicKey.json):
+Each identity public key must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/schema/identity/v0/publicKey.json):
 
 ```json
 {
