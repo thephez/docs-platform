@@ -315,21 +315,6 @@ Each identity public key must comply with this JSON-Schema definition establishe
 
 Each public key in an identity's `publicKeys` array must be assigned a unique index number (`id`).
 
-#### Public Key `type`
-
-The `type` field indicates the algorithm used to derive the key.
-
-| Type | Description                                                                                           |
-| :--: | ----------------------------------------------------------------------------------------------------- |
-|   0  | ECDSA Secp256k1 (default)                                                                             |
-|   1  | BLS 12-381                                                                                            |
-|   2  | ECDSA Secp256k1 Hash160                                                                               |
-|   3  | [BIP13](https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki) pay-to-script-hash public key |
-
-#### Public Key `data`
-
-The `data` field contains the compressed public key.
-
 #### Public Key `purpose`
 
 The `purpose` field describes which operations are supported by the key. Please refer to [DIP11 - Identities](https://github.com/dashpay/dips/blob/master/dip-0011.md#keys) for additional information regarding this.
@@ -345,17 +330,32 @@ The `purpose` field describes which operations are supported by the key. Please 
 
 The `securityLevel` field indicates how securely the key should be stored by clients. Please refer to [DIP11 - Identities](https://github.com/dashpay/dips/blob/master/dip-0011.md#keys) for additional information regarding this.
 
-| Level | Description | Security Practice                                                                                                                                                                       |
-| :---: | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|   0   | Master      | Should always require a user to authenticate when signing a transition. Can only be used to update an identity.                                                                         |
-|   1   | Critical    | Should always require a user to authenticate when signing a transition                                                                                                                  |
+| Level | Description | Security Practice |
+| :---: | ----------- | ----------------- |
+|   0   | Master      | Should always require a user to authenticate when signing a transition. Can only be used to update an identity. |
+|   1   | Critical    | Should always require a user to authenticate when signing a transition |
 |   2   | High        | Should be available as long as the user has authenticated at least once during a session. Typically used to sign state transitions, but cannot be used for identity update transitions. |
-|   3   | Medium      | Should not require user authentication but must require access to the client device                                                                                                     |
+|   3   | Medium      | Should not require user authentication but must require access to the client device |
+
+#### Public Key `type`
+
+The `type` field indicates the algorithm used to derive the key.
+
+| Type | Description                                                                                           |
+| :--: | ----------------------------------------------------------------------------------------------------- |
+|   0  | ECDSA Secp256k1 (default)                                                                             |
+|   1  | BLS 12-381                                                                                            |
+|   2  | ECDSA Secp256k1 Hash160                                                                               |
+|   3  | [BIP13](https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki) pay-to-script-hash public key |
 
 #### Public Key `readOnly`
 
 The `readOnly` field indicates that the public key can't be modified if it is set to `true`. The  
 value of this field cannot be changed after adding the key.
+
+#### Public Key `data`
+
+The `data` field contains the compressed public key.
 
 #### Public Key `disabledAt`
 
