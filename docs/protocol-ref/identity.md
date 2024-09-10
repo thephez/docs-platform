@@ -311,6 +311,24 @@ Each identity public key must comply with this JSON-Schema definition establishe
 }
 ```
 
+#### Example Public Key
+
+JSON representation of the public key data for `0000000000000021033a9a8b1e4c581a1987724c6697135d31c07ee7ac827e6a59cec022b04d51055f00`:
+
+```json
+{
+  "$version": "0",
+  "id": 0,
+  "purpose": 0,
+  "securityLevel": 0,
+  "contractBounds": null,
+  "type": 0,
+  "readOnly": false,
+  "data": [ 3, 58, 154, 139, 30, 76, 88, 26, 25, 135, 114, 76, 102, 151, 19, 93, 49, 192, 126, 231, 172, 130, 126, 106, 89, 206, 192, 34, 176, 77, 81, 5, 95 ],
+  "disabledAt": null
+}
+```
+
 #### Public Key `id`
 
 Each public key in an identity's `publicKeys` array must be assigned a unique index number (`id`).
