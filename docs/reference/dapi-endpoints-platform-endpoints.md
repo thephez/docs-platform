@@ -1550,16 +1550,14 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 :::{note}
 The `where`, `order_by`, `limit`, `start_at`, and `start_after` parameters must comply with the limits defined on the [Query Syntax](../reference/query-syntax.md) page.
-
-Additionally, note that `where` and `order_by` must be [CBOR](https://tools.ietf.org/html/rfc7049) encoded.
 :::
 
 | Name                    | Type    | Required | Description                                                                                      |
 | ----------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------ |
 | `data_contract_id`      | Bytes   | Yes      | A data contract `id`                                                                             |
 | `document_type`         | String  | Yes      | A document type defined by the data contract (e.g. `preorder` or `domain` for the DPNS contract) |
-| `where` \*              | Bytes   | No       | Where clause to filter the results (**must be CBOR encoded**)                                    |
-| `order_by` \*           | Bytes   | No       | Sort records by the field(s) provided (**must be CBOR encoded**)                                 |
+| `where` \*              | Bytes   | No       | Where clause to filter the results |
+| `order_by` \*           | Bytes   | No       | Sort records by the field(s) provided |
 | `limit`                 | Integer | No       | Maximum number of results to return                                                              |
 | ----------              |         |          |                                                                                                  |
 | _One_ of the following: |         |          |                                                                                                  |
