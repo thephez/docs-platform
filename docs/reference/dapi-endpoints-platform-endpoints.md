@@ -36,7 +36,9 @@ by the system based on the [Core masternode registration transaction (protx)
 hash](inv:core:std#ref-txs-proregtx). Masternode identity IDs are created by converting the protx
 hash to base58. This can be done using an [online base58
 encoder](https://appdevtools.com/base58-encoder-decoder) or through JavaScript using the [bs58
-package](https://www.npmjs.com/package/bs58) as shown below.
+package](https://www.npmjs.com/package/bs58) as shown below. For gRPCurl, convert the protx hash to
+base64 instead. This can be done using an [online hex to base64
+encoder](https://base64.guru/converter/encode/hex).
 
 ```{eval-rst}
 .. _reference-dapi-endpoints-platform-grpc-protx-to-id:
@@ -47,11 +49,14 @@ package](https://www.npmjs.com/package/bs58) as shown below.
 
 const bs58 = require('bs58').default;
 
-const protx = 'b09cfb1d82a643408818d4a02f491a7ed2dc66f074618706221f2f49f2bae0de';
+const protx = '8eca4bcbb3a124ab283afd42dad3bdb2077b3809659788a0f1daffce5b9f001f';
 const base58Protx = bs58.encode(Buffer.from(protx, 'hex'));
 console.log(`Masternode identity id (base58): ${base58Protx}`);
+const base64Protx = Buffer.from(protx, 'hex').toString('base64');
+console.log(`Masternode identity id (base58): ${base64Protx}`);
 // Output:
-//  Masternode identity id (base58): CtRbCAi9R5hhC9VdsgxtRMw7MSVrBCZNEELdkTxpy5Kj
+//  Masternode identity id (base58): AcPogCxrxeas7jrWYG7TnLHKbsA5KLHGfvg6oYgANZ8J
+//  Masternode identity id (base64): jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=
 :::
 
 ## Endpoint Details
@@ -343,6 +348,132 @@ Retrieves the state of a vote for a specific contested resource.
   ```
   :::
   ::::
+
+### getEvonodesProposedEpochBlocksByIds
+
+Retrieves the number of blocks proposed by the specified evonodes in a certain epoch, based on their IDs.
+
+**Returns**: A list of evonodes and their proposed block counts or a cryptographic proof.
+
+**Parameters**:
+
+| Name               | Type     | Required | Description |
+| ------------------ | -------- | -------- | ----------- |
+| `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
+| `ids`              | Array    | Yes    | An array of evonode IDs for which proposed blocks are retrieved IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "ids": [
+        "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=","dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
+      ],
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getEvonodesProposedEpochBlocksByIds
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "evonodesProposedBlockCountsInfo": {
+      "evonodesProposedBlockCounts": [
+        {
+          "proTxHash": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
+        },
+        {
+          "proTxHash": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
+          "count": "13"
+        }
+      ]
+    },
+    "metadata": {
+      "height": "13621",
+      "coreChainLockedHeight": 1105397,
+      "epoch": 1482,
+      "timeMs": "1726691577244",
+      "protocolVersion": 3,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getEvonodesProposedEpochBlocksByRange
+
+Retrieves the number of blocks proposed by evonodes for a specified epoch.
+
+**Returns**: A list of evonodes and their proposed block counts or a cryptographic proof.
+
+**Parameters**:
+
+| Name               | Type     | Required | Description |
+| ------------------ | -------- | -------- | ----------- |
+| `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
+| `limit`            | Integer  | No       | Maximum number of evonodes proposed epoch blocks to return |
+| `start_after`      | Bytes    | No       | Retrieve results starting after this document |
+| `start_at`         | Bytes    | No       | Retrieve results starting at this document |
+| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "epoch": 0,
+      "limit": 10,
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getEvonodesProposedEpochBlocksByRange
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "evonodesProposedBlockCountsInfo": {
+      "evonodesProposedBlockCounts": [
+        {
+          "proTxHash": "BbaHl4NE+iQzsqqZ1B9kPi2FgaeJzcIwhIic7KUkTqg=",
+          "count": "1"
+        }
+      ]
+    },
+    "metadata": {
+      "height": "20263",
+      "coreChainLockedHeight": 1105827,
+      "epoch": 1499,
+      "timeMs": "1726752270072",
+      "protocolVersion": 3,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
 
 ### getIdentity
 
@@ -963,6 +1094,70 @@ Current identity nonce: 0
 :::
 ::::
 
+### getIdentitiesBalances
+
+Retrieves the balances for a list of identities.
+
+**Returns**: A list of identities with their corresponding balances or a cryptographic proof.
+
+**Parameters**:
+
+| Name      | Type    | Required | Description                                              |
+|-----------|---------|----------|----------------------------------------------------------|
+| `ids`     | Array   | No       | An array of identity IDs for which balances are requested<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `prove`   | Boolean | No       | Set to `true` to receive a proof containing the requested balances |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "ids": [
+        "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=","dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
+      ],
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentitiesBalances
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "identitiesBalances": {
+      "entries": [
+        {
+          "identity_id": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
+          "balance": 1000000
+        },
+        {
+          "identity_id": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14=",
+          "balance": 2500000
+        }
+      ]
+    },
+    "metadata": {
+      "height": "13621",
+      "coreChainLockedHeight": 1105397,
+      "epoch": 1482,
+      "timeMs": "1726691577244",
+      "protocolVersion": 3,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
 ### getIdentitiesContractKeys
 
 **Returns**: Keys associated to a specific contract for multiple [Identities](../explanations/identity.md).
@@ -971,7 +1166,7 @@ Current identity nonce: 0
 
 | Name                 | Type                    | Required | Description |
 |----------------------|-------------------------|----------|-------------|
-| `identities_ids`     | Array of Strings        | Yes      | An array of identity IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `identities_ids`     | Array                   | Yes      | An array of identity IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
 | `contract_id`        | String                  | Yes      | The ID of the contract |
 | `document_type_name` | String                  | No       | Name of the document type |
 | `purposes`           | Array of [KeyPurpose](#key-purposes) | No | Array of purposes for which keys are requested |
