@@ -150,8 +150,10 @@ pub fn generate_document_id(
 | :-: | - | - |
 | 0 | Create | Create a new document with the provided data |
 | 1 | Replace | Replace an existing document with the provided data |
-| 2 | `RESERVED` | Unused action |
-| 3 | Delete | Delete the referenced document |
+| 2 | Delete | Delete the referenced document |
+| 3 | Transfer | Transfer the referenced document to a new owner |
+| 4 | Update price | Update the price for the document |
+| 5 | Purchase | Purchase the referenced document |
 
 ### Document Create Transition
 
