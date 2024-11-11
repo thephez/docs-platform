@@ -16,9 +16,9 @@ Parameters:
 | -------------- | ------- | -------- | ------------------------- |
 | **where**      | array   | no       | Mongo-like where query    |
 | **orderBy**    | array   | no       | Mongo-like orderBy query  |
-| **limit**      | integer | no       | how many objects to fetch |
-| **startAt**    | integer | no       | number of objects to skip |
-| **startAfter** | integer | no       | exclusive skip            |
+| **limit**      | integer | no       | Number of objects to fetch |
+| **startAt**    | identifier | no       | Return results starting at the document with the specified identifier |
+| **startAfter** | identifier | no       | Return results starting after the document with the specified identifier |
 
 [Learn more about query syntax](../../../reference/query-syntax.md).
 
