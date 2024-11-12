@@ -75,7 +75,7 @@ Locked names can no longer be requested or awarded in Dash Platform v1, but the 
 DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
 
 1. Maximum length - 63 characters
-1. Character set - `0-9`, `-` (hyphen), and `A-Z` (case insensitive)
+1. Usable characters - `0-9`, `-` (hyphen), `a-z`, and `A-Z` (case sensitive)
     * Note: Use of `-` as a prefix/suffix to a name is _not_ allowed (e.g. `-name` or `name-`). This constraint is defined by this JSON-Schema [pattern](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json#L44) in the DPNS data contract: `"^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$`
 1. Domain labels are converted to lowercase for case-insensitive uniqueness validation.
 1. To mitigate [homograph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack), `o` is replaced with `0` and `i`/`l` are replaced with `1`. For example, "Alice" is normalized to "a11ce".
