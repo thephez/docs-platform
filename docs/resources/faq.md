@@ -53,6 +53,17 @@ Names can contain the characters `0-9`, `-` (hyphen), `a-z`, and `A-Z`. Names ca
 with a hyphen (e.g. `-name` or `name-`).
 :::
 
+:::{dropdown} Are names case-sensitive?
+
+Yes and no. Internally, name validation and processing are case-insensitive. For example, if you
+request the name "Sam", the system will check the availability of the case-insensitive version
+("sam"). Once registered, no other case variants of that name can registered (i.e., "SAM", "saM",
+etc.).
+
+However, each name also includes a label field that stores the exact case-sensitive version of the
+name as you requested (e.g. "Sam").
+:::
+
 :::{dropdown} Why do names have "0" and "1" in them when viewed in some apps?
 
 Some apps display the normalized name instead of the requested (display) name. To mitigate
@@ -116,6 +127,12 @@ If there is a tie, the first identity requesting the name will receive it. This 
 there is a tie between votes for an identity and votes to lock the name.
 :::
 
+:::{dropdown} Can usernames be transferred?
+
+Currently, usernames are non-transferrable. Future updates may enable transfers.
+
+:::
+
 :::{dropdown} How many times can a masternode change their vote for a name?
 
 Masternodes and evonodes can vote a total of 5 times per name. At the end of the voting period, the
@@ -125,4 +142,54 @@ most recent vote is the one that is counted.
 :::{dropdown} Is it necessary to have a DPNS name to use Platform apps?
 
 No, apps can interact with an identity whether or not it has a DPNS name registered. Someone may create an app that requires names, but it is not a platform requirement.
+:::
+
+:::{dropdown} What are identities and how are they related to usernames?
+
+Identities are separate from names and work behind the scenes to provide the foundation for various
+features. An identity consists primarily of one or more public keys recorded on the platform chain
+that can be used to control a user’s profile and cryptographically sign their data. All interactions
+with Platform, like creating and updating documents, are done using an identity.
+
+Usernames are DNS-like labels that can be associated with identities. Each identity can have
+multiple usernames.
+
+:::
+
+## DashPay
+
+:::{tip}
+See the [DashPay page](../explanations/dashpay.md) and the [DashPay
+DIP](https://github.com/dashpay/dips/blob/master/dip-0015.md) for additional information on the Dash Platform Name Service (DPNS).
+:::
+
+:::{dropdown} Can someone tell when Dash is sent from one username to another?
+
+No. Although contact requests are public in Dash Platform, the extended public keys are encrypted in
+such a way that only the two users involved in a contact's two way relationship can decrypt those
+keys. This ensures that when any two users make payments in DashPay, only they know the sender and
+receiver while 3rd parties do not. This means that outside observers cannot link the identities
+involved in the transaction.
+
+See the [DashPay DIP](https://github.com/dashpay/dips/blob/master/dip-0015.md) for more details.
+
+:::
+
+:::{dropdown} What info is encrypted, how is it encrypted and who can decrypt it?
+
+Your extended public (xPub) key is encrypted with an ECDH shared key when you send a contact request
+to someone else. Only the recipient of the contact request can decrypt the information in the
+document.
+
+See the [DashPay DIP](https://github.com/dashpay/dips/blob/master/dip-0015.md#the-contact-request)
+for more details.
+
+:::
+
+:::{dropdown} Are contacts public? Can I look up someone's entire contact list on Platform?
+
+Contact request documents on Dash Platform are public. Certain details, like public keys, are
+encrypted to ensure payments between users cannot be linked to their username. However, it is
+possible to see what contact requests someone has sent and which ones they have accepted.
+
 :::
