@@ -174,7 +174,7 @@ resources/faq
 resources/repository-overview
 Platform Explorer <https://platform-explorer.com/>
 Testnet Block Explorer <https://insight.testnet.networks.dash.org/insight/>
-Testnet Faucet <http://faucet.testnet.networks.dash.org/>
+Testnet Faucet <https://faucet.testnet.networks.dash.org/>
 JavaScript SDK <https://github.com/dashpay/platform/tree/master/packages/js-dash-sdk#readme>
 resources/source-code
 Previous Version of Docs <https://docs.dash.org/projects/platform/en/0.25.0/docs/>
