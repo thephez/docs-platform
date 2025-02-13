@@ -84,8 +84,8 @@ When creating a token, you define its configuration using the following paramete
 | Configuration Parameter | Mutable           | Default |
 |:------------------------|:------------------|:--------|
 | [Conventions](#display-conventions)      | Yes | N/A. Depends on implementation |
-| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v2.0-tokens-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L38) |
-| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v2.0-tokens-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L159) |
+| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L38) |
+| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L159) |
 | [Maximum supply](#token-supply)          | Yes | None |
 | [Keep history](#history)                 | Yes | True |
 | [Start paused](#initial-state)           | Yes | False |
@@ -136,7 +136,7 @@ Control level rule settings define who can perform token actions. This includes 
 
 ##### Parameters
 
-Each rule consists of the following parameters [defined in DPP](https://github.com/dashpay/platform/blob/v2.0-tokens-dev/packages/rs-dpp/src/data_contract/change_control_rules/v0/mod.rs) that control its behavior:
+Each rule consists of the following parameters [defined in DPP](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/change_control_rules/v0/mod.rs) that control its behavior:
 
 | Field | Description |
 | - | - |
@@ -148,7 +148,7 @@ Each rule consists of the following parameters [defined in DPP](https://github.c
 
 ###### Authorized Parties
 
-Rules can authorize no one, specific identities, or multiparty groups. The complete set of options [defined by DPP](https://github.com/dashpay/platform/blob/v2.0-tokens-dev/packages/rs-dpp/src/data_contract/change_control_rules/authorized_action_takers.rs#L14-L21) is:
+Rules can authorize no one, specific identities, or multiparty groups. The complete set of options [defined by DPP](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/change_control_rules/authorized_action_takers.rs#L14-L21) is:
 
 | Authorized Party     | Description |
 |----------------------|-------------|
