@@ -3073,15 +3073,15 @@ Retrieves token balances for a specified identity.
 ::::{tab-set}
 :::{tab-item} gRPCurl
 ```shell
-grpcurl -proto protos/platform/v0/platform.proto \
+grpcurl -insecure -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-      "token_ids": ["1122334455667788", "99aabbccddeeff00"],
+      "identity_id": "fRead5oV4z8PFUZYt2riPRQgH5LhmZQD2PSWFgtctf0=",
+      "token_ids": ["MDbQqGnUFMiD96MNa39mwN4TlZQ63Aw1fhLZq0Uam98=", "VJcuY5gL416LbJl3EPqW7wpBvdwS5ITVQoFLJnHEk0Y="],
       "prove": false
     }
   }' \
-  seed-1.testnet.networks.dash.org:1443 \
+  35.93.25.23:1443 \
   org.dash.platform.dapi.v0.Platform/getIdentityTokenBalances
 ```
 :::
@@ -3093,24 +3093,24 @@ grpcurl -proto protos/platform/v0/platform.proto \
 {
   "v0": {
     "tokenBalances": {
-      "token_balances": [
+      "tokenBalances": [
         {
-          "token_id": "1122334455667788",
-          "balance": 1000
+          "tokenId": "MDbQqGnUFMiD96MNa39mwN4TlZQ63Aw1fhLZq0Uam98=",
+          "balance": "100000"
         },
         {
-          "token_id": "99aabbccddeeff00",
-          "balance": 500
+          "tokenId": "VJcuY5gL416LbJl3EPqW7wpBvdwS5ITVQoFLJnHEk0Y=",
+          "balance": "100000"
         }
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "1108",
+      "coreChainLockedHeight": 9760,
+      "epoch": 27,
+      "timeMs": "1742496295435",
+      "protocolVersion": 9,
+      "chainId": "dash-devnet-gimlet"
     }
   }
 }
@@ -3137,15 +3137,15 @@ Retrieves the token balances for a list of specified identities.
 ::::{tab-set}
 :::{tab-item} gRPCurl
 ```shell
-grpcurl -proto protos/platform/v0/platform.proto \
+grpcurl -insecure -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-      "identity_ids": ["HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=", "02abcdef"],
+      "token_id": "MDbQqGnUFMiD96MNa39mwN4TlZQ63Aw1fhLZq0Uam98=",
+      "identity_ids": ["fRead5oV4z8PFUZYt2riPRQgH5LhmZQD2PSWFgtctf0="],
       "prove": false
     }
   }' \
-  seed-1.testnet.networks.dash.org:1443 \
+  35.93.25.23:1443 \
   org.dash.platform.dapi.v0.Platform/getIdentitiesTokenBalances
 ```
 :::
@@ -3156,25 +3156,21 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "identity_token_balances": {
-      "identity_token_balances": [
+    "identityTokenBalances": {
+      "identityTokenBalances": [
         {
-          "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-          "balance": "500"
-        },
-        {
-          "identity_id": "02abcdef",
-          "balance": "1000"
+          "identityId": "fRead5oV4z8PFUZYt2riPRQgH5LhmZQD2PSWFgtctf0=",
+          "balance": "100000"
         }
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "1110",
+      "coreChainLockedHeight": 9764,
+      "epoch": 27,
+      "timeMs": "1742496657403",
+      "protocolVersion": 9,
+      "chainId": "dash-devnet-gimlet"
     }
   }
 }
@@ -3403,20 +3399,19 @@ Retrieves pre-programmed distributions of a specified token.
 ::::{tab-set}
 :::{tab-item} gRPCurl
 ```shell
-grpcurl -proto protos/platform/v0/platform.proto \
+grpcurl -insecure -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+      "token_id": "MDbQqGnUFMiD96MNa39mwN4TlZQ63Aw1fhLZq0Uam98=",
       "start_at_info": {
         "start_time_ms": 1724094056000,
-        "start_recipient": "01abcdef",
         "start_recipient_included": true
       },
       "limit": 10,
       "prove": false
     }
   }' \
-  seed-1.testnet.networks.dash.org:1443 \
+  35.93.25.23:1443 \
   org.dash.platform.dapi.v0.Platform/getTokenPreProgrammedDistributions
 ```
 :::
@@ -3476,14 +3471,14 @@ Retrieves the total supply of a specified token, including aggregated user accou
 ::::{tab-set}
 :::{tab-item} gRPCurl
 ```shell
-grpcurl -proto protos/platform/v0/platform.proto \
+grpcurl -insecure -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+      "token_id": "MDbQqGnUFMiD96MNa39mwN4TlZQ63Aw1fhLZq0Uam98=",
       "prove": false
     }
   }' \
-  seed-1.testnet.networks.dash.org:1443 \
+  35.93.25.23:1443 \
   org.dash.platform.dapi.v0.Platform/getTokenTotalSupply
 ```
 :::
