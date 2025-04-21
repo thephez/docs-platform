@@ -39,7 +39,7 @@ pub fn calculate_token_id(contract_id: &[u8; 32], token_pos: TokenContractPositi
 
 #### Token Transition Action
 
-The token transition actions [defined in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/token_transition_action_type.rs#L7-L17) indicate what operation platform should perform with the provided transition data.
+The token transition actions [defined in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/token_transition_action_type.rs#L15-L48) indicate what operation platform should perform with the provided transition data.
 
 | Action | Name | Description |
 | :-: | - | - |
@@ -52,6 +52,8 @@ The token transition actions [defined in rs-dpp](https://github.com/dashpay/plat
 | 6 | [Claim](#token-claim-transition) | Retrieve tokens based on a specified distribution method |
 | 7 | [Emergency Action](#token-emergency-action-transition) | Execute an emergency protocol affecting tokens |
 | 8 | [Config Update](#token-config-update-transition) | Modify the configuration settings of a token |
+| 9 | [Set Purchase Price](#token-set-purchase-price-transition) | Define or update the token’s direct purchase pricing schedule for users (enables or adjusts direct token sales) |
+| 10 | [Purchase](#token-purchase-transition) | Purchase tokens directly from the token’s owner or distribution pool at the predefined price (transfers tokens to the buyer in exchange for Platform credits) |
 
 ### Token Notes
 
@@ -159,3 +161,34 @@ The token config update transition extends the [base transition](#token-base-tra
 | publicNote | string | [<= 2048 characters](#token-notes) | Optional public note |
 
 Each token configuration update transition must comply with the [token config update transition defined in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/token_config_update_transition/v0/mod.rs#L19-L27).
+
+### Token Set Purchase Price Transition
+
+The token set purchase price transition enables token purchases by setting the token price using a pricing schedule. This can be a single entry (for a fixed price) or multiple entries for tiered pricing. For example, a token might define a price of 100 credits each for a minimum of 1 token, and 90 credits each for a minimum of 10 tokens – allowing a discount for bulk purchases.
+
+Only an identity authorized by the token’s *change direct purchase pricing* rules can successfully execute this transition. On execution, platform will update the token’s current direct purchase price schedule. If direct pricing history is enabled, it will also record the change in the token’s history.
+
+This transition extends the [base transition](#token-base-transition) to include the following additional fields:
+
+| Field | Type | Size | Description |
+| ----- | ---- | ---- | ----------- |
+price    | [TokenPricingSchedule](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/tokens/token_pricing_schedule.rs#L31-L47) | Variable | Set the fixed price or tiered price. Tiered pricing entries consists of a *minimum token amount* (unsigned 64-bit) and a *price in credits* (unsigned 64-bit) applicable for purchases of that size or greater. The smallest amount tier also defines the *minimum purchasable amount*. If the lowest tier has amount > 1, users cannot buy less than that amount in a single purchase.  If multiple tiers are provided, they should be ordered by ascending minimum amount.<br>**Note:** An empty pricing schedule indicates direct purchases are disabled for the token. |
+| publicNote | string | [<= 2048 characters](#token-notes) | Optional public note |
+
+Each token set purchase price transition must comply with the [token set purchase price transition defined in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/token_set_price_for_direct_purchase_transition/v0/mod.rs#L18-L35).
+
+### Token Purchase Transition
+
+The token purchase transition transfers a specified number of tokens to the purchasing identity. Platform simultaneously deducts the corresponding purchase cost in credits from the buyer’s balance as part of the state transition. A purchase must be accompanied by a credit transfer to the token seller’s identity in the same batch. If direct purchase history is enabled for the token, platform will create a record of this sale in the token’s history.
+
+Attempts to purchase tokens when no price is set, when providing insufficient payment, or below the minimum amount will be rejected by platform consensus.
+
+This transition extends the [base transition](#token-base-transition) to include the following additional fields:
+
+| Field | Type | Size | Description |
+| ----- | ---- | ---- | ----------- |
+| amount       | unsigned integer | 64 bits | Number of tokens the user is purchasing. The `amount` must be at least the minimum purchase amount defined by the current pricing, and cannot exceed any available supply limits. |
+| totalPrice   | unsigned integer | 64 bits | Total price (in credits) that the purchaser agrees to pay for this purchase. This should equal the unit price (or tiered price) times the `amount` of tokens, according to the currently set pricing schedule. |
+| publicNote | string | [<= 2048 characters](#token-notes) | Optional public note |
+
+Each token purchase transition must comply with the [token direct purchase transition defined in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/token_direct_purchase_transition/v0/mod.rs#L20-L31).

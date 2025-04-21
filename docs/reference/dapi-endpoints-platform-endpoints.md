@@ -6,7 +6,14 @@
 
 Please refer to the [gRPC Overview](../reference/dapi-endpoints-grpc-overview.md) for details regarding running the examples shown below.
 
-## Data Proofs and Metadata
+## General Behavior
+
+### Versioning
+
+All Dash Platform endpoints are versioned so future updates can be done without creating significant
+issues for API consumers.
+
+### Data Proofs and Metadata
 
 Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L17-L22) so the data returned for a request can be verified as being valid. When requesting proofs, the data requested will be encoded as part of the proof in the response. Full support is not yet available in the JavaScript client, but can be used via the low level [dapi-grpc library](https://github.com/dashpay/platform/tree/master/packages/dapi-grpc).
 
@@ -21,15 +28,11 @@ Some [additional metadata](https://github.com/dashpay/platform/blob/master/packa
 | `protocolVersion`       | Platform protocol version                             |
 | `chainId`               | Name of the network                                   |
 
-## Versioning
-
-Dash Platform 0.25.16 included a [breaking change that added versioning](https://github.com/dashpay/platform/pull/1522) to these endpoints so future updates can be done without creating significant issues for API consumers.
-
 ```{eval-rst}
 .. _mn-identity-id:
 ```
 
-## Masternode identity IDs
+### Masternode identity IDs
 
 [Masternode identities](../explanations/identity.md#masternode-identities) are created automatically
 by the system based on the [Core masternode registration transaction (protx)
@@ -53,41 +56,23 @@ const protx = '8eca4bcbb3a124ab283afd42dad3bdb2077b3809659788a0f1daffce5b9f001f'
 const base58Protx = bs58.encode(Buffer.from(protx, 'hex'));
 console.log(`Masternode identity id (base58): ${base58Protx}`);
 const base64Protx = Buffer.from(protx, 'hex').toString('base64');
-console.log(`Masternode identity id (base58): ${base64Protx}`);
+console.log(`Masternode identity id (base64): ${base64Protx}`);
 // Output:
 //  Masternode identity id (base58): AcPogCxrxeas7jrWYG7TnLHKbsA5KLHGfvg6oYgANZ8J
 //  Masternode identity id (base64): jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=
 :::
 
-## Endpoint Details
+## Contested Resource Endpoints
 
-### broadcastStateTransition
+Contested resources are a special class of Dash Platform documents that require deterministic
+conflict resolution when multiple identities request the same logical resource (e.g., a DPNS name).
+These resources are defined at the data contract level using [contested
+indexes](./data-contracts.md#contested-indices). See the [DPNS conflict resolution
+section](../explanations/dpns.md#conflict-resolution) for an example of how this works for premium
+DPNS names.
 
-Broadcasts a [state transition](../explanations/platform-protocol-state-transition.md) to the platform via DAPI to make a change to layer 2 data. The `broadcastStateTransition` call returns once the state transition has been accepted into the mempool.
-
-**Returns**: Nothing or error
-
-:::{note}
-The [`waitForStateTransitionResult` endpoint](#waitforstatetransitionresult) should be used after `broadcastStateTransition` if proof of block confirmation is required.
-:::
-
-**Parameters**:
-
-| Name               | Type           | Required | Description                                                          |
-| ------------------ | -------------- | -------- | -------------------------------------------------------------------- |
-| `state_transition` | Bytes (Base64) | Yes      | A [state transition](../explanations/platform-protocol-state-transition.md) |
-
-```{eval-rst}
-..
-  Commented out info
-  [block:html]
-  {
-    "html": "<!--\nJavaScript (dapi-client) example (old)\nconst DAPIClient = require('@dashevo/dapi-client');\nconst DashPlatformProtocol = require('@dashevo/dpp');\n\nconst client = new DAPIClient({ network: 'testnet' });\nconst dpp = new DashPlatformProtocol();\n\n// Data Contract Create State Transition (JSON)\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    client.platform.broadcastStateTransition(stateTransition.toBuffer())\n      .then(() => console.log('State Transition broadcast successfully'));\n  });\n-->\n\n<!--\nJavaScript (dapi-grpc) example (old)\nconst {\n  v0: {\n    PlatformPromiseClient,\n    BroadcastStateTransitionRequest,\n  },\n} = require('@dashevo/dapi-grpc');\nconst DashPlatformProtocol = require('@dashevo/dpp');\n\nconst platformPromiseClient = new PlatformPromiseClient(\n  'https://seed-1.testnet.networks.dash.org:1443',\n);\n\nconst dpp = new DashPlatformProtocol();\n\n// Data Contract Create State Transition (JSON)\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\nconst broadcastStateTransitionRequest = new BroadcastStateTransitionRequest();\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    console.log(stateTransition);\n    broadcastStateTransitionRequest.setStateTransition(stateTransition.toBuffer());\n\n    platformPromiseClient.broadcastStateTransition(broadcastStateTransitionRequest)\n      .then(() => console.log('State Transition broadcast successfully'))\n      .catch((e) => {\n        console.error(e);\n        console.error(e.metadata);\n      });\n  })\n  .catch((e) => console.error(e));\n-->\n\n<!--\ngRPCurl example (old)\n# Submit an identity create State Transition\n# `state_transition` must be represented in base64\n# Replace `state_transition` with your own state transition object before running\ngrpcurl -proto protos/platform/v0/platform.proto \\\n  -d '{\n    \"state_transition\":\"pWR0eXBlAmlzaWduYXR1cmV4WEg3TWhFWDQ0Z3JzMVIwTE9XTU5IZjAxWFNpYVFQcUlVZ1JLRXQyMkxHVERsUlUrZ1BwQUlUZk5JUmhXd3IvYTVHd0lzWm1idGdYVVFxcVhjbW9lQWtUOD1qcHVibGljS2V5c4GkYmlkAGRkYXRheCxBdzh2UmYxeFFCTlVLbzNiY2llaHlaR2NhM0hBSThkY0ZvVWJTK3hLb0lITmR0eXBlAGlpc0VuYWJsZWT1bmxvY2tlZE91dFBvaW50eDBLT1VUSHB5YnFPek9DNnhEVUhFWm9uc1lNSVpqcGppTHFZNnkxYmlWNWxRQUFBQUFvcHJvdG9jb2xWZXJzaW9uAA==\"\n\n    }' \\\n  seed-1.testnet.networks.dash.org:1443 \\\n  org.dash.platform.dapi.v0.Platform/broadcastStateTransition\n-->"
-  }
-  [/block]
-```
-
-**Response**: No response except on error
+The endpoints in this section allow clients to check the status of active contests, retrieve
+contestants, and obtain the outcome.
 
 ### getContestedResources
 
@@ -181,7 +166,7 @@ Retrieves the voting record of a specific identity.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
+      "identity_id": "CSgo7cCB07oaVPBDJZuUE2jyxxiIGwap00eIOyG/4xM="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -196,15 +181,83 @@ grpcurl -proto protos/platform/v0/platform.proto \
 {
   "v0": {
     "votes": {
+      "contestedResourceIdentityVotes": [
+        {
+          "contractId": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+          "documentTypeName": "domain",
+          "serializedIndexStorageValues": [
+            "ZGFzaA==",
+            "dDBueQ=="
+          ],
+          "voteChoice": {
+            "identityId": "+G9rGhk5ggauDroBJbx8DHj/DCjLaLvlxj3m4oFs9f0="
+          }
+        },
+        {
+          "contractId": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+          "documentTypeName": "domain",
+          "serializedIndexStorageValues": [
+            "ZGFzaA==",
+            "anUxeQ=="
+          ],
+          "voteChoice": {
+            "identityId": "hzKARzLQgCeLgieyXkc22PVsDy9RoyRCSQpVA1sq3Ag="
+          }
+        },
+        {
+          "contractId": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+          "documentTypeName": "domain",
+          "serializedIndexStorageValues": [
+            "ZGFzaA==",
+            "cmVkcGFuZGE="
+          ],
+          "voteChoice": {
+            "identityId": "Yiub6FbtHuyrGjiOhtFFsNzkFXay15HKapz/5WmIdRc="
+          }
+        },
+        {
+          "contractId": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+          "documentTypeName": "domain",
+          "serializedIndexStorageValues": [
+            "ZGFzaA==",
+            "YTFleGFuZHJh"
+          ],
+          "voteChoice": {
+            "identityId": "FSzaDd9OWziOwkizZf/t6HdDCG3pY6zb4MTriOuiyf0="
+          }
+        },
+        {
+          "contractId": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+          "documentTypeName": "domain",
+          "serializedIndexStorageValues": [
+            "ZGFzaA==",
+            "ZW0xMTFt"
+          ],
+          "voteChoice": {
+            "identityId": "HpGErJllHxDvKnetz9d88452CCfWsbm8s+SLq7hn1v4="
+          }
+        },
+        {
+          "contractId": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+          "documentTypeName": "domain",
+          "serializedIndexStorageValues": [
+            "ZGFzaA==",
+            "YXNkdGhyZWVhcHI="
+          ],
+          "voteChoice": {
+            "identityId": "toqsgrVi2jpH5zyFqx8IkC2cK987anWbUQJknPu+qss="
+          }
+        }
+      ],
       "finishedResults": true
     },
     "metadata": {
-      "height": "7762",
-      "coreChainLockedHeight": 1099677,
-      "epoch": 1260,
-      "timeMs": "1725889742454",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
+      "height": "164297",
+      "coreChainLockedHeight": 2256124,
+      "epoch": 25,
+      "timeMs": "1744850434997",
+      "protocolVersion": 8,
+      "chainId": "evo1"
     }
   }
 }
@@ -244,8 +297,8 @@ grpcurl -proto protos/platform/v0/platform.proto \
       "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
       "document_type_name": "domain",
       "index_name": "parentNameAndLabel",
-      "index_values": [],
-      "contestant_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
+      "index_values": ["EgRkYXNo", "EgZlbTExMW0="],
+      "contestant_id": "HpGErJllHxDvKnetz9d88452CCfWsbm8s+SLq7hn1v4="
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
@@ -260,15 +313,27 @@ grpcurl -proto protos/platform/v0/platform.proto \
 {
   "v0": {
     "contestedResourceVoters": {
+      "voters": [
+        "9BNnQL24MI/zNJQeg6njKqMFsPfY3r1syRB9zxAlZFQ=",
+        "7GFTbyVQbbUuol/RD2iNAeKbsL7NXPjfqSjhapTRN3g=",
+        "vMOhByXvdDR4bNAWsB/gF5WdtF+W4HIEciZgRJZnN4I=",
+        "rU44/IHactYbFCOO5uW5GRVVTiTXJXGIAGktOoY8kQs=",
+        "nrjH6/4hLLe9Eh/Y9NPsezMctlDH4+q+4+2AujX68WQ=",
+        "hLickXbsCtHIUjadrnX4DGaALQ1hBi4HSzAn1iAiI1A=",
+        "TC4jH+JzJyRlHQ/YxdtqN+L2icRxcM/8Uuq7gxjSJ+8=",
+        "Nk7hQkGkrfC7lApPG8EyQXOKXoGKsg07MfY1khdQxoM=",
+        "FE0hYA6383IDzr7zrFxdT6pgY9kXjt90b4OKJED7tCg=",
+        "CSgo7cCB07oaVPBDJZuUE2jyxxiIGwap00eIOyG/4xM="
+      ],
       "finishedResults": true
     },
     "metadata": {
-      "height": "7762",
-      "coreChainLockedHeight": 1099677,
-      "epoch": 1260,
-      "timeMs": "1725889742454",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
+      "height": "164240",
+      "coreChainLockedHeight": 2256049,
+      "epoch": 25,
+      "timeMs": "1744839902217",
+      "protocolVersion": 8,
+      "chainId": "evo1"
     }
   }
 }
@@ -296,72 +361,6 @@ Retrieves the state of a vote for a specific contested resource.
 | `count`                                          | Integer  | No       | Number of results to return |
 | `prove`                                          | Boolean  | No       | Set to `true` to receive a proof that contains the requested vote state |
 
-```{eval-rst}
-..
-  Commented out info
-  The following example isn't fully functional
-  
-  **Example Request and Response**
-
-  ::::{tab-set}
-  :::{tab-item} gRPCurl
-  ```shell
-  grpcurl -proto protos/platform/v0/platform.proto \
-    -d '{
-      "v0": {
-        "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
-        "document_type_name": "domain",
-        "index_name": "parentNameAndLabel",
-        "index_values": ["EgRkYXNo", "value2"],
-        "result_type": 1
-      }
-    }' \
-    seed-1.testnet.networks.dash.org:1443 \
-    org.dash.platform.dapi.v0.Platform/getContestedResourceVoteState
-  ```
-  :::
-  ::::
-
-```{eval-rst}
-..
-  Commented out info
-  The following example isn't fully functional
-  
-  ::::{tab-set}
-  :::{tab-item} Response (gRPCurl)
-  ```json
-  {
-    "v0": {
-      "contested_resource_contenders": {
-        "contenders": [{"identifier": "id1", "vote_count": 10}, {"identifier": "id2", "vote_count": 5}]
-      },
-      "metadata": {
-        "height": "6852",
-        "coreChainLockedHeight": 927072,
-        "epoch": 850,
-        "timeMs": "1701983652299",
-        "protocolVersion": 1,
-        "chainId": "dash-testnet-37"
-      }
-    }
-  }
-  ```
-  :::
-  ::::
-
-### getCurrentQuorumsInfo
-
-Retrieves current quorum details, including validator sets and metadata for each quorum.
-
-**Returns**: Information about current quorums, including quorum hashes, validator sets, and
-cryptographic proof.
-
-**Parameters**:
-
-| Name          | Type   | Required | Description |
-| ------------- | ------ | -------- | ----------- |
-| `version`     | Object | No       | Version object containing request parameters |
-
 **Example Request and Response**
 
 ::::{tab-set}
@@ -369,52 +368,40 @@ cryptographic proof.
 ```shell
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
-    "v0": {}
+    "v0": {
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+      "document_type_name": "domain",
+      "index_name": "parentNameAndLabel",
+      "index_values": ["EgRkYXNo", "EgZlbTExMW0="],
+      "result_type": 2
+    }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getCurrentQuorumsInfo
+  org.dash.platform.dapi.v0.Platform/getContestedResourceVoteState
 ```
 :::
 ::::
-
 ::::{tab-set}
 :::{tab-item} Response (gRPCurl)
 ```json
 {
   "v0": {
-    "quorumHashes": [
-      "AAABC9mcu+F3eC33hC9wyZAP20QQNHz4kYnfFQPwa5A="
-    ],
-    "currentQuorumHash": "AAABP7yY5DKt8UlLUR/QJlH8BI108xugKSEIOrR6iAA=",
-    "validatorSets": [
-      {
-        "quorumHash": "AAABC9mcu+F3eC33hC9wyZAP20QQNHz4kYnfFQPwa5A=",
-        "coreHeight": 1131096,
-        "members": [
-          {
-            "proTxHash": "BbaHl4NE+iQzsqqZ1B9kPi2FgaeJzcIwhIic7KUkTqg=",
-            "nodeIp": "52.24.124.162"
-          },
-          {
-            "proTxHash": "iCUb1LEk7+uHU33qvuxU9sj1dfTfgfEM9ejuoHMJK28=",
-            "nodeIp": "52.33.28.47"
-          },
-          {
-            "proTxHash": "FD3Namt2hP3gHoihDl1l3popJExezVhtFKNCZXAl8RM=",
-            "nodeIp": "35.164.23.245"
-          }
-        ],
-        "thresholdPublicKey": "ixciXjkgFnI/cQNXS51yBi4MYgdPZWjRGxsubEsfzItgvTlABUxow9S1eCE7w9+f"
-      }
-    ],
-    "lastBlockProposer": "iCUb1LEk7+uHU33qvuxU9sj1dfTfgfEM9ejuoHMJK28=",
+    "contestedResourceContenders": {
+      "contenders": [
+        {
+          "identifier": "HpGErJllHxDvKnetz9d88452CCfWsbm8s+SLq7hn1v4=",
+          "voteCount": 34,
+          "document": "AKcHIgv30Tb3zWNw0bgSF17cJp7HW+A6eiYRVpS3YMKuHpGErJllHxDvKnetz9d88452CCfWsbm8s+SLq7hn1v4BAAcAAAGWGJoweAAAAZYYmjB4AAABlhiaMHgABkVtaWxpTQZlbTExMW0BBGRhc2gEZGFzaAAhAR6RhKyZZR8Q7yp3rc/XfPOOdggn1rG5vLPki6u4Z9b+AQA="
+        }
+      ]
+    },
     "metadata": {
-      "height": "43865",
-      "coreChainLockedHeight": 1131112,
-      "epoch": 2483,
-      "timeMs": "1730295469308",
-      "protocolVersion": 4,
-      "chainId": "dash-testnet-51"
+      "height": "164296",
+      "coreChainLockedHeight": 2256122,
+      "epoch": 25,
+      "timeMs": "1744850252661",
+      "protocolVersion": 8,
+      "chainId": "evo1"
     }
   }
 }
@@ -422,19 +409,22 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
-### getEvonodesProposedEpochBlocksByIds
+### getVotePollsByEndDate
 
-Retrieves the number of blocks proposed by the specified evonodes in a certain epoch, based on their IDs.
+Retrieves vote polls that will end within a specified date range.
 
-**Returns**: A list of evonodes and their proposed block counts or a cryptographic proof.
+**Returns**: A list of vote polls or a cryptographic proof.
 
 **Parameters**:
 
 | Name               | Type     | Required | Description |
 | ------------------ | -------- | -------- | ----------- |
-| `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
-| `ids`              | Array    | Yes    | An array of evonode IDs for which proposed blocks are retrieved IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
-| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
+| `start_time_info`  | Object   | No       | Start time information for filtering vote polls |
+| `end_time_info`    | Object   | No       | End time information for filtering vote polls |
+| `limit`            | Integer  | No       | Maximum number of results to return |
+| `offset`           | Integer  | No       | Offset for pagination |
+| `ascending`        | Boolean  | No       | Sort order for results |
+| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested vote polls |
 
 **Example Request and Response**
 
@@ -444,14 +434,13 @@ Retrieves the number of blocks proposed by the specified evonodes in a certain e
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "ids": [
-        "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=","dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
-      ],
-      "prove": false
+      "start_time_info": {"start_time_ms": "1701980000000", "start_time_included": true},
+      "end_time_info": {"end_time_ms": "1702000000000", "end_time_included": true},
+      "limit": 10
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getEvonodesProposedEpochBlocksByIds
+  org.dash.platform.dapi.v0.Platform/getVotePollsByEndDate
 ```
 :::
 ::::
@@ -461,279 +450,16 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "evonodesProposedBlockCountsInfo": {
-      "evonodesProposedBlockCounts": [
-        {
-          "proTxHash": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
-        },
-        {
-          "proTxHash": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
-          "count": "13"
-        }
-      ]
+    "votePollsByTimestamps": {
+      "finishedResults": true
     },
     "metadata": {
-      "height": "13621",
-      "coreChainLockedHeight": 1105397,
-      "epoch": 1482,
-      "timeMs": "1726691577244",
-      "protocolVersion": 3,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
-
-### getEvonodesProposedEpochBlocksByRange
-
-Retrieves the number of blocks proposed by evonodes for a specified epoch.
-
-**Returns**: A list of evonodes and their proposed block counts or a cryptographic proof.
-
-**Parameters**:
-
-| Name               | Type     | Required | Description |
-| ------------------ | -------- | -------- | ----------- |
-| `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
-| `limit`            | Integer  | No       | Maximum number of evonodes proposed epoch blocks to return |
-| `start_after`      | Bytes    | No       | Retrieve results starting after this document |
-| `start_at`         | Bytes    | No       | Retrieve results starting at this document |
-| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "epoch": 0,
-      "limit": 10,
-      "prove": false
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getEvonodesProposedEpochBlocksByRange
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-```json
-{
-  "v0": {
-    "evonodesProposedBlockCountsInfo": {
-      "evonodesProposedBlockCounts": [
-        {
-          "proTxHash": "BbaHl4NE+iQzsqqZ1B9kPi2FgaeJzcIwhIic7KUkTqg=",
-          "count": "1"
-        }
-      ]
-    },
-    "metadata": {
-      "height": "20263",
-      "coreChainLockedHeight": 1105827,
-      "epoch": 1499,
-      "timeMs": "1726752270072",
-      "protocolVersion": 3,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
-
-### getIdentity
-
-**Returns**: [Identity](../explanations/identity.md) information for the requested identity  
-**Parameters**:
-
-| Name    | Type    | Required | Description                                                           |
-| ------- | ------- | -------- | --------------------------------------------------------------------- |
-| `id`    | Bytes   | Yes      | An identity `id`<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity. The data requested will be encoded as part of the proof in the response.|
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} JavaScript (dapi-client)
-:sync: js-dapi-client
-```javascript
-const DAPIClient = require('@dashevo/dapi-client');
-const {
-  default: loadDpp,
-  DashPlatformProtocol,
-  Identifier,
-} = require('@dashevo/wasm-dpp');
-
-loadDpp();
-const dpp = new DashPlatformProtocol();
-const client = new DAPIClient({ network: 'testnet' });
-
-const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
-client.platform.getIdentity(identityId).then((response) => {
-  const identity = dpp.identity.createFromBuffer(response.getIdentity());
-  console.log(identity.toJSON());
-});
-```
-:::
-
-:::{tab-item} JavaScript (dapi-grpc)
-:sync: js-dapi-grpc
-```javascript
-const {
-  v0: { PlatformPromiseClient, GetIdentityRequest },
-} = require('@dashevo/dapi-grpc');
-const {
-  default: loadDpp,
-  DashPlatformProtocol,
-  Identifier,
-} = require('@dashevo/wasm-dpp');
-
-loadDpp();
-const dpp = new DashPlatformProtocol(null);
-const platformPromiseClient = new PlatformPromiseClient(
-  'https://seed-1.testnet.networks.dash.org:1443',
-);
-
-const id = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
-const idBuffer = Buffer.from(id);
-const getIdentityRequest = new GetIdentityRequest();
-getIdentityRequest.setId(idBuffer);
-getIdentityRequest.setProve(false);
-
-platformPromiseClient
-  .getIdentity(getIdentityRequest)
-  .then((response) => {
-    const identity = dpp.identity.createFromBuffer(response.getIdentity());
-    console.dir(identity.toJSON());
-  })
-  .catch((e) => console.error(e));
-```
-:::
-
-:::{tab-item} gRPCurl
-:sync: grpcurl
-```shell
-# `id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentity
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (JavaScript)
-:sync: js-dapi-client
-```json
-{
-  "$version":"0",
-  "id":"EuzJmuZdBSJs2eTrxHEp6QqJztbp6FKDNGMeb4W2Ds7h",
-  "publicKeys":[
-    {
-      "$version":"0",
-      "id":0,
-      "purpose":0,
-      "securityLevel":0,
-      "contractBounds":null,
-      "type":0,
-      "readOnly":false,
-      "data":"Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
-      "disabledAt":null
-    },
-    {
-      "$version":"0",
-      "id":1,
-      "purpose":0,
-      "securityLevel":2,
-      "contractBounds":null,
-      "type":0,
-      "readOnly":false,
-      "data":"AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
-      "disabledAt":null
-    }
-  ],
-  "balance":17912102140,
-  "revision":0
-}
-```
-:::
-
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "identity": "AB8VEmymhcW7r01Ka36+WtMlOruBGrE3Ulr0sTsCo5scBAAAAAAAAAAAIQMSQ7bd3xPfA+9xn2+FLl/AJrQTEhdW/OUafgjhbjs6qwABAAEAAgAAACED8nl3p8oFHACE5DGvv8Y9sBxWEVPLpUDUlSD7yICx0OoAAgACAAEAAAAhA9BQqn5pbKnveG+CTGpr+sheSghjJFEUYpm//gO1HPa1AAMAAwMBAAAAIQK7PbawzDv5oNWL3icaXEeAnv5xigN0gUMXRVzn6VgPQwD8J+gRAgA=",
-    "metadata": {
-      "height": "5986",
-      "coreChainLockedHeight": 1097381,
-      "epoch": 1170,
-      "timeMs": "1725566939334",
+      "height": "2876",
+      "coreChainLockedHeight": 1086885,
+      "epoch": 761,
+      "timeMs": "1724094056585",
       "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-
-::::
-
-### getIdentityBalance
-
-**Returns**: Credit balance for the requested [Identity](../explanations/identity.md)
-
-**Parameters**:
-
-| Name    | Type    | Required | Description |
-| ------- | ------- | -------- | ------------ |
-| `id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-:sync: grpcurl
-```shell
-# `id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityBalance
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "balance": "669520130",
-    "metadata": {
-      "height": "5986",
-      "coreChainLockedHeight": 1097381,
-      "epoch": 1170,
-      "timeMs": "1725566939334",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
+      "chainId": "dash-testnet-50"
     }
   }
 }
@@ -741,569 +467,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
-### getIdentityBalanceAndRevision
-
-**Returns**: Credit balance and identity revision for the requested [Identity](../explanations/identity.md)
-
-**Parameters**:
-
-| Name    | Type    | Required | Description |
-| ------- | ------- | -------- | ------------ |
-| `id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-:sync: grpcurl
-```shell
-# `id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityBalanceAndRevision
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "balanceAndRevision": {
-      "balance": "669520130"
-    },
-    "metadata": {
-      "height": "5986",
-      "coreChainLockedHeight": 1097381,
-      "epoch": 1170,
-      "timeMs": "1725566939334",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
-
-### getIdentityByPublicKeyHash
-
-**Returns**: An [identity](../explanations/identity.md) associated with the provided public key hash
-
-:::{note}
-This endpoint only works for unique keys. Since masternode keys do not have to be unique (e.g.,
-voting keys), some masternode identities cannot be retrieved using this endpoint.
-:::
-
-**Parameters**:
-
-| Name    | Type    | Required | Description |
-| ------- | ------- | -------- | ------------ |
-| `public_key_hash` | Bytes   | Yes | Public key hash (sha256-ripemd160) of identity public key
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-:sync: grpcurl
-```shell
-# `id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "public_key_hash": "uNFZGqdNRA4K+cC+FsVbvBQYR/c="
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityByPublicKeyHash
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "identity": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQLItHR7UoysX933psxjcC7gTtfRMykE4IUQND6gDc5UagABAAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA/QAAAAQ8fEg8AA==",
-    "metadata": {
-      "height": "6870",
-      "coreChainLockedHeight": 927094,
-      "epoch": 851,
-      "timeMs": "1701985137472",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
-    }
-  }
-}
-```
-:::
-::::
-
-### getIdentityContractNonce
-
-**Returns**: Current contract nonce for the requested [Identity](../explanations/identity.md)
-
-**Parameters**:
-
-| Name    | Type    | Required | Description |
-| ------- | ------- | -------- | ------------ |
-| `identity_id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
-| `contract_id`    | Bytes   | Yes      | A contract ID
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity contract nonce
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} JavaScript (dapi-client)
-:sync: js-dapi-client
-```javascript
-const DAPIClient = require('@dashevo/dapi-client');
-const {
-  default: loadDpp,
-  DashPlatformProtocol,
-  Identifier,
-} = require('@dashevo/wasm-dpp');
-
-loadDpp();
-const dpp = new DashPlatformProtocol(null);
-const client = new DAPIClient({ network: 'testnet' });
-
-const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
-const contractId = Identifier.from('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec');
-client.platform.getIdentityContractNonce(identityId, contractId).then((response) => {
-  console.log(`Current identity contract nonce: ${response.getIdentityContractNonce()}`);
-});
-```
-:::
-
-:::{tab-item} gRPCurl
-:sync: grpcurl
-```shell
-# `id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityContractNonce
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (dapi-client)
-:sync: js-dapi-client
-```text
-Current identity contract nonce: 0
-```
-:::
-
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "identityContractNonce": "3",
-    "metadata": {
-      "height": "5986",
-      "coreChainLockedHeight": 1097381,
-      "epoch": 1170,
-      "timeMs": "1725566939334",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
-
-### getIdentityKeys
-
-**Returns**: Keys for an [Identity](../explanations/identity.md).
-
-**Parameters**:
-
-| Name    | Type    | Required | Description |
-| ------- | ------- | -------- | ------------ |
-| `identity_td`  | String | Yes | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
-| `request_type` | [KeyRequestType](#request-types) | Yes | Request all keys (`all_keys`), specific keys (`specific_keys`), search for keys (`search_key`)
-| `limit` | Integer  | Yes     | The maximum number of revisions to return |
-| `offset` | Integer | Yes     | The offset of the first revision to return |
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
-
-#### Request Types
-
-**All keys**
-
-To request all keys for an identity, use the `all_keys` request type:
-
-```json
-"all_keys": {}
-```
-
-**Specific keys**
-
-To request specific keys for an identity, use the `specific_keys` request type where `key_ids` is an array containing the key IDs to request:
-
-```json
-"specific_keys": {
-  "key_ids": [
-    1
-  ]
-}
-```
-
-**Search keys**
-
-To search for identity keys, use the `search_keys` request type. The options for `security_Level_map` are "CURRENT_KEY_OF_KIND_REQUEST" and "ALL_KEYS_OF_KIND_REQUEST":
-
-```json
-"search_key": {
-  "purpose_map": {
-    "0": {
-      "security_level_map": {
-        "0": "CURRENT_KEY_OF_KIND_REQUEST"
-      }
-    }
-  }
-}
-```
-
-#### Example Request and Response
-
-::::{tab-set}
-:::{tab-item} gRPCurl (All keys)
-
-Request all identity keys
-
-Note: `identityId` must be represented in base64
-
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-      "request_type": {
-        "allKeys": {}
-      }
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityKeys
-```
-:::
-:::{tab-item} gRPCurl (Specific keys)
-
-Request specific keys
-
-Note: `identityId` must be represented in base64
-
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-      "request_type": {
-        "specificKeys": {
-          "keyIds": [
-            1
-          ]
-        }
-      },
-      "limit": 1
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityKeys
-```
-:::
-
-:::{tab-item} gRPCurl (Search keys)
-
-Search keys
-
-Note: `identityId` must be represented in base64
-
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-      "request_type": {
-        "search_key": {
-          "purpose_map": {
-            "0": {
-              "security_level_map": {
-                "0": "CURRENT_KEY_OF_KIND_REQUEST"
-              }
-            }
-          }
-        }
-      },
-      "limit": 1
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityKeys
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-All keys
-```json
-{
-  "v0": {
-    "keys": {
-      "keysBytes": [
-        "AAAAAAAAACEDEkO23d8T3wPvcZ9vhS5fwCa0ExIXVvzlGn4I4W47OqsA",
-        "AAEAAgAAACED8nl3p8oFHACE5DGvv8Y9sBxWEVPLpUDUlSD7yICx0OoA",
-        "AAIAAQAAACED0FCqfmlsqe94b4JMamv6yF5KCGMkURRimb/+A7Uc9rUA",
-        "AAMDAQAAACECuz22sMw7+aDVi94nGlxHgJ7+cYoDdIFDF0Vc5+lYD0MA"
-      ]
-    },
-    "metadata": {
-      "height": "5986",
-      "coreChainLockedHeight": 1097381,
-      "epoch": 1170,
-      "timeMs": "1725566939334",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
-
-### getIdentityNonce
-
-**Returns**: Current nonce for the requested [Identity](../explanations/identity.md)
-
-**Parameters**:
-
-| Name    | Type    | Required | Description |
-| ------- | ------- | -------- | ------------ |
-| `identity_id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
-| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity nonce
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} JavaScript (dapi-client)
-:sync: js-dapi-client
-```javascript
-const DAPIClient = require('@dashevo/dapi-client');
-const {
-  default: loadDpp,
-  DashPlatformProtocol,
-  Identifier,
-} = require('@dashevo/wasm-dpp');
-
-loadDpp();
-const dpp = new DashPlatformProtocol(null);
-const client = new DAPIClient({ network: 'testnet' });
-
-const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
-client.platform.getIdentityNonce(identityId).then((response) => {
-  console.log(`Current identity nonce: ${response.getIdentityNonce()}`);
-});
-```
-:::
-
-:::{tab-item} gRPCurl
-:sync: grpcurl
-```shell
-# `id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentityNonce
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (dapi-client)
-:sync: js-dapi-client
-```text
-Current identity nonce: 0
-```
-:::
-
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "identityNonce": "3",
-    "metadata": {
-      "height": "5990",
-      "coreChainLockedHeight": 1097384,
-      "epoch": 1170,
-      "timeMs": "1725567663863",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
-
-### getIdentitiesBalances
-
-Retrieves the balances for a list of identities.
-
-**Returns**: A list of identities with their corresponding balances or a cryptographic proof.
-
-**Parameters**:
-
-| Name      | Type    | Required | Description                                              |
-|-----------|---------|----------|----------------------------------------------------------|
-| `ids`     | Array   | No       | An array of identity IDs for which balances are requested<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
-| `prove`   | Boolean | No       | Set to `true` to receive a proof containing the requested balances |
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "ids": [
-        "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=","dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
-      ],
-      "prove": false
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentitiesBalances
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-```json
-{
-  "v0": {
-    "identitiesBalances": {
-      "entries": [
-        {
-          "identity_id": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
-          "balance": 1000000
-        },
-        {
-          "identity_id": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14=",
-          "balance": 2500000
-        }
-      ]
-    },
-    "metadata": {
-      "height": "13621",
-      "coreChainLockedHeight": 1105397,
-      "epoch": 1482,
-      "timeMs": "1726691577244",
-      "protocolVersion": 3,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
-
-### getIdentitiesContractKeys
-
-**Returns**: Keys associated to a specific contract for multiple [Identities](../explanations/identity.md).
-
-**Parameters**:
-
-| Name                 | Type                    | Required | Description |
-|----------------------|-------------------------|----------|-------------|
-| `identities_ids`     | Array                   | Yes      | An array of identity IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
-| `contract_id`        | String                  | Yes      | The ID of the contract |
-| `document_type_name` | String                  | No       | Name of the document type |
-| `purposes`           | Array of [KeyPurpose](#key-purposes) | No | Array of purposes for which keys are requested |
-| `prove`              | Boolean                 | No       | Set to `true` to receive a proof that contains the requested identity keys |
-
-#### Key Purposes
-
-**Key Purposes** define the intent of usage for each key. Here are the available purposes:
-
-- `AUTHENTICATION` - Keys used for authentication purposes.
-- `ENCRYPTION` - Keys used for encrypting data.
-- `DECRYPTION` - Keys used for decrypting data.
-- `TRANSFER` - Keys used for transferring assets.
-- `VOTING` - Keys used for voting mechanisms.
-
-#### Example Request and Response
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-# Request identity keys associated with the specified contract
-# `identities_ids` and `contract_id` must be represented in base64
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "identities_ids": [
-        "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-        "NBgQk65dTNttDYDGLZNLrb1QEAWB91jqkqXtK1KU4Dc="
-      ],
-      "purposes": [],
-      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getIdentitiesContractKeys
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-:sync: grpcurl
-```json
-{
-  "v0": {
-    "identitiesKeys": {},
-    "metadata": {
-      "height": "5990",
-      "coreChainLockedHeight": 1097384,
-      "epoch": 1170,
-      "timeMs": "1725567663863",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-51"
-    }
-  }
-}
-```
-:::
-::::
+## Data Contract Endpoints
 
 ### getDataContract
 
@@ -1816,6 +980,8 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+## Document Endpoints
+
 ### getDocuments
 
 **Returns**: [Document](../explanations/platform-protocol-document.md) information for the requested document(s)  
@@ -2022,6 +1188,1515 @@ grpcurl -proto protos/platform/v0/platform.proto \
       "epoch": 1170,
       "timeMs": "1725567845055",
       "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+## Identity Endpoints
+
+### getIdentity
+
+**Returns**: [Identity](../explanations/identity.md) information for the requested identity  
+**Parameters**:
+
+| Name    | Type    | Required | Description                                                           |
+| ------- | ------- | -------- | --------------------------------------------------------------------- |
+| `id`    | Bytes   | Yes      | An identity `id`<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity. The data requested will be encoded as part of the proof in the response.|
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} JavaScript (dapi-client)
+:sync: js-dapi-client
+```javascript
+const DAPIClient = require('@dashevo/dapi-client');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
+
+loadDpp();
+const dpp = new DashPlatformProtocol();
+const client = new DAPIClient({ network: 'testnet' });
+
+const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
+client.platform.getIdentity(identityId).then((response) => {
+  const identity = dpp.identity.createFromBuffer(response.getIdentity());
+  console.log(identity.toJSON());
+});
+```
+:::
+
+:::{tab-item} JavaScript (dapi-grpc)
+:sync: js-dapi-grpc
+```javascript
+const {
+  v0: { PlatformPromiseClient, GetIdentityRequest },
+} = require('@dashevo/dapi-grpc');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
+
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
+const platformPromiseClient = new PlatformPromiseClient(
+  'https://seed-1.testnet.networks.dash.org:1443',
+);
+
+const id = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
+const idBuffer = Buffer.from(id);
+const getIdentityRequest = new GetIdentityRequest();
+getIdentityRequest.setId(idBuffer);
+getIdentityRequest.setProve(false);
+
+platformPromiseClient
+  .getIdentity(getIdentityRequest)
+  .then((response) => {
+    const identity = dpp.identity.createFromBuffer(response.getIdentity());
+    console.dir(identity.toJSON());
+  })
+  .catch((e) => console.error(e));
+```
+:::
+
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentity
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (JavaScript)
+:sync: js-dapi-client
+```json
+{
+  "$version":"0",
+  "id":"EuzJmuZdBSJs2eTrxHEp6QqJztbp6FKDNGMeb4W2Ds7h",
+  "publicKeys":[
+    {
+      "$version":"0",
+      "id":0,
+      "purpose":0,
+      "securityLevel":0,
+      "contractBounds":null,
+      "type":0,
+      "readOnly":false,
+      "data":"Asi0dHtSjKxf3femzGNwLuBO19EzKQTghRA0PqANzlRq",
+      "disabledAt":null
+    },
+    {
+      "$version":"0",
+      "id":1,
+      "purpose":0,
+      "securityLevel":2,
+      "contractBounds":null,
+      "type":0,
+      "readOnly":false,
+      "data":"AgHuKPhPVIU5BWfpOcK1hgELY6aeySyrU13JaoxxkTYC",
+      "disabledAt":null
+    }
+  ],
+  "balance":17912102140,
+  "revision":0
+}
+```
+:::
+
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "identity": "AB8VEmymhcW7r01Ka36+WtMlOruBGrE3Ulr0sTsCo5scBAAAAAAAAAAAIQMSQ7bd3xPfA+9xn2+FLl/AJrQTEhdW/OUafgjhbjs6qwABAAEAAgAAACED8nl3p8oFHACE5DGvv8Y9sBxWEVPLpUDUlSD7yICx0OoAAgACAAEAAAAhA9BQqn5pbKnveG+CTGpr+sheSghjJFEUYpm//gO1HPa1AAMAAwMBAAAAIQK7PbawzDv5oNWL3icaXEeAnv5xigN0gUMXRVzn6VgPQwD8J+gRAgA=",
+    "metadata": {
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+
+::::
+
+### getIdentityBalance
+
+**Returns**: Credit balance for the requested [Identity](../explanations/identity.md)
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityBalance
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "balance": "669520130",
+    "metadata": {
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentityBalanceAndRevision
+
+**Returns**: Credit balance and identity revision for the requested [Identity](../explanations/identity.md)
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityBalanceAndRevision
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "balanceAndRevision": {
+      "balance": "669520130"
+    },
+    "metadata": {
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentityByNonUniquePublicKeyHash
+
+:::{versionadded} 2.0.0
+:::
+
+**Returns**: One or more [identities](../explanations/identity.md) associated with a public key
+hash, including non-unique masternode keys.
+
+:::{note}
+Unlike [`getIdentityByPublicKeyHash`](#getidentitybypublickeyhash), this endpoint supports public
+key hashes that may be associated with multiple identities, such as masternode voting keys. Use the
+`start_after` parameter to paginate through results.
+:::
+
+**Parameters**:
+
+| Name             | Type   | Required | Description |
+| ---------------- | ------ | -------- | ----------- |
+| `public_key_hash`| Bytes  | Yes      | Public key hash (sha256-ripemd160) to search for |
+| `start_after`    | Bytes  | No       | Identity ID to start after (for pagination) |
+| `prove`          | Boolean| No       | Set to `true` to receive a proof that contains the requested identity |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `public_key_hash` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "public_key_hash": "uNFZGqdNRA4K+cC+FsVbvBQYR/c="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityByNonUniquePublicKeyHash
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (identity)
+```json
+{
+  "v0": {
+    "identity": {
+      "identity": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQCgUViOvLoIUc3Ibd9YqICX+1+xQz+fdYxRkyZPslTrBzQABAAEAAgAAACECA+Zn..."
+    },
+    "metadata": {
+      "height": "7242",
+      "coreChainLockedHeight": 927815,
+      "epoch": 855,
+      "timeMs": "1702012386543",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-37"
+    }
+  }
+}
+```
+:::
+
+::::
+
+### getIdentityByPublicKeyHash
+
+**Returns**: An [identity](../explanations/identity.md) associated with the provided public key hash
+
+:::{note}
+This endpoint only works for unique keys. Since masternode keys do not have to be unique
+(e.g., voting keys), some masternode identities cannot be retrieved using this endpoint. See
+[`getIdentityByNonUniquePublicKeyHash`](#getidentitybynonuniquepublickeyhash) for masternode
+identities.
+:::
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `public_key_hash` | Bytes   | Yes | Public key hash (sha256-ripemd160) of identity public key
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "public_key_hash": "uNFZGqdNRA4K+cC+FsVbvBQYR/c="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityByPublicKeyHash
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "identity": "ADASwZuY7AAzrds2zWS39RBnDyo1GkMEtfaZQUQobv2sAgAAAAAAAAAAIQLItHR7UoysX933psxjcC7gTtfRMykE4IUQND6gDc5UagABAAEAAgAAACECAe4o+E9UhTkFZ+k5wrWGAQtjpp7JLKtTXclqjHGRNgIA/QAAAAQ8fEg8AA==",
+    "metadata": {
+      "height": "6870",
+      "coreChainLockedHeight": 927094,
+      "epoch": 851,
+      "timeMs": "1701985137472",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-37"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentityContractNonce
+
+**Returns**: Current contract nonce for the requested [Identity](../explanations/identity.md)
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `identity_id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
+| `contract_id`    | Bytes   | Yes      | A contract ID
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity contract nonce
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} JavaScript (dapi-client)
+:sync: js-dapi-client
+```javascript
+const DAPIClient = require('@dashevo/dapi-client');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
+
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
+const client = new DAPIClient({ network: 'testnet' });
+
+const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
+const contractId = Identifier.from('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec');
+client.platform.getIdentityContractNonce(identityId, contractId).then((response) => {
+  console.log(`Current identity contract nonce: ${response.getIdentityContractNonce()}`);
+});
+```
+:::
+
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityContractNonce
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (dapi-client)
+:sync: js-dapi-client
+```text
+Current identity contract nonce: 0
+```
+:::
+
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "identityContractNonce": "3",
+    "metadata": {
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentityKeys
+
+**Returns**: Keys for an [Identity](../explanations/identity.md).
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `identity_td`  | String | Yes | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
+| `request_type` | [KeyRequestType](#request-types) | Yes | Request all keys (`all_keys`), specific keys (`specific_keys`), search for keys (`search_key`)
+| `limit` | Integer  | Yes     | The maximum number of revisions to return |
+| `offset` | Integer | Yes     | The offset of the first revision to return |
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
+
+#### Request Types
+
+**All keys**
+
+To request all keys for an identity, use the `all_keys` request type:
+
+```json
+"all_keys": {}
+```
+
+**Specific keys**
+
+To request specific keys for an identity, use the `specific_keys` request type where `key_ids` is an array containing the key IDs to request:
+
+```json
+"specific_keys": {
+  "key_ids": [
+    1
+  ]
+}
+```
+
+**Search keys**
+
+To search for identity keys, use the `search_keys` request type. The options for `security_Level_map` are "CURRENT_KEY_OF_KIND_REQUEST" and "ALL_KEYS_OF_KIND_REQUEST":
+
+```json
+"search_key": {
+  "purpose_map": {
+    "0": {
+      "security_level_map": {
+        "0": "CURRENT_KEY_OF_KIND_REQUEST"
+      }
+    }
+  }
+}
+```
+
+#### Example Request and Response
+
+::::{tab-set}
+:::{tab-item} gRPCurl (All keys)
+
+Request all identity keys
+
+Note: `identityId` must be represented in base64
+
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
+      "request_type": {
+        "allKeys": {}
+      }
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityKeys
+```
+:::
+:::{tab-item} gRPCurl (Specific keys)
+
+Request specific keys
+
+Note: `identityId` must be represented in base64
+
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
+      "request_type": {
+        "specificKeys": {
+          "keyIds": [
+            1
+          ]
+        }
+      },
+      "limit": 1
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityKeys
+```
+:::
+
+:::{tab-item} gRPCurl (Search keys)
+
+Search keys
+
+Note: `identityId` must be represented in base64
+
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
+      "request_type": {
+        "search_key": {
+          "purpose_map": {
+            "0": {
+              "security_level_map": {
+                "0": "CURRENT_KEY_OF_KIND_REQUEST"
+              }
+            }
+          }
+        }
+      },
+      "limit": 1
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityKeys
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+All keys
+```json
+{
+  "v0": {
+    "keys": {
+      "keysBytes": [
+        "AAAAAAAAACEDEkO23d8T3wPvcZ9vhS5fwCa0ExIXVvzlGn4I4W47OqsA",
+        "AAEAAgAAACED8nl3p8oFHACE5DGvv8Y9sBxWEVPLpUDUlSD7yICx0OoA",
+        "AAIAAQAAACED0FCqfmlsqe94b4JMamv6yF5KCGMkURRimb/+A7Uc9rUA",
+        "AAMDAQAAACECuz22sMw7+aDVi94nGlxHgJ7+cYoDdIFDF0Vc5+lYD0MA"
+      ]
+    },
+    "metadata": {
+      "height": "5986",
+      "coreChainLockedHeight": 1097381,
+      "epoch": 1170,
+      "timeMs": "1725566939334",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentityNonce
+
+**Returns**: Current nonce for the requested [Identity](../explanations/identity.md)
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+| ------- | ------- | -------- | ------------ |
+| `identity_id`    | Bytes   | Yes      | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity nonce
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} JavaScript (dapi-client)
+:sync: js-dapi-client
+```javascript
+const DAPIClient = require('@dashevo/dapi-client');
+const {
+  default: loadDpp,
+  DashPlatformProtocol,
+  Identifier,
+} = require('@dashevo/wasm-dpp');
+
+loadDpp();
+const dpp = new DashPlatformProtocol(null);
+const client = new DAPIClient({ network: 'testnet' });
+
+const identityId = Identifier.from('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm');
+client.platform.getIdentityNonce(identityId).then((response) => {
+  console.log(`Current identity nonce: ${response.getIdentityNonce()}`);
+});
+```
+:::
+
+:::{tab-item} gRPCurl
+:sync: grpcurl
+```shell
+# `id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentityNonce
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (dapi-client)
+:sync: js-dapi-client
+```text
+Current identity nonce: 0
+```
+:::
+
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "identityNonce": "3",
+    "metadata": {
+      "height": "5990",
+      "coreChainLockedHeight": 1097384,
+      "epoch": 1170,
+      "timeMs": "1725567663863",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentitiesBalances
+
+Retrieves the balances for a list of identities.
+
+**Returns**: A list of identities with their corresponding balances or a cryptographic proof.
+
+**Parameters**:
+
+| Name      | Type    | Required | Description                                              |
+|-----------|---------|----------|----------------------------------------------------------|
+| `ids`     | Array   | No       | An array of identity IDs for which balances are requested<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `prove`   | Boolean | No       | Set to `true` to receive a proof containing the requested balances |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "ids": [
+        "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=","dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
+      ],
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentitiesBalances
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "identitiesBalances": {
+      "entries": [
+        {
+          "identity_id": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
+          "balance": 1000000
+        },
+        {
+          "identity_id": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14=",
+          "balance": 2500000
+        }
+      ]
+    },
+    "metadata": {
+      "height": "13621",
+      "coreChainLockedHeight": 1105397,
+      "epoch": 1482,
+      "timeMs": "1726691577244",
+      "protocolVersion": 3,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getIdentitiesContractKeys
+
+**Returns**: Keys associated to a specific contract for multiple [Identities](../explanations/identity.md).
+
+**Parameters**:
+
+| Name                 | Type                    | Required | Description |
+|----------------------|-------------------------|----------|-------------|
+| `identities_ids`     | Array                   | Yes      | An array of identity IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `contract_id`        | String                  | Yes      | The ID of the contract |
+| `document_type_name` | String                  | No       | Name of the document type |
+| `purposes`           | Array of [KeyPurpose](#key-purposes) | No | Array of purposes for which keys are requested |
+| `prove`              | Boolean                 | No       | Set to `true` to receive a proof that contains the requested identity keys |
+
+#### Key Purposes
+
+**Key Purposes** define the intent of usage for each key. Here are the available purposes:
+
+- `AUTHENTICATION` - Keys used for authentication purposes.
+- `ENCRYPTION` - Keys used for encrypting data.
+- `DECRYPTION` - Keys used for decrypting data.
+- `TRANSFER` - Keys used for transferring assets.
+- `VOTING` - Keys used for voting mechanisms.
+
+#### Example Request and Response
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+# Request identity keys associated with the specified contract
+# `identities_ids` and `contract_id` must be represented in base64
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "identities_ids": [
+        "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
+        "NBgQk65dTNttDYDGLZNLrb1QEAWB91jqkqXtK1KU4Dc="
+      ],
+      "purposes": [],
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU="
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getIdentitiesContractKeys
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+:sync: grpcurl
+```json
+{
+  "v0": {
+    "identitiesKeys": {},
+    "metadata": {
+      "height": "5990",
+      "coreChainLockedHeight": 1097384,
+      "epoch": 1170,
+      "timeMs": "1725567663863",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+## Security Group Endpoints
+
+:::{versionadded} 2.0.0
+:::
+
+Security groups provide a way to distribute token configuration and update authorization across multiple identities. Each group defines a set of member identities, the voting power of each member, and the required power threshold to authorize an action. The endpoints in this section are used to retrieve information about groups and the actions they are performing.
+
+### getGroupInfo
+
+Retrieves information about a specific group within a contract, including its members and required power.
+
+**Returns**: Group information containing member details and required power, or a cryptographic proof.
+
+**Parameters**:
+
+| Name                     | Type     | Required | Description |
+|--------------------------|---------|----------|-------------|
+| `contract_id`            | Bytes   | Yes      | The ID of the contract containing the group |
+| `group_contract_position` | UInt32  | Yes      | The position of the group within the contract |
+| `prove`                  | Boolean | No       | Set to `true` to receive a proof that contains the requested group information |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+      "group_contract_position": 1,
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getGroupInfo
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "group_info": {
+      "group_info": {
+        "members": [
+          {
+            "member_id": "01abcdef",
+            "power": 5
+          },
+          {
+            "member_id": "02abcdef",
+            "power": 10
+          }
+        ],
+        "group_required_power": 15
+      }
+    },
+    "metadata": {
+      "height": "2876",
+      "coreChainLockedHeight": 1086885,
+      "epoch": 761,
+      "timeMs": "1724094056585",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
+### getGroupInfos
+
+Retrieves information about multiple groups within a contract, including their members and required power.
+
+**Returns**: A list of group information entries or a cryptographic proof.
+
+**Parameters**:
+
+| Name                                      | Type     | Required | Description |
+|-------------------------------------------|---------|----------|-------------|
+| `contract_id`                             | Bytes   | Yes      | The ID of the contract containing the groups |
+| `start_at_group_contract_position`        | Object  | No       | Filtering options for retrieving groups |
+| `start_at_group_contract_position`<br>`.start_group_contract_position` | UInt32  | No       | The position of the first group to retrieve |
+| `start_at_group_contract_position`<br>`.start_group_contract_position_included` | Boolean | No       | Whether the start position should be included in the results |
+| `count`                                   | UInt32  | No       | The maximum number of groups to retrieve |
+| `prove`                                   | Boolean | No       | Set to `true` to receive a proof that contains the requested group information |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+      "start_at_group_contract_position": {
+        "start_group_contract_position": 1,
+        "start_group_contract_position_included": true
+      },
+      "count": 5,
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getGroupInfos
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "group_infos": {
+      "group_infos": [
+        {
+          "group_contract_position": 1,
+          "members": [
+            {
+              "member_id": "01abcdef",
+              "power": 5
+            },
+            {
+              "member_id": "02abcdef",
+              "power": 10
+            }
+          ],
+          "group_required_power": 15
+        },
+        {
+          "group_contract_position": 2,
+          "members": [
+            {
+              "member_id": "03abcdef",
+              "power": 8
+            },
+            {
+              "member_id": "04abcdef",
+              "power": 12
+            }
+          ],
+          "group_required_power": 20
+        }
+      ]
+    },
+    "metadata": {
+      "height": "2876",
+      "coreChainLockedHeight": 1086885,
+      "epoch": 761,
+      "timeMs": "1724094056585",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
+### getGroupActions
+
+Retrieves a list of actions performed by a specific group within a contract.
+
+**Parameters**:
+
+| Name                              | Type     | Required | Description |
+|-----------------------------------|---------|----------|-------------|
+| `contract_id`                     | Bytes   | Yes      | The ID of the contract containing the group |
+| `group_contract_position`         | UInt32  | Yes      | The position of the group within the contract |
+| `status`                          | Enum    | Yes      | The status of the actions to retrieve (`ACTIVE = 0`, `CLOSED = 1`) |
+| `start_at_action_id`              | Object  | No       | Filtering options for retrieving actions |
+| `start_at_action_id.`<br>`start_action_id` | Bytes  | No       | The action ID to start retrieving from |
+| `start_at_action_id.`<br>`start_action_id_included` | Boolean | No | Whether the start action should be included in the results |
+| `count`                           | UInt32  | No       | The maximum number of actions to retrieve |
+| `prove`                           | Boolean | No       | Set to `true` to receive a proof that contains the requested group actions |
+
+**Returns**: A list of group actions or a cryptographic proof. The response message contains details about actions performed by a group, including various event types related to token operations, document updates, contract updates, and emergency actions. The list of possible actions is shown in the table below:
+
+| Event Type        | Subtype                     | Description |
+|-------------------|---------------------------|-------------|
+| **TokenEvent**    | `mint`                     | Mints new tokens to a specified recipient. |
+|                   | `burn`                     | Burns (destroys) a specified amount of tokens. |
+|                   | `freeze`                   | Freezes a specific entity's tokens. |
+|                   | `unfreeze`                 | Unfreezes a specific entity's tokens. |
+|                   | `destroy_frozen_funds`     | Destroys frozen funds for a specified entity. |
+|                   | `transfer`                 | Transfers tokens to another recipient. |
+|                   | `emergency_action`         | Performs emergency actions like pausing or resuming the contract. |
+|                   | `token_config_update`      | Updates token configuration settings. |
+| **DocumentEvent** | `create`                   | Represents the creation of a document. |
+| **ContractEvent** | `update`                   | Represents updates to a contract. |
+
+**Response Object**
+
+| Name                | Type      | Description |
+|---------------------|----------|-------------|
+| `group_actions`    | Object   | Contains a list of group actions |
+| `group_actions.group_actions` | Array of `GroupActionEntry` | A list of actions performed by the group |
+| `group_actions.group_actions[]`<br>`.action_id` | Bytes  | Unique identifier for the action |
+| `group_actions.group_actions[]`<br>`.event` | Object  | The event data associated with the action |
+| `group_actions.group_actions[]`<br>`.event.event_type` | Object  | The specific type of event |
+| `group_actions.group_actions[]`<br>`.event.event_type.token_event` | Object  | Token-related event details (if applicable). See [Token Event details](#token-event-fields) below for complete information. |
+| `group_actions.group_actions[]`<br>`.event.event_type.document_event` | Object  | Document-related event details |
+| `group_actions.group_actions[]`<br>`.event.event_type.document_event`<br>`.create` | Object  | Document creation event details |
+| `group_actions.group_actions[]`<br>`.event.event_type.document_event`<br>`.create.created_document` | Bytes | Created document data |
+| `group_actions.group_actions[]`<br>`.event.event_type.contract_event` | Object  | Contract-related event details |
+| `group_actions.group_actions[]`<br>`.event.event_type.contract_event`<br>`.update` | Object  | Contract update event details |
+| `group_actions.group_actions[]`<br>`.event.event_type.contract_event`<br>`.update.updated_contract` | Bytes | Updated contract data |
+| `metadata` | Object  | Metadata about the blockchain state. See [metadata details](#data-proofs-and-metadata) for complete information |
+
+#### Token Event Fields
+
+| Token Event Type | Field Name | Type | Description |
+|-----------------|------------|------|-------------|
+| `mint`   | `amount` | UInt64 | Amount of tokens to mint. |
+|          | `recipient_id` | Bytes | Identity ID of the recipient. |
+|          | `public_note` | String (Optional) | A public note for the mint event. |
+| `burn`   | `amount` | UInt64 | Amount of tokens to burn. |
+|          | `public_note` | String (Optional) | A public note for the burn event. |
+| `freeze` | `frozen_id` | Bytes | Identifier of the entity being frozen. |
+|          | `public_note` | String (Optional) | A public note for the freeze event. |
+| `unfreeze` | `frozen_id` | Bytes | Identifier of the entity being unfrozen. |
+|          | `public_note` | String (Optional) | A public note for the unfreeze event. |
+| `destroy_frozen_funds` | `frozen_id` | Bytes | Identifier of the frozen entity. |
+|          | `amount` | UInt64 | Amount of frozen funds to destroy. |
+|          | `public_note` | String (Optional) | A public note for the destruction event. |
+| `transfer` | `recipient_id` | Bytes | Identity ID of the recipient. |
+|          | `amount` | UInt64 | Amount of tokens transferred. |
+|          | `public_note` | String (Optional) | A public note for the transfer event. |
+|          | `shared_encrypted_note` | Object (Optional) | Encrypted note shared by sender and recipient. |
+|          | `personal_encrypted_note` | Object (Optional) | Personal encrypted note. |
+| `emergency_action` | `action_type` | Enum (`PAUSE = 0`, `RESUME = 1`) | Type of emergency action performed. |
+|           | `public_note` | String (Optional) | A public note for the emergency action. |
+| `token_config_update` | `token_config_update_item` | Bytes | Configuration update details. |
+|           | `public_note` | String (Optional) | A public note for the configuration update. |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+      "group_contract_position": 1,
+      "status": 0,
+      "start_at_action_id": {
+        "start_action_id": "01abcdef",
+        "start_action_id_included": true
+      },
+      "count": 5,
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getGroupActions
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "group_actions": {
+      "group_actions": [
+        {
+          "action_id": "01abcdef",
+          "event": {
+            "event_type": {
+              "token_event": {
+                "mint": {
+                  "amount": "1000",
+                  "recipient_id": "02abcdef",
+                  "public_note": "Minting 1000 tokens"
+                }
+              }
+            }
+          }
+        },
+        {
+          "action_id": "02abcdef",
+          "event": {
+            "event_type": {
+              "token_event": {
+                "burn": {
+                  "amount": "500",
+                  "public_note": "Burning 500 tokens"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "height": "2876",
+      "coreChainLockedHeight": 1086885,
+      "epoch": 761,
+      "timeMs": "1724094056585",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
+### getGroupActionSigners
+
+Retrieves the signers for a specified group action within a contract, along with their assigned power.
+
+**Returns**: A list of group action signers or a cryptographic proof.
+
+**Parameters**
+
+| Name                      | Type     | Required | Description |
+|---------------------------|---------|----------|-------------|
+| `contract_id`             | Bytes   | Yes      | The ID of the contract containing the group action. |
+| `group_contract_position` | UInt32  | Yes      | The position of the group within the contract. |
+| `status`                  | Enum    | Yes      | The status of the action (`ACTIVE = 0`, `CLOSED = 1`). |
+| `action_id`               | Bytes   | Yes      | The unique identifier of the action. |
+| `prove`                   | Boolean | No       | Set to `true` to receive a proof that contains the requested group action signers. |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
+      "group_contract_position": 1,
+      "status": 0,
+      "action_id": "01abcdef",
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getGroupActionSigners
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "group_action_signers": {
+      "signers": [
+        {
+          "signer_id": "01abcdef",
+          "power": 5
+        },
+        {
+          "signer_id": "02abcdef",
+          "power": 10
+        }
+      ]
+    },
+    "metadata": {
+      "height": "2876",
+      "coreChainLockedHeight": 1086885,
+      "epoch": 761,
+      "timeMs": "1724094056585",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
+## State Transition Endpoints
+
+### broadcastStateTransition
+
+Broadcasts a [state transition](../explanations/platform-protocol-state-transition.md) to the platform via DAPI to make a change to layer 2 data. The `broadcastStateTransition` call returns once the state transition has been accepted into the mempool.
+
+**Returns**: Nothing or error
+
+:::{note}
+The [`waitForStateTransitionResult` endpoint](#waitforstatetransitionresult) should be used after `broadcastStateTransition` if proof of block confirmation is required.
+:::
+
+**Parameters**:
+
+| Name               | Type           | Required | Description                                                          |
+| ------------------ | -------------- | -------- | -------------------------------------------------------------------- |
+| `state_transition` | Bytes (Base64) | Yes      | A [state transition](../explanations/platform-protocol-state-transition.md) |
+
+```{eval-rst}
+..
+  Commented out info
+  [block:html]
+  {
+    "html": "<!--\nJavaScript (dapi-client) example (old)\nconst DAPIClient = require('@dashevo/dapi-client');\nconst DashPlatformProtocol = require('@dashevo/dpp');\n\nconst client = new DAPIClient({ network: 'testnet' });\nconst dpp = new DashPlatformProtocol();\n\n// Data Contract Create State Transition (JSON)\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    client.platform.broadcastStateTransition(stateTransition.toBuffer())\n      .then(() => console.log('State Transition broadcast successfully'));\n  });\n-->\n\n<!--\nJavaScript (dapi-grpc) example (old)\nconst {\n  v0: {\n    PlatformPromiseClient,\n    BroadcastStateTransitionRequest,\n  },\n} = require('@dashevo/dapi-grpc');\nconst DashPlatformProtocol = require('@dashevo/dpp');\n\nconst platformPromiseClient = new PlatformPromiseClient(\n  'https://seed-1.testnet.networks.dash.org:1443',\n);\n\nconst dpp = new DashPlatformProtocol();\n\n// Data Contract Create State Transition (JSON)\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\nconst broadcastStateTransitionRequest = new BroadcastStateTransitionRequest();\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    console.log(stateTransition);\n    broadcastStateTransitionRequest.setStateTransition(stateTransition.toBuffer());\n\n    platformPromiseClient.broadcastStateTransition(broadcastStateTransitionRequest)\n      .then(() => console.log('State Transition broadcast successfully'))\n      .catch((e) => {\n        console.error(e);\n        console.error(e.metadata);\n      });\n  })\n  .catch((e) => console.error(e));\n-->\n\n<!--\ngRPCurl example (old)\n# Submit an identity create State Transition\n# `state_transition` must be represented in base64\n# Replace `state_transition` with your own state transition object before running\ngrpcurl -proto protos/platform/v0/platform.proto \\\n  -d '{\n    \"state_transition\":\"pWR0eXBlAmlzaWduYXR1cmV4WEg3TWhFWDQ0Z3JzMVIwTE9XTU5IZjAxWFNpYVFQcUlVZ1JLRXQyMkxHVERsUlUrZ1BwQUlUZk5JUmhXd3IvYTVHd0lzWm1idGdYVVFxcVhjbW9lQWtUOD1qcHVibGljS2V5c4GkYmlkAGRkYXRheCxBdzh2UmYxeFFCTlVLbzNiY2llaHlaR2NhM0hBSThkY0ZvVWJTK3hLb0lITmR0eXBlAGlpc0VuYWJsZWT1bmxvY2tlZE91dFBvaW50eDBLT1VUSHB5YnFPek9DNnhEVUhFWm9uc1lNSVpqcGppTHFZNnkxYmlWNWxRQUFBQUFvcHJvdG9jb2xWZXJzaW9uAA==\"\n\n    }' \\\n  seed-1.testnet.networks.dash.org:1443 \\\n  org.dash.platform.dapi.v0.Platform/broadcastStateTransition\n-->"
+  }
+  [/block]
+```
+
+**Response**: No response except on error
+
+### waitForStateTransitionResult
+
+**Returns**: The state transition hash and either a proof that the state transition was confirmed in a block or an error.  
+**Parameters**:
+
+| Name                    | Type    | Required | Description                      |
+| ----------------------- | ------- | -------- | -------------------------------- |
+| `state_transition_hash` | Bytes   | Yes      | Hash of the state transition     |
+| `prove`                 | Boolean | Yes      | Set to `true` to request a proof. The data requested will be encoded as part of the proof in the response. |
+
+**Example Request**
+
+```{eval-rst}
+..
+  Commented out info
+  [block:html]
+  {
+    "html": "<!--\nJavaScript (dapi-client) example (old)\nconst DAPIClient = require('@dashevo/dapi-client');\nconst DashPlatformProtocol = require('@dashevo/dpp');\nconst crypto = require('crypto');\n\nconst client = new DAPIClient({ network: 'testnet' });\nconst dpp = new DashPlatformProtocol();\n\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    //  Calculate state transition hash\n    const hash = crypto.createHash('sha256')\n      .update(stateTransition.toBuffer())\n      .digest();\n\n    console.log(`Requesting proof of state transition with hash:\\n\\t${hash.toString('hex')}`);\n\n    client.platform.waitForStateTransitionResult(hash, { prove: true })\n      .then((response) => {\n        console.log(response);\n      });\n  });\n-->\n\n<!--\nJavaScript (dapi-grpc) example (old)\nconst {\n  v0: {\n    PlatformPromiseClient,\n    WaitForStateTransitionResultRequest,\n  },\n} = require('@dashevo/dapi-grpc');\nconst DashPlatformProtocol = require('@dashevo/dpp');\nconst crypto = require('crypto');\n\nconst platformPromiseClient = new PlatformPromiseClient(\n  'https://seed-1.testnet.networks.dash.org:1443',\n);\n\nconst dpp = new DashPlatformProtocol();\n\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    //  Calculate state transition hash\n    const hash = crypto.createHash('sha256')\n      .update(stateTransition.toBuffer())\n      .digest();\n\n    const waitForStateTransitionResultRequest = new WaitForStateTransitionResultRequest();\n    waitForStateTransitionResultRequest.setStateTransitionHash(hash);\n    waitForStateTransitionResultRequest.setProve(true);\n\n    console.log(`Requesting proof of state transition with hash:\\n\\t${hash.toString('hex')}`);\n\n    platformPromiseClient.waitForStateTransitionResult(waitForStateTransitionResultRequest)\n      .then((response) => {\n        const rootTreeProof = Buffer.from(response.getProof().getRootTreeProof());\n        const storeTreeProof = Buffer.from(response.getProof().getStoreTreeProof());\n        console.log(`Root tree proof: ${rootTreeProof.toString('hex')}`);\n        console.log(`Store tree proof: ${storeTreeProof.toString('hex')}`);\n      })\n  \t\t.catch((e) => console.error(e));\n  });\n-->\n\n<!--\ngRPCurl example (old)\n# `state_transition_hash` must be represented in base64\n# Replace `state_transition_hash` with your own before running\ngrpcurl -proto protos/platform/v0/platform.proto \\\n  -d '{\n    \"state_transition_hash\":\"wEiwFu9WvAtylrwTph5v0uXQm743N+75C+C9DhmZBkw=\",\n    \"prove\": \"true\"\n    }' \\\n  seed-1.testnet.networks.dash.org:1443 \\\n  org.dash.platform.dapi.v0.Platform/waitForStateTransitionResult\n-->"
+  }
+  [/block]
+```
+
+::::{tab-set}
+:::{tab-item} JavaScript (dapi-client)
+:sync: js-dapi-client
+```javascript
+const DAPIClient = require('@dashevo/dapi-client');
+
+const client = new DAPIClient({ network: 'testnet' });
+
+// Replace <YOUR_STATE_TRANSITION_HASH> with your actual hash
+const hash = <YOUR_STATE_TRANSITION_HASH>;
+client.platform.waitForStateTransitionResult(hash, { prove: true })
+  .then((response) => {
+    console.log(response);
+  });
+
+```
+:::
+
+:::{tab-item} Request (gRPCurl)
+:sync: grpcurl
+```shell
+# Replace `your_state_transition_hash` with your own before running
+# `your_state_transition_hash` must be represented in base64
+#    Example: wEiwFu9WvAtylrwTph5v0uXQm743N+75C+C9DhmZBkw=
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "state_transition_hash":your_state_transition_hash,
+      "prove": "true"
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/waitForStateTransitionResult
+```
+:::
+::::
+
+```{eval-rst}
+..
+  Commented out info
+  [block:html]
+  {
+    "html": "<!--\ndapi-client\n{\n  proof: {\n    rootTreeProof: <Buffer 01 00 00 00 03 26 e0 35 e0 31 82 7e 7c 27 b0 91 23 41 ed d2 11 bf 3b 90 54 70 11 2c 68 5a 8e 76 8c 68 bb 39 21 3d cf 46 6d 09 d0 7a 28 e3 e9 0b 2b 0e ... 17 more bytes>,\n    storeTreeProof: <Buffer 01 0b ee 31 ce ca 2a bd 44 6a db d4 9f 13 4a 7d 70 25 96 a9 b9 02 6e c4 e1 90 95 f7 a1 b4 c9 de 1f e4 63 e6 ce f7 58 3a 5b c3 10 01 78 9b 4f 98 9a c9 ... 526 more bytes>\n  }\n}\n-->\n<!--\ndapi-grpc\nRequesting proof of state transition with hash:\n        8ae93b89c272455f3ce8d01dba99a3a28c9550262a602c6ba44de08e545d3aa9\nRoot tree proof: 010000000326e035e031827e7c27b0912341edd211bf3b905470112c685a8e768c68bb39213dcf466d09d07a28e3e90b2b0e1d1510dede30214f68e32f8cf498220101\nStore tree proof: 010bee31ceca2abd446adbd49f134a7d702596a9b9026ec4e19095f7a1b4c9de1fe463e6cef7583a5bc31001789b4f989ac9f8f524f1247fed372502d8c54a3c026072d5239f074422621673c250d1c74eadbb304a10013fb54a99ef641b9a7585d6d28dd443875e435a35022d92a0711f56ae23bc13f4a630a1455970451e3f1001fe2b060fca69ce2eb3d784cec28c0f575690f131026df252af068635bdf08f5448ea67c23d9a9a02831001a7df0a9f392682d7d7d0a29bd43d932c16b0d6530320a8b7df4cadb6cdfd5b5d1bb31cbb488d241e91d60cc1341cd686a3fbb6291f19e800a5632469645820a8b7df4cadb6cdfd5b5d1bb31cbb488d241e91d60cc1341cd686a3fbb6291f196724736368656d61783468747470733a2f2f736368656d612e646173682e6f72672f6470702d302d342d302f6d6574612f646174612d636f6e7472616374676f776e657249645820703796bfd3e2bbd54505a8e04929bb05b8aecfb1cd5c013ef8a8b84511770e0c69646f63756d656e7473a1646e6f7465a26a70726f70657274696573a1676d657373616765a1647479706566737472696e67746164646974696f6e616c50726f70657274696573f46f70726f746f636f6c56657273696f6e001001d94cd40044b8485e962d80e57c1992c77a182a1611111102abe7e3f7231ed71b8c4fd7ee09d4a1f970a51cd4100139312feadce145313ef34f720e940892d0ed2405111102245c6aaaf192b51207333be85ab77c9c9393af47100128ef7d4479e4f488373d92280fe8e52a9a48a6621111\n-->\n<!--\ngRPCurl\n{\n  \"proof\": {\n    \"merkleProof\": \"AQAAAAAAAAJHAV8NeFRgf0cWRiCIIVsbJcNs+bALwShVQEkXV2jRCueIAkeoHTKeU60+Jm2oiHbGSkOL8ui06Nj27SLz2raMF29iEAHKnCrDvO67hcJV79tfQwqQSFcxJOek9Fa/x3oYvwQrQQL8lxVOSAkZSC1qhI8LJa6PtR+u8TifMMmRCRY2dXrSUBABihjPBDgD9SM/d9JgWkYyT+sUp4FdgotmwHhZIB1rJVUCkaeftxRkQ/B0FU26ojDJirY/SwZ8RcU1/3pnbJbA+5EQBCBkeRNzJuVLjOKnDOmG48wnSzjHg5lLdlA5JSBD79rQxQAFAgEBAAAYUfu7+1iqqIwjkszndZ6Vm8pli6pjt4XxvvgKCcE3ygI+G8nIsflGKoZQOaWGcFBmXDzAwJqjGlMxSIWNSEgoQBACAQd7xuP4BzKoaf75MNyQQC6Q7e94Vg2IdQe2LFJysA4QAZ2mq+ad/rNJ7n2fPiJgHi4NMT9Wht6Kb5J8qF20hajJEQKz2VnGsgYNwMjY9kadWb63Tjk3nTqFttgjLnoz4PCpQBABpdWVJ9sfU+o+OEcUuFcDOV+y4gYFoao3kVNLZ+Yz7Y4RAuVHBoF21TyNc9DUDHmAfcaJf6K+/VzqIzfnJ7iGqXN+EAGvNlkFsWw+DjFg+MLjzo2MzUaWk7sA63+rG3FQJ7LO2hERERECPImih8uZnpEfew+qLeKrdEig5TR6g5VsfuHI9U2WuvsQAU7qdWenHDisDf3TNzJQytKJYaeyhmy2LEo11zZVwsoREQIAAAAAAAAA/wMBAAD6APcBAAAApGJpZFggZHkTcyblS4zipwzphuPMJ0s4x4OZS3ZQOSUgQ+/a0MVnYmFsYW5jZRo7mmxAaHJldmlzaW9uAGpwdWJsaWNLZXlzgqZiaWQAZGRhdGFYIQLlz7I9IuqDAf1fp2xiyvGiApsvgANo2ldfmrWv6MsfG2R0eXBlAGdwdXJwb3NlAGhyZWFkT25sefRtc2VjdXJpdHlMZXZlbACmYmlkAWRkYXRhWCECrq7odM9OoHGEyM1D19ZAaEPf50OKLwsxL2D4SpnLZllkdHlwZQBncHVycG9zZQBocmVhZE9ubHn0bXNlY3VyaXR5TGV2ZWwCAAEAAAAAAAAA0QQBAAAkAgEgbaBpE46QX8+EXS6Sl5CG4r+JuiXVDhxZeZy/TS8qnQEAUw2uiB7scatAs99mQfB5VfVb0lMSywDMHXpmUgNfONsC4OEPflWGlZAqBSOhaKD0/SfPJHbOOMEfCjTtBV1jjgwQARdKA3tf2c8gP3H7tRKcRMHXfljTH/4L8L63tbZk5FX/EQL+TedZ8kFHQEuNY8e9pfmaLI36Y7rHe1hAjVBSh9U95BABfPfYq74T0N0ygKE4spKvSQkekrnH0Ge8Ot0FEDsq2rcR\",\n    \"signatureLlmqHash\": \"AAAA1h0X9yUNsXpD0/iKlsPvVb+VezkZAIkQIzmGqoc=\",\n    \"signature\": \"jeByZ8qlZvID/C3LVVy/mZGHlRu2QhN3MZO09hCOjAH0gn1tqrAX6BXaJf6qRLw9APv0+nInObRF3JhstvsByPK8QOHCCl9M3NpcgI/HCECpqMMG8S9DPtJYI6HwQO5I\"\n  },\n  \"metadata\": {\n    \"height\": \"1221\",\n    \"coreChainLockedHeight\": 802939\n  }\n}\n-->"
+  }
+  [/block]
+```
+
+## System Info Endpoints
+
+### getCurrentQuorumsInfo
+
+Retrieves current quorum details, including validator sets and metadata for each quorum.
+
+**Returns**: Information about current quorums, including quorum hashes, validator sets, and
+cryptographic proof.
+
+**Parameters**:
+
+| Name          | Type   | Required | Description |
+| ------------- | ------ | -------- | ----------- |
+| `version`     | Object | No       | Version object containing request parameters |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {}
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getCurrentQuorumsInfo
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "quorumHashes": [
+      "AAABC9mcu+F3eC33hC9wyZAP20QQNHz4kYnfFQPwa5A="
+    ],
+    "currentQuorumHash": "AAABP7yY5DKt8UlLUR/QJlH8BI108xugKSEIOrR6iAA=",
+    "validatorSets": [
+      {
+        "quorumHash": "AAABC9mcu+F3eC33hC9wyZAP20QQNHz4kYnfFQPwa5A=",
+        "coreHeight": 1131096,
+        "members": [
+          {
+            "proTxHash": "BbaHl4NE+iQzsqqZ1B9kPi2FgaeJzcIwhIic7KUkTqg=",
+            "nodeIp": "52.24.124.162"
+          },
+          {
+            "proTxHash": "iCUb1LEk7+uHU33qvuxU9sj1dfTfgfEM9ejuoHMJK28=",
+            "nodeIp": "52.33.28.47"
+          },
+          {
+            "proTxHash": "FD3Namt2hP3gHoihDl1l3popJExezVhtFKNCZXAl8RM=",
+            "nodeIp": "35.164.23.245"
+          }
+        ],
+        "thresholdPublicKey": "ixciXjkgFnI/cQNXS51yBi4MYgdPZWjRGxsubEsfzItgvTlABUxow9S1eCE7w9+f"
+      }
+    ],
+    "lastBlockProposer": "iCUb1LEk7+uHU33qvuxU9sj1dfTfgfEM9ejuoHMJK28=",
+    "metadata": {
+      "height": "43865",
+      "coreChainLockedHeight": 1131112,
+      "epoch": 2483,
+      "timeMs": "1730295469308",
+      "protocolVersion": 4,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getEvonodesProposedEpochBlocksByIds
+
+Retrieves the number of blocks proposed by the specified evonodes in a certain epoch, based on their IDs.
+
+**Returns**: A list of evonodes and their proposed block counts or a cryptographic proof.
+
+**Parameters**:
+
+| Name               | Type     | Required | Description |
+| ------------------ | -------- | -------- | ----------- |
+| `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
+| `ids`              | Array    | Yes    | An array of evonode IDs for which proposed blocks are retrieved IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "ids": [
+        "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=","dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
+      ],
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getEvonodesProposedEpochBlocksByIds
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "evonodesProposedBlockCountsInfo": {
+      "evonodesProposedBlockCounts": [
+        {
+          "proTxHash": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14="
+        },
+        {
+          "proTxHash": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
+          "count": "13"
+        }
+      ]
+    },
+    "metadata": {
+      "height": "13621",
+      "coreChainLockedHeight": 1105397,
+      "epoch": 1482,
+      "timeMs": "1726691577244",
+      "protocolVersion": 3,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getEvonodesProposedEpochBlocksByRange
+
+Retrieves the number of blocks proposed by evonodes for a specified epoch.
+
+**Returns**: A list of evonodes and their proposed block counts or a cryptographic proof.
+
+**Parameters**:
+
+| Name               | Type     | Required | Description |
+| ------------------ | -------- | -------- | ----------- |
+| `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
+| `limit`            | Integer  | No       | Maximum number of evonodes proposed epoch blocks to return |
+| `start_after`      | Bytes    | No       | Retrieve results starting after this document |
+| `start_at`         | Bytes    | No       | Retrieve results starting at this document |
+| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "epoch": 0,
+      "limit": 10,
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getEvonodesProposedEpochBlocksByRange
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "evonodesProposedBlockCountsInfo": {
+      "evonodesProposedBlockCounts": [
+        {
+          "proTxHash": "BbaHl4NE+iQzsqqZ1B9kPi2FgaeJzcIwhIic7KUkTqg=",
+          "count": "1"
+        }
+      ]
+    },
+    "metadata": {
+      "height": "20263",
+      "coreChainLockedHeight": 1105827,
+      "epoch": 1499,
+      "timeMs": "1726752270072",
+      "protocolVersion": 3,
       "chainId": "dash-testnet-51"
     }
   }
@@ -2544,515 +3219,10 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
-### getVotePollsByEndDate
-
-Retrieves vote polls that will end within a specified date range.
-
-**Returns**: A list of vote polls or a cryptographic proof.
-
-**Parameters**:
-
-| Name               | Type     | Required | Description |
-| ------------------ | -------- | -------- | ----------- |
-| `start_time_info`  | Object   | No       | Start time information for filtering vote polls |
-| `end_time_info`    | Object   | No       | End time information for filtering vote polls |
-| `limit`            | Integer  | No       | Maximum number of results to return |
-| `offset`           | Integer  | No       | Offset for pagination |
-| `ascending`        | Boolean  | No       | Sort order for results |
-| `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested vote polls |
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "start_time_info": {"start_time_ms": "1701980000000", "start_time_included": true},
-      "end_time_info": {"end_time_ms": "1702000000000", "end_time_included": true},
-      "limit": 10
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getVotePollsByEndDate
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-```json
-{
-  "v0": {
-    "votePollsByTimestamps": {
-      "finishedResults": true
-    },
-    "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
-    }
-  }
-}
-```
-:::
-::::
-
-### waitForStateTransitionResult
-
-**Returns**: The state transition hash and either a proof that the state transition was confirmed in a block or an error.  
-**Parameters**:
-
-| Name                    | Type    | Required | Description                      |
-| ----------------------- | ------- | -------- | -------------------------------- |
-| `state_transition_hash` | Bytes   | Yes      | Hash of the state transition     |
-| `prove`                 | Boolean | Yes      | Set to `true` to request a proof. The data requested will be encoded as part of the proof in the response. |
-
-**Example Request**
-
-```{eval-rst}
-..
-  Commented out info
-  [block:html]
-  {
-    "html": "<!--\nJavaScript (dapi-client) example (old)\nconst DAPIClient = require('@dashevo/dapi-client');\nconst DashPlatformProtocol = require('@dashevo/dpp');\nconst crypto = require('crypto');\n\nconst client = new DAPIClient({ network: 'testnet' });\nconst dpp = new DashPlatformProtocol();\n\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    //  Calculate state transition hash\n    const hash = crypto.createHash('sha256')\n      .update(stateTransition.toBuffer())\n      .digest();\n\n    console.log(`Requesting proof of state transition with hash:\\n\\t${hash.toString('hex')}`);\n\n    client.platform.waitForStateTransitionResult(hash, { prove: true })\n      .then((response) => {\n        console.log(response);\n      });\n  });\n-->\n\n<!--\nJavaScript (dapi-grpc) example (old)\nconst {\n  v0: {\n    PlatformPromiseClient,\n    WaitForStateTransitionResultRequest,\n  },\n} = require('@dashevo/dapi-grpc');\nconst DashPlatformProtocol = require('@dashevo/dpp');\nconst crypto = require('crypto');\n\nconst platformPromiseClient = new PlatformPromiseClient(\n  'https://seed-1.testnet.networks.dash.org:1443',\n);\n\nconst dpp = new DashPlatformProtocol();\n\n// Replace with your own state transition object before running\nconst stateTransitionObject = {\n  protocolVersion: 0,\n  type: 0,\n  signature: 'HxAipUsLWQBE++C1suSRNQiQh91rI1LZbblvQhk2erUaIvRneAagxGYYsXXYNvEeO+lBzlF1a9KHGGTHgnO/8Ts=',\n  signaturePublicKeyId: 0,\n  dataContract: {\n    protocolVersion: 0,\n    '$id': 'CMc7RghKkHeHtFdwfSX5Hzy7CUdpCEJnwsbfHdsbmJ32',\n    '$schema': 'https://schema.dash.org/dpp-0-4-0/meta/data-contract',\n    ownerId: '8Z3ps3tNoGoPEDYerUNCd4yi7zDwgBh2ejgSMExxvkfD',\n    documents: {\n      note: {\n        properties: { message: { type: 'string' } },\n        additionalProperties: false,\n      },\n    },\n  },\n  entropy: '+RqUArypdL8f/gCMAo4b6c3CoQvxHzsQG0BdYrT5QT0=',\n};\n\n// Convert signature and entropy to buffer\nstateTransitionObject.signature = Buffer.from(stateTransitionObject.signature, 'base64');\nstateTransitionObject.entropy = Buffer.from(stateTransitionObject.entropy, 'base64');\n\ndpp.stateTransition.createFromObject(stateTransitionObject, { skipValidation: true })\n  .then((stateTransition) => {\n    //  Calculate state transition hash\n    const hash = crypto.createHash('sha256')\n      .update(stateTransition.toBuffer())\n      .digest();\n\n    const waitForStateTransitionResultRequest = new WaitForStateTransitionResultRequest();\n    waitForStateTransitionResultRequest.setStateTransitionHash(hash);\n    waitForStateTransitionResultRequest.setProve(true);\n\n    console.log(`Requesting proof of state transition with hash:\\n\\t${hash.toString('hex')}`);\n\n    platformPromiseClient.waitForStateTransitionResult(waitForStateTransitionResultRequest)\n      .then((response) => {\n        const rootTreeProof = Buffer.from(response.getProof().getRootTreeProof());\n        const storeTreeProof = Buffer.from(response.getProof().getStoreTreeProof());\n        console.log(`Root tree proof: ${rootTreeProof.toString('hex')}`);\n        console.log(`Store tree proof: ${storeTreeProof.toString('hex')}`);\n      })\n  \t\t.catch((e) => console.error(e));\n  });\n-->\n\n<!--\ngRPCurl example (old)\n# `state_transition_hash` must be represented in base64\n# Replace `state_transition_hash` with your own before running\ngrpcurl -proto protos/platform/v0/platform.proto \\\n  -d '{\n    \"state_transition_hash\":\"wEiwFu9WvAtylrwTph5v0uXQm743N+75C+C9DhmZBkw=\",\n    \"prove\": \"true\"\n    }' \\\n  seed-1.testnet.networks.dash.org:1443 \\\n  org.dash.platform.dapi.v0.Platform/waitForStateTransitionResult\n-->"
-  }
-  [/block]
-```
-
-::::{tab-set}
-:::{tab-item} JavaScript (dapi-client)
-:sync: js-dapi-client
-```javascript
-const DAPIClient = require('@dashevo/dapi-client');
-
-const client = new DAPIClient({ network: 'testnet' });
-
-// Replace <YOUR_STATE_TRANSITION_HASH> with your actual hash
-const hash = <YOUR_STATE_TRANSITION_HASH>;
-client.platform.waitForStateTransitionResult(hash, { prove: true })
-  .then((response) => {
-    console.log(response);
-  });
-
-```
-:::
-
-:::{tab-item} Request (gRPCurl)
-:sync: grpcurl
-```shell
-# Replace `your_state_transition_hash` with your own before running
-# `your_state_transition_hash` must be represented in base64
-#    Example: wEiwFu9WvAtylrwTph5v0uXQm743N+75C+C9DhmZBkw=
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "state_transition_hash":your_state_transition_hash,
-      "prove": "true"
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/waitForStateTransitionResult
-```
-:::
-::::
-
-```{eval-rst}
-..
-  Commented out info
-  [block:html]
-  {
-    "html": "<!--\ndapi-client\n{\n  proof: {\n    rootTreeProof: <Buffer 01 00 00 00 03 26 e0 35 e0 31 82 7e 7c 27 b0 91 23 41 ed d2 11 bf 3b 90 54 70 11 2c 68 5a 8e 76 8c 68 bb 39 21 3d cf 46 6d 09 d0 7a 28 e3 e9 0b 2b 0e ... 17 more bytes>,\n    storeTreeProof: <Buffer 01 0b ee 31 ce ca 2a bd 44 6a db d4 9f 13 4a 7d 70 25 96 a9 b9 02 6e c4 e1 90 95 f7 a1 b4 c9 de 1f e4 63 e6 ce f7 58 3a 5b c3 10 01 78 9b 4f 98 9a c9 ... 526 more bytes>\n  }\n}\n-->\n<!--\ndapi-grpc\nRequesting proof of state transition with hash:\n        8ae93b89c272455f3ce8d01dba99a3a28c9550262a602c6ba44de08e545d3aa9\nRoot tree proof: 010000000326e035e031827e7c27b0912341edd211bf3b905470112c685a8e768c68bb39213dcf466d09d07a28e3e90b2b0e1d1510dede30214f68e32f8cf498220101\nStore tree proof: 010bee31ceca2abd446adbd49f134a7d702596a9b9026ec4e19095f7a1b4c9de1fe463e6cef7583a5bc31001789b4f989ac9f8f524f1247fed372502d8c54a3c026072d5239f074422621673c250d1c74eadbb304a10013fb54a99ef641b9a7585d6d28dd443875e435a35022d92a0711f56ae23bc13f4a630a1455970451e3f1001fe2b060fca69ce2eb3d784cec28c0f575690f131026df252af068635bdf08f5448ea67c23d9a9a02831001a7df0a9f392682d7d7d0a29bd43d932c16b0d6530320a8b7df4cadb6cdfd5b5d1bb31cbb488d241e91d60cc1341cd686a3fbb6291f19e800a5632469645820a8b7df4cadb6cdfd5b5d1bb31cbb488d241e91d60cc1341cd686a3fbb6291f196724736368656d61783468747470733a2f2f736368656d612e646173682e6f72672f6470702d302d342d302f6d6574612f646174612d636f6e7472616374676f776e657249645820703796bfd3e2bbd54505a8e04929bb05b8aecfb1cd5c013ef8a8b84511770e0c69646f63756d656e7473a1646e6f7465a26a70726f70657274696573a1676d657373616765a1647479706566737472696e67746164646974696f6e616c50726f70657274696573f46f70726f746f636f6c56657273696f6e001001d94cd40044b8485e962d80e57c1992c77a182a1611111102abe7e3f7231ed71b8c4fd7ee09d4a1f970a51cd4100139312feadce145313ef34f720e940892d0ed2405111102245c6aaaf192b51207333be85ab77c9c9393af47100128ef7d4479e4f488373d92280fe8e52a9a48a6621111\n-->\n<!--\ngRPCurl\n{\n  \"proof\": {\n    \"merkleProof\": \"AQAAAAAAAAJHAV8NeFRgf0cWRiCIIVsbJcNs+bALwShVQEkXV2jRCueIAkeoHTKeU60+Jm2oiHbGSkOL8ui06Nj27SLz2raMF29iEAHKnCrDvO67hcJV79tfQwqQSFcxJOek9Fa/x3oYvwQrQQL8lxVOSAkZSC1qhI8LJa6PtR+u8TifMMmRCRY2dXrSUBABihjPBDgD9SM/d9JgWkYyT+sUp4FdgotmwHhZIB1rJVUCkaeftxRkQ/B0FU26ojDJirY/SwZ8RcU1/3pnbJbA+5EQBCBkeRNzJuVLjOKnDOmG48wnSzjHg5lLdlA5JSBD79rQxQAFAgEBAAAYUfu7+1iqqIwjkszndZ6Vm8pli6pjt4XxvvgKCcE3ygI+G8nIsflGKoZQOaWGcFBmXDzAwJqjGlMxSIWNSEgoQBACAQd7xuP4BzKoaf75MNyQQC6Q7e94Vg2IdQe2LFJysA4QAZ2mq+ad/rNJ7n2fPiJgHi4NMT9Wht6Kb5J8qF20hajJEQKz2VnGsgYNwMjY9kadWb63Tjk3nTqFttgjLnoz4PCpQBABpdWVJ9sfU+o+OEcUuFcDOV+y4gYFoao3kVNLZ+Yz7Y4RAuVHBoF21TyNc9DUDHmAfcaJf6K+/VzqIzfnJ7iGqXN+EAGvNlkFsWw+DjFg+MLjzo2MzUaWk7sA63+rG3FQJ7LO2hERERECPImih8uZnpEfew+qLeKrdEig5TR6g5VsfuHI9U2WuvsQAU7qdWenHDisDf3TNzJQytKJYaeyhmy2LEo11zZVwsoREQIAAAAAAAAA/wMBAAD6APcBAAAApGJpZFggZHkTcyblS4zipwzphuPMJ0s4x4OZS3ZQOSUgQ+/a0MVnYmFsYW5jZRo7mmxAaHJldmlzaW9uAGpwdWJsaWNLZXlzgqZiaWQAZGRhdGFYIQLlz7I9IuqDAf1fp2xiyvGiApsvgANo2ldfmrWv6MsfG2R0eXBlAGdwdXJwb3NlAGhyZWFkT25sefRtc2VjdXJpdHlMZXZlbACmYmlkAWRkYXRhWCECrq7odM9OoHGEyM1D19ZAaEPf50OKLwsxL2D4SpnLZllkdHlwZQBncHVycG9zZQBocmVhZE9ubHn0bXNlY3VyaXR5TGV2ZWwCAAEAAAAAAAAA0QQBAAAkAgEgbaBpE46QX8+EXS6Sl5CG4r+JuiXVDhxZeZy/TS8qnQEAUw2uiB7scatAs99mQfB5VfVb0lMSywDMHXpmUgNfONsC4OEPflWGlZAqBSOhaKD0/SfPJHbOOMEfCjTtBV1jjgwQARdKA3tf2c8gP3H7tRKcRMHXfljTH/4L8L63tbZk5FX/EQL+TedZ8kFHQEuNY8e9pfmaLI36Y7rHe1hAjVBSh9U95BABfPfYq74T0N0ygKE4spKvSQkekrnH0Ge8Ot0FEDsq2rcR\",\n    \"signatureLlmqHash\": \"AAAA1h0X9yUNsXpD0/iKlsPvVb+VezkZAIkQIzmGqoc=\",\n    \"signature\": \"jeByZ8qlZvID/C3LVVy/mZGHlRu2QhN3MZO09hCOjAH0gn1tqrAX6BXaJf6qRLw9APv0+nInObRF3JhstvsByPK8QOHCCl9M3NpcgI/HCECpqMMG8S9DPtJYI6HwQO5I\"\n  },\n  \"metadata\": {\n    \"height\": \"1221\",\n    \"coreChainLockedHeight\": 802939\n  }\n}\n-->"
-  }
-  [/block]
-```
-
-## Security Group Endpoints
-
-Security groups provide a way to distribute token configuration and update authorization across multiple identities. Each group defines a set of member identities, the voting power of each member, and the required power threshold to authorize an action. The endpoints in this section are used to retrieve information about groups and the actions they are performing.
-
-### getGroupInfo
-
-Retrieves information about a specific group within a contract, including its members and required power.
-
-**Returns**: Group information containing member details and required power, or a cryptographic proof.
-
-**Parameters**:
-
-| Name                     | Type     | Required | Description |
-|--------------------------|---------|----------|-------------|
-| `contract_id`            | Bytes   | Yes      | The ID of the contract containing the group |
-| `group_contract_position` | UInt32  | Yes      | The position of the group within the contract |
-| `prove`                  | Boolean | No       | Set to `true` to receive a proof that contains the requested group information |
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
-      "group_contract_position": 1,
-      "prove": false
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getGroupInfo
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-```json
-{
-  "v0": {
-    "group_info": {
-      "group_info": {
-        "members": [
-          {
-            "member_id": "01abcdef",
-            "power": 5
-          },
-          {
-            "member_id": "02abcdef",
-            "power": 10
-          }
-        ],
-        "group_required_power": 15
-      }
-    },
-    "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
-    }
-  }
-}
-```
-:::
-::::
-
-### getGroupInfos
-
-Retrieves information about multiple groups within a contract, including their members and required power.
-
-**Returns**: A list of group information entries or a cryptographic proof.
-
-**Parameters**:
-
-| Name                                      | Type     | Required | Description |
-|-------------------------------------------|---------|----------|-------------|
-| `contract_id`                             | Bytes   | Yes      | The ID of the contract containing the groups |
-| `start_at_group_contract_position`        | Object  | No       | Filtering options for retrieving groups |
-| `start_at_group_contract_position`<br>`.start_group_contract_position` | UInt32  | No       | The position of the first group to retrieve |
-| `start_at_group_contract_position`<br>`.start_group_contract_position_included` | Boolean | No       | Whether the start position should be included in the results |
-| `count`                                   | UInt32  | No       | The maximum number of groups to retrieve |
-| `prove`                                   | Boolean | No       | Set to `true` to receive a proof that contains the requested group information |
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
-      "start_at_group_contract_position": {
-        "start_group_contract_position": 1,
-        "start_group_contract_position_included": true
-      },
-      "count": 5,
-      "prove": false
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getGroupInfos
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-```json
-{
-  "v0": {
-    "group_infos": {
-      "group_infos": [
-        {
-          "group_contract_position": 1,
-          "members": [
-            {
-              "member_id": "01abcdef",
-              "power": 5
-            },
-            {
-              "member_id": "02abcdef",
-              "power": 10
-            }
-          ],
-          "group_required_power": 15
-        },
-        {
-          "group_contract_position": 2,
-          "members": [
-            {
-              "member_id": "03abcdef",
-              "power": 8
-            },
-            {
-              "member_id": "04abcdef",
-              "power": 12
-            }
-          ],
-          "group_required_power": 20
-        }
-      ]
-    },
-    "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
-    }
-  }
-}
-```
-:::
-::::
-
-### getGroupActions
-
-Retrieves a list of actions performed by a specific group within a contract.
-
-**Parameters**:
-
-| Name                              | Type     | Required | Description |
-|-----------------------------------|---------|----------|-------------|
-| `contract_id`                     | Bytes   | Yes      | The ID of the contract containing the group |
-| `group_contract_position`         | UInt32  | Yes      | The position of the group within the contract |
-| `status`                          | Enum    | Yes      | The status of the actions to retrieve (`ACTIVE = 0`, `CLOSED = 1`) |
-| `start_at_action_id`              | Object  | No       | Filtering options for retrieving actions |
-| `start_at_action_id.`<br>`start_action_id` | Bytes  | No       | The action ID to start retrieving from |
-| `start_at_action_id.`<br>`start_action_id_included` | Boolean | No | Whether the start action should be included in the results |
-| `count`                           | UInt32  | No       | The maximum number of actions to retrieve |
-| `prove`                           | Boolean | No       | Set to `true` to receive a proof that contains the requested group actions |
-
-**Returns**: A list of group actions or a cryptographic proof. The response message contains details about actions performed by a group, including various event types related to token operations, document updates, contract updates, and emergency actions. The list of possible actions is shown in the table below:
-
-| Event Type        | Subtype                     | Description |
-|-------------------|---------------------------|-------------|
-| **TokenEvent**    | `mint`                     | Mints new tokens to a specified recipient. |
-|                   | `burn`                     | Burns (destroys) a specified amount of tokens. |
-|                   | `freeze`                   | Freezes a specific entity's tokens. |
-|                   | `unfreeze`                 | Unfreezes a specific entity's tokens. |
-|                   | `destroy_frozen_funds`     | Destroys frozen funds for a specified entity. |
-|                   | `transfer`                 | Transfers tokens to another recipient. |
-|                   | `emergency_action`         | Performs emergency actions like pausing or resuming the contract. |
-|                   | `token_config_update`      | Updates token configuration settings. |
-| **DocumentEvent** | `create`                   | Represents the creation of a document. |
-| **ContractEvent** | `update`                   | Represents updates to a contract. |
-
-**Response Object**
-
-| Name                | Type      | Description |
-|---------------------|----------|-------------|
-| `group_actions`    | Object   | Contains a list of group actions |
-| `group_actions.group_actions` | Array of `GroupActionEntry` | A list of actions performed by the group |
-| `group_actions.group_actions[]`<br>`.action_id` | Bytes  | Unique identifier for the action |
-| `group_actions.group_actions[]`<br>`.event` | Object  | The event data associated with the action |
-| `group_actions.group_actions[]`<br>`.event.event_type` | Object  | The specific type of event |
-| `group_actions.group_actions[]`<br>`.event.event_type.token_event` | Object  | Token-related event details (if applicable). See [Token Event details](#token-event-fields) below for complete information. |
-| `group_actions.group_actions[]`<br>`.event.event_type.document_event` | Object  | Document-related event details |
-| `group_actions.group_actions[]`<br>`.event.event_type.document_event`<br>`.create` | Object  | Document creation event details |
-| `group_actions.group_actions[]`<br>`.event.event_type.document_event`<br>`.create.created_document` | Bytes | Created document data |
-| `group_actions.group_actions[]`<br>`.event.event_type.contract_event` | Object  | Contract-related event details |
-| `group_actions.group_actions[]`<br>`.event.event_type.contract_event`<br>`.update` | Object  | Contract update event details |
-| `group_actions.group_actions[]`<br>`.event.event_type.contract_event`<br>`.update.updated_contract` | Bytes | Updated contract data |
-| `metadata` | Object  | Metadata about the blockchain state. See [metadata details](#data-proofs-and-metadata) for complete information |
-
-#### Token Event Fields
-
-| Token Event Type | Field Name | Type | Description |
-|-----------------|------------|------|-------------|
-| `mint`   | `amount` | UInt64 | Amount of tokens to mint. |
-|          | `recipient_id` | Bytes | Identity ID of the recipient. |
-|          | `public_note` | String (Optional) | A public note for the mint event. |
-| `burn`   | `amount` | UInt64 | Amount of tokens to burn. |
-|          | `public_note` | String (Optional) | A public note for the burn event. |
-| `freeze` | `frozen_id` | Bytes | Identifier of the entity being frozen. |
-|          | `public_note` | String (Optional) | A public note for the freeze event. |
-| `unfreeze` | `frozen_id` | Bytes | Identifier of the entity being unfrozen. |
-|          | `public_note` | String (Optional) | A public note for the unfreeze event. |
-| `destroy_frozen_funds` | `frozen_id` | Bytes | Identifier of the frozen entity. |
-|          | `amount` | UInt64 | Amount of frozen funds to destroy. |
-|          | `public_note` | String (Optional) | A public note for the destruction event. |
-| `transfer` | `recipient_id` | Bytes | Identity ID of the recipient. |
-|          | `amount` | UInt64 | Amount of tokens transferred. |
-|          | `public_note` | String (Optional) | A public note for the transfer event. |
-|          | `shared_encrypted_note` | Object (Optional) | Encrypted note shared by sender and recipient. |
-|          | `personal_encrypted_note` | Object (Optional) | Personal encrypted note. |
-| `emergency_action` | `action_type` | Enum (`PAUSE = 0`, `RESUME = 1`) | Type of emergency action performed. |
-|           | `public_note` | String (Optional) | A public note for the emergency action. |
-| `token_config_update` | `token_config_update_item` | Bytes | Configuration update details. |
-|           | `public_note` | String (Optional) | A public note for the configuration update. |
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
-      "group_contract_position": 1,
-      "status": 0,
-      "start_at_action_id": {
-        "start_action_id": "01abcdef",
-        "start_action_id_included": true
-      },
-      "count": 5,
-      "prove": false
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getGroupActions
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-```json
-{
-  "v0": {
-    "group_actions": {
-      "group_actions": [
-        {
-          "action_id": "01abcdef",
-          "event": {
-            "event_type": {
-              "token_event": {
-                "mint": {
-                  "amount": "1000",
-                  "recipient_id": "02abcdef",
-                  "public_note": "Minting 1000 tokens"
-                }
-              }
-            }
-          }
-        },
-        {
-          "action_id": "02abcdef",
-          "event": {
-            "event_type": {
-              "token_event": {
-                "burn": {
-                  "amount": "500",
-                  "public_note": "Burning 500 tokens"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
-    }
-  }
-}
-```
-:::
-::::
-
-### getGroupActionSigners
-
-Retrieves the signers for a specified group action within a contract, along with their assigned power.
-
-**Returns**: A list of group action signers or a cryptographic proof.
-
-**Parameters**
-
-| Name                      | Type     | Required | Description |
-|---------------------------|---------|----------|-------------|
-| `contract_id`             | Bytes   | Yes      | The ID of the contract containing the group action. |
-| `group_contract_position` | UInt32  | Yes      | The position of the group within the contract. |
-| `status`                  | Enum    | Yes      | The status of the action (`ACTIVE = 0`, `CLOSED = 1`). |
-| `action_id`               | Bytes   | Yes      | The unique identifier of the action. |
-| `prove`                   | Boolean | No       | Set to `true` to receive a proof that contains the requested group action signers. |
-
-**Example Request and Response**
-
-::::{tab-set}
-:::{tab-item} gRPCurl
-```shell
-grpcurl -proto protos/platform/v0/platform.proto \
-  -d '{
-    "v0": {
-      "contract_id": "5mjGWa9mruHnLBht3ntbfgodcSoJxA1XIfYiv1PFMVU=",
-      "group_contract_position": 1,
-      "status": 0,
-      "action_id": "01abcdef",
-      "prove": false
-    }
-  }' \
-  seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getGroupActionSigners
-```
-:::
-::::
-
-::::{tab-set}
-:::{tab-item} Response (gRPCurl)
-```json
-{
-  "v0": {
-    "group_action_signers": {
-      "signers": [
-        {
-          "signer_id": "01abcdef",
-          "power": 5
-        },
-        {
-          "signer_id": "02abcdef",
-          "power": 10
-        }
-      ]
-    },
-    "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
-    }
-  }
-}
-```
-:::
-::::
-
 ## Token Endpoints
+
+:::{versionadded} 2.0.0
+:::
 
 ### getIdentityTokenBalances
 
@@ -3318,18 +3488,20 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
-### getTokenStatuses
+### getTokenDirectPurchasePrices
 
-Retrieves the statuses of specified tokens.
+Retrieves direct purchase prices defined for the specified token IDs.
 
-**Returns**: A list of token statuses or a cryptographic proof.
+This endpoint provides pricing data for tokens that support direct purchases. Each token may have either a fixed price or a tiered pricing schedule that depends on the quantity being purchased.
+
+**Returns**: A list of token price entries or a cryptographic proof containing the requested data.
 
 **Parameters**:
 
 | Name        | Type     | Required | Description |
-|------------|---------|----------|-------------|
-| `token_ids`  | Array of Bytes | Yes      | A list of token IDs to retrieve statuses for |
-| `prove`      | Boolean | No      | Set to `true` to receive a proof that contains the requested token statuses |
+|-------------|----------|----------|-------------|
+| `token_ids` | Array    | Yes      | List of 32-byte token IDs to retrieve pricing for. Must be unique and non-empty. |
+| `prove`     | Boolean  | No       | Set to `true` to receive a proof that contains the requested pricing data |
 
 **Example Request and Response**
 
@@ -3339,30 +3511,26 @@ Retrieves the statuses of specified tokens.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_ids": ["01abcdef", "02abcdef"],
+      "token_ids": ["2f8d91fe65b3b9f1d473ad729f7861e27159be9a93d5748591ecdbbda5e776c0"],
       "prove": false
     }
   }' \
   seed-1.testnet.networks.dash.org:1443 \
-  org.dash.platform.dapi.v0.Platform/getTokenStatuses
+  org.dash.platform.dapi.v0.Platform/getTokenDirectPurchasePrices
 ```
 :::
 ::::
 
 ::::{tab-set}
-:::{tab-item} Response (gRPCurl)
+:::{tab-item} Response (Fixed Price)
 ```json
 {
   "v0": {
-    "token_statuses": {
-      "token_statuses": [
+    "tokenDirectPurchasePrices": {
+      "tokenDirectPurchasePrice": [
         {
-          "token_id": "01abcdef",
-          "paused": false
-        },
-        {
-          "token_id": "02abcdef",
-          "paused": true
+          "tokenId": "2f8d91fe65b3b9f1d473ad729f7861e27159be9a93d5748591ecdbbda5e776c0",
+          "fixedPrice": "1000"
         }
       ]
     },
@@ -3373,6 +3541,104 @@ grpcurl -proto protos/platform/v0/platform.proto \
       "timeMs": "1724094056585",
       "protocolVersion": 1,
       "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+
+:::{tab-item} Response (Tiered Pricing)
+```json
+{
+  "v0": {
+    "tokenDirectPurchasePrices": {
+      "tokenDirectPurchasePrice": [
+        {
+          "tokenId": "ab1c23d4ef567890fedcba9876543210ab1c23d4ef567890fedcba9876543210",
+          "variablePrice": {
+            "priceForQuantity": [
+              {
+                "quantity": "1",
+                "price": "1000"
+              },
+              {
+                "quantity": "10",
+                "price": "900"
+              },
+              {
+                "quantity": "100",
+                "price": "750"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "height": "2880",
+      "coreChainLockedHeight": 1086890,
+      "epoch": 762,
+      "timeMs": "1724095000000",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
+### getTokenPerpetualDistributionLastClaim
+
+Retrieves the last-claim timestamp for a token’s perpetual distribution for a specific identity.
+
+**Returns**: A timestamp indicating the last successful claim, or a cryptographic proof.
+
+**Parameters**:
+
+| Name                      | Type    | Required | Description |
+|---------------------------|---------|----------|-------------|
+| `token_id`                | Bytes   | Yes      | The unique 32-byte identifier of the token |
+| `contract_info`           | Object  | No       | Token contract info, used to disambiguate tokens with the same ID across contracts |
+| `contract_info.`<br>`contract_id`         | Bytes   | Yes (if `contract_info` is provided) | ID of the data contract where the token is defined |
+| `contract_info.`<br>`token_contract_position` | Integer | Yes (if `contract_info` is provided) | Token position within the contract |
+| `identity_id`             | Bytes   | Yes      | Identity whose last-claim info is being requested |
+| `prove`                   | Boolean | No       | Set to `true` to receive a proof containing the requested last-claim data |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "token_id": "2wXv5jz2WxOqZ6RtN4xkGAMeA9ElvZyMvP9pshHylrs=",
+      "identity_id": "HpGErJllHxDvKnetz9d88452CCfWsbm8s+SLq7hn1v4=",
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getTokenPerpetualDistributionLastClaim
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "lastClaim": {
+      "timestampMs": "1744857654321"
+    },
+    "metadata": {
+      "height": "164312",
+      "coreChainLockedHeight": 2256151,
+      "epoch": 25,
+      "timeMs": "1744857654873",
+      "protocolVersion": 8,
+      "chainId": "evo1"
     }
   }
 }
@@ -3441,6 +3707,68 @@ grpcurl -proto protos/platform/v0/platform.proto \
               "amount": "1000"
             }
           ]
+        }
+      ]
+    },
+    "metadata": {
+      "height": "2876",
+      "coreChainLockedHeight": 1086885,
+      "epoch": 761,
+      "timeMs": "1724094056585",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
+### getTokenStatuses
+
+Retrieves the statuses of specified tokens.
+
+**Returns**: A list of token statuses or a cryptographic proof.
+
+**Parameters**:
+
+| Name        | Type     | Required | Description |
+|------------|---------|----------|-------------|
+| `token_ids`  | Array of Bytes | Yes      | A list of token IDs to retrieve statuses for |
+| `prove`      | Boolean | No      | Set to `true` to receive a proof that contains the requested token statuses |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "token_ids": ["01abcdef", "02abcdef"],
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getTokenStatuses
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "token_statuses": {
+      "token_statuses": [
+        {
+          "token_id": "01abcdef",
+          "paused": false
+        },
+        {
+          "token_id": "02abcdef",
+          "paused": true
         }
       ]
     },
