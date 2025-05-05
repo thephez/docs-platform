@@ -118,6 +118,7 @@ tutorials/send-funds
 tutorials/use-dapi-client-methods
 tutorials/setup-a-node
 tutorials/tui/index
+tutorials/building-platform
 ```
 
 ```{toctree}
@@ -134,6 +135,7 @@ explanations/drive
 explanations/platform-consensus
 explanations/dashpay
 explanations/fees
+explanations/tokens
 explanations/nft
 ```
 
@@ -160,6 +162,7 @@ protocol-ref/identity
 protocol-ref/data-contract
 protocol-ref/state-transition
 protocol-ref/document
+protocol-ref/token
 protocol-ref/data-trigger
 protocol-ref/errors
 ```
@@ -177,7 +180,7 @@ Testnet Block Explorer <https://insight.testnet.networks.dash.org/insight/>
 Testnet Faucet <https://faucet.testnet.networks.dash.org/>
 JavaScript SDK <https://github.com/dashpay/platform/tree/master/packages/js-dash-sdk#readme>
 resources/source-code
-Previous Version of Docs <https://docs.dash.org/projects/platform/en/0.25.0/docs/>
+Previous Version of Docs <https://docs.dash.org/projects/platform/en/1.0.0/docs/>
 ```
 
 ```{toctree}

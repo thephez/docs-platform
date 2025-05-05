@@ -8,41 +8,52 @@
 
 Data contracts define the schema (structure) of data an application will store on Dash Platform. Contracts are described using [JSON Schema](https://json-schema.org/understanding-json-schema/) which allows the platform to validate the contract-related data submitted to it.
 
-The following sections provide details that developers need to construct valid contracts. All data contracts must define one or more [documents](#data-contract-documents), whereas definitions are optional and may not be used for simple contracts.
+The following sections provide details that developers need to construct valid contracts. All data contracts must define at least one [document](#data-contract-documents) or [token](#data-contract-tokens). A contract may define multiple documents and/or tokens.
+
+### Fees
+
+Dash Platform charges fees for registering data contracts based on complexity. These fees compensate evonodes for their role in storing and processing contract-related data.
+
+The table below outlines the current fee structure for various data contract components. Fees are denominated in DASH and are charged at registration time based on the structure of the contract.
+
+| Fee Component                                          | Amount (DASH) | Description |
+|--------------------------------------------------------|-------------------|---------|
+| `base_contract_registration_fee`                       | 0.1  | Fixed fee for every data contract. Covers the baseline cost of anchoring a contract into platform state. |
+| `document_type_registration_fee`                       | 0.02 | Charged per [document type](./data-contract-document.md#contract-documents). Reflects indexing and storage schema overhead. |
+| `document_type_base_non_unique`<br>`_index_registration_fee` | 0.01 | Per non-unique [index](./data-contract-document.md#document-indices) in a document type. Supports query operations. |
+| `document_type_base_unique_index`<br>`_registration_fee`            | 0.01 | Per unique [index](./data-contract-document.md#document-indices). Enforces uniqueness and adds validation complexity. |
+| `document_type_base_contested`<br>`_index_registration_fee`         | 1.0  | Per [contested index](./data-contract-document.md#contested-indices). Used for identity/username resolution; requires voting and [conflict resolution](../explanations/dpns.md#conflict-resolution) by masternodes and evonodes. |
+| `token_registration_fee`                                      | 0.1  | Per token defined in the contract. Reflects additional overhead from managing balances, transfers, and supply. |
+| `token_uses_perpetual`<br>`_distribution_fee`                       | 0.1  | Additional fee for tokens that use perpetual (e.g., block-based) distribution mechanisms. These create ongoing state changes triggered by network events. |
+| `token_uses_pre_programmed`<br>`_distribution_fee`                  | 0.1  | Charged when tokens use scheduled distributions (e.g., airdrops). Adds periodic complexity. |
+| `search_keyword_fee`                                          | 0.1 per keyword   | Charged per search keyword defined. Keywords enable reverse lookups and indexing, increasing on-chain storage and filtering load. |
+
+These fees are additive. For example, a contract that defines two document types, each with one unique index, and one token using a perpetual distribution will incur the following total fee:
+
+```text
+0.1 (base) + 0.02×2 (documents) + 0.01×2 (unique indices) = 0.16 DASH
+0.1 (token) + 0.1 (perpetual) = 0.2 DASH
+
+Total fee: 0.16 + 0.2 = 0.36 DASH
+```
 
 ### General Constraints
 
-There are a variety of constraints currently defined for performance and security reasons. The following constraints are applicable to all aspects of data contracts. Unless otherwise noted, these constraints are defined in the platform's JSON Schema rules (e.g. [rs-dpp data contract meta schema](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json)).
-
-#### Keyword
-
-| Keyword | Constraint |
-| ------- | ---------- |
-| `default`                   | Restricted - cannot be used (defined in DPP logic)  |
-| `propertyNames`             | Restricted - cannot be used (defined in DPP logic) |
-| `uniqueItems: true`         | `maxItems` must be defined (maximum: 100000) |
-| `pattern: <something>`      | `maxLength` must be defined (maximum: 50000) |
-| `format: <something>`       | `maxLength` must be defined (maximum: 50000) |
-| `$ref: <something>`         | **Disabled**<br>`$ref` can only reference `$defs` - <br> remote references not supported |
-| `if`, `then`, `else`, `allOf`, `anyOf`, `oneOf`, `not` | Disabled for data contracts |
-| `dependencies`              | Not supported. Use `dependentRequired` and `dependentSchema` instead |
-| `additionalItems`           | Not supported. Use `items: false` and `prefixItems` instead |
-| `patternProperties`         | Restricted - cannot be used for data contracts |
-| `pattern`                   | Accept only [RE2](https://github.com/google/re2/wiki/Syntax) compatible regular expressions (defined in DPP logic) |
+There are a variety of constraints currently defined for performance and security reasons. The following constraints are applicable to all aspects of data contracts.
 
 #### Data Size
 
 | Parameter | Size |
 | - | - |
-| Maximum serialized data contract size | [16384 bytes (16 KB)](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-platform-version/src/version/system_limits/v1.rs#L4) |
-| Maximum field value size | [5120 bytes (5 KB)](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-platform-version/src/version/system_limits/v1.rs#L5) |
-| Maximum state transition size | [20480 bytes (20 KB)](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-platform-version/src/version/system_limits/v1.rs#L6) |
+| Maximum serialized data contract size | [16384 bytes (16 KB)](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-platform-version/src/version/system_limits/v1.rs#L4) |
+| Maximum field value size | [5120 bytes (5 KB)](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-platform-version/src/version/system_limits/v1.rs#L5) |
+| Maximum state transition size | [20480 bytes (20 KB)](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-platform-version/src/version/system_limits/v1.rs#L6) |
 
 A document cannot exceed the maximum state transition size in any case. For example, although it is
-possible to define a data contract with 10 fields that each support the maximum field size (5120),
-it is not possible to create a document where all 10 fields contain the full 5120 bytes. This is
-because the overall document and state transition containing it would be too large (5120 * 10 =
-51200 bytes).
+possible to define a data contract with 10 document fields that each support the maximum field size
+(5120), it is not possible to create a document where all 10 fields contain the full 5120 bytes.
+This is because the overall document and state transition containing it would be too large (5120 *
+10 = 51200 bytes).
 
 #### Additional Properties
 
@@ -56,173 +67,648 @@ Include the following at the same level as the `properties` keyword to ensure pr
 
 ## Data Contract Object
 
-The data contract object consists of the following fields as defined in the JavaScript reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/data_contract/dataContractMeta.json)):
+The data contract object consists of the following fields as defined in the Rust reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/v1/data_contract.rs#L77-L121)):
 
-| Property        | Type           | Required | Description |
-| --------------- | -------------- | -------- | ----------- |
-| protocolVersion | integer        | Yes      | The platform protocol version ([currently `7`](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-platform-version/src/version/mod.rs#L25)) |
-| $schema         | string         | Yes      | A valid URL (default: <https://schema.dash.org/dpp-0-4-0/meta/data-contract>) |
-| $id             | array of bytes | Yes      | Contract ID generated from `ownerId` and entropy ([32 bytes; content media type: `application/x.dash.dpp.identifier`](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/data_contract/dataContractMeta.json#L378-L384)) |
-| version         | integer        | Yes      | The data contract version |
-| ownerId         | array of bytes | Yes      | [Identity](../protocol-ref/identity.md) that registered the data contract defining the document ([32 bytes; content media type: `application/x.dash.dpp.identifier`](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/data_contract/dataContractMeta.json#L389-L395) |
-| documents       | object         | Yes      | Document definitions (see [Documents](#data-contract-documents) for details) |
-| $defs           | object         | No       | Definitions for `$ref` references used in the `documents` object (if present, must be a non-empty object with \<= 100 valid properties) |
+| Property        | Type           | Size | Description |
+| --------------- | -------------- | ---- | ----------- |
+| $version | unsigned integer      | 32 bits | The platform protocol version ([currently `8`](https://github.com/dashpay/platform/blob/v1.8.0/packages/rs-platform-version/src/version/mod.rs#L26)) |
+| [$schema](#data-contract-schema) | string         | Varies      | A valid URL |
+| [id](#data-contract-id)         | array of bytes | 32 bytes      | Contract ID generated from `ownerId` and entropy (content media type: `application/x.dash.dpp.identifier`) |
+| [version](#data-contract-version) | unsigned integer        | Yes      | The data contract version |
+| ownerId         | array of bytes | 32 bytes      | [Identity](../protocol-ref/identity.md) that registered the data contract defining the document (content media type: `application/x.dash.dpp.identifier`) |
+| [documents](./data-contract-document.md) | object         | Varies    | (Optional \*) Document definitions (see [Contract Documents](./data-contract-document.md) for details) |
+| [config](#data-contract-config) | DataContractConfig | Varies | (Optional) Internal configuration for the contract |
+| $defs           | object         | Varies       | (Optional) Definitions for `$ref` references used in the `documents` object (if present, must be a non-empty object with \<= 100 valid properties) |
+| [groups](#data-contract-groups) | Group | Varies | (Optional) Groups that allow for specific multiparty actions on the contract. |
+| [tokens](./data-contract-token.md) | object         | Varies    | (Optional \*) Token definitions (see [Contract Tokens](./data-contract-token.md) for details) |
+| keywords | array of strings | Varies | (Optional) Keywords associated with the contract to improve searchability. Maximum of 20 words. |
+| description | string | 3-100 characters | (Optional) Brief description of the contract. |
 
-### Data Contract Schema
+\* The data contract object must define documents or tokens. It may include both documents and tokens.
 
-Details regarding the data contract object may be found in the [rs-dpp data contract meta schema](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/data_contract/dataContractMeta.json). A truncated version is shown below for reference:
+### Data Contract schema
+
+The full schema is [defined is rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/document_type/schema/enrich_with_base_schema/v0/mod.rs#L6-L7), hosted on [GitHub](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json), and can be viewed by expanding this dropdown:
+
+::: {dropdown} Full schema
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.dash.org/dpp-0-4-0/meta/data-contract",
+  "$id": "https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json",
   "type": "object",
   "$defs": {
-    // Truncated ...
-  },
-  "properties": {
-    "protocolVersion": {
-      "type": "integer",
-      "minimum": 0,
-      "$comment": "Maximum is the latest protocol version"
-    },
-    "$schema": {
-      "type": "string",
-      "const": "https://schema.dash.org/dpp-0-4-0/meta/data-contract"
-    },
-    "$id": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    },
-    "version": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "ownerId": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    },
-    "documents": {
+    "documentProperties": {
       "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9-_]{1,64}$": {
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "#/$defs/documentSchema"
+            }
+          ],
+          "unevaluatedProperties": false
+        }
+      },
       "propertyNames": {
         "pattern": "^[a-zA-Z0-9-_]{1,64}$"
       },
-      "additionalProperties": {
+      "minProperties": 1,
+      "maxProperties": 100
+    },
+    "documentSchemaArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
         "type": "object",
         "allOf": [
           {
+            "$ref": "#/$defs/documentSchema"
+          }
+        ],
+        "unevaluatedProperties": false
+      }
+    },
+    "documentSchema": {
+      "type": "object",
+      "properties": {
+        "$id": {
+          "type": "string",
+          "pattern": "^#",
+          "minLength": 1
+        },
+        "$ref": {
+          "type": "string",
+          "pattern": "^#",
+          "minLength": 1
+        },
+        "$comment": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/core#/properties/$comment"
+        },
+        "description": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/meta-data#/properties/description"
+        },
+        "examples": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/meta-data#/properties/examples"
+        },
+        "multipleOf": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/multipleOf"
+        },
+        "maximum": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/maximum"
+        },
+        "exclusiveMaximum": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/exclusiveMaximum"
+        },
+        "minimum": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/minimum"
+        },
+        "exclusiveMinimum": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/exclusiveMinimum"
+        },
+        "maxLength": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/maxLength"
+        },
+        "minLength": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/minLength"
+        },
+        "pattern": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/pattern"
+        },
+        "maxItems": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/maxItems"
+        },
+        "minItems": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/minItems"
+        },
+        "uniqueItems": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/uniqueItems"
+        },
+        "contains": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/applicator#/properties/contains"
+        },
+        "maxProperties": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/maxProperties"
+        },
+        "minProperties": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/minProperties"
+        },
+        "required": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/required"
+        },
+        "additionalProperties": {
+          "type": "boolean",
+          "const": false
+        },
+        "properties": {
+          "$ref": "#/$defs/documentProperties"
+        },
+        "dependentRequired": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/$defs/stringArray"
+          }
+        },
+        "const": true,
+        "enum": {
+          "type": "array",
+          "items": true,
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "type": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/validation#/properties/type"
+        },
+        "format": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/format-annotation#/properties/format"
+        },
+        "contentMediaType": {
+          "$ref": "https://json-schema.org/draft/2020-12/meta/content#/properties/contentMediaType"
+        },
+        "byteArray": {
+          "type": "boolean",
+          "const": true
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "dependentSchemas": {
+        "byteArray": {
+          "description": "should be used only with array type",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "array"
+            }
+          }
+        },
+        "contentMediaType": {
+          "if": {
             "properties": {
-              "indices": {
+              "contentMediaType": {
+                "const": "application/x.dash.dpp.identifier"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "byteArray": {
+                "const": true
+              },
+              "minItems": {
+                "const": 32
+              },
+              "maxItems": {
+                "const": 32
+              }
+            },
+            "required": [
+              "byteArray",
+              "minItems",
+              "maxItems"
+            ]
+          }
+        },
+        "pattern": {
+          "description": "prevent slow pattern matching of large strings",
+          "properties": {
+            "maxLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50000
+            }
+          },
+          "required": [
+            "maxLength"
+          ]
+        },
+        "format": {
+          "description": "prevent slow format validation of large strings",
+          "properties": {
+            "maxLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50000
+            }
+          },
+          "required": [
+            "maxLength"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "$comment": "require index for object properties",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "object"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "position": true
+                  },
+                  "required": [
+                    "position"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "$comment": "allow only byte arrays",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "array"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "byteArray": true
+            },
+            "required": [
+              "byteArray"
+            ]
+          }
+        },
+        {
+          "$comment": "all object properties must be defined",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "object"
+              }
+            },
+            "not": {
+              "properties": {
+                "$ref": true
+              },
+              "required": [
+                "$ref"
+              ]
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "$ref": "#/$defs/documentProperties"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/documentSchema/properties/additionalProperties"
+              }
+            },
+            "required": [
+              "properties",
+              "additionalProperties"
+            ]
+          }
+        }
+      ]
+    },
+    "documentActionTokenCost": {
+      "type": "object",
+      "properties": {
+        "contractId": {
+          "type": "array",
+          "contentMediaType": "application/x.dash.dpp.identifier",
+          "byteArray": true,
+          "minItems": 32,
+          "maxItems": 32
+        },
+        "tokenPosition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 281474976710655
+        },
+        "effect": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "0 - TransferTokenToContractOwner (default), 1 - Burn"
+        },
+        "gasFeesPaidBy": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2
+          ],
+          "description": "0 - DocumentOwner (default), 1 - ContractOwner, 2 - PreferContractOwner"
+        }
+      },
+      "required": [
+        "tokenPosition",
+        "amount"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "object"
+    },
+    "$schema": {
+      "type": "string",
+      "const": "https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json"
+    },
+    "$defs": {
+      "$ref": "#/$defs/documentProperties"
+    },
+    "indices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "maxLength": 256
+              },
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "asc"
+                ]
+              },
+              "minProperties": 1,
+              "maxProperties": 1
+            },
+            "minItems": 1,
+            "maxItems": 10
+          },
+          "unique": {
+            "type": "boolean"
+          },
+          "nullSearchable": {
+            "type": "boolean"
+          },
+          "contested": {
+            "type": "object",
+            "properties": {
+              "fieldMatches": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "name": {
+                    "field": {
                       "type": "string",
                       "minLength": 1,
-                      "maxLength": 32
+                      "maxLength": 256
                     },
-                    "properties": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "propertyNames": {
-                          "maxLength": 256
-                        },
-                        "additionalProperties": {
-                          "type": "string",
-                          "enum": [
-                            "asc"
-                          ]
-                        },
-                        "minProperties": 1,
-                        "maxProperties": 1
-                      },
-                      "minItems": 1,
-                      "maxItems": 10
-                    },
-                    "unique": {
-                      "type": "boolean"
+                    "regexPattern": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
                     }
                   },
+                  "additionalProperties": false,
                   "required": [
-                    "properties",
-                    "name"
-                  ],
-                  "additionalProperties": false
+                    "field",
+                    "regexPattern"
+                  ]
                 },
-                "minItems": 1,
-                "maxItems": 10
+                "minItems": 1
               },
-              "type": {
-                "const": "object"
-              },
-              "signatureSecurityLevelRequirement": {
+              "resolution": {
                 "type": "integer",
                 "enum": [
-                  0,
-                  1,
-                  2,
-                  3
+                  0
                 ],
-                "description": "Public key security level. 0 - Master, 1 - Critical, 2 - High, 3 - Medium. If none specified, High level is used"
+                "description": "Resolution. 0 - Masternode Vote"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
               }
-            }
-          },
+            },
+            "required": [
+              "resolution"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "properties",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "signatureSecurityLevelRequirement": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "description": "Public key security level. 1 - Critical, 2 - High, 3 - Medium. If none specified, High level is used"
+    },
+    "documentsKeepHistory": {
+      "type": "boolean",
+      "description": "True if the documents keep all their history, default is false"
+    },
+    "documentsMutable": {
+      "type": "boolean",
+      "description": "True if the documents are mutable, default is true"
+    },
+    "canBeDeleted": {
+      "type": "boolean",
+      "description": "True if the documents can be deleted, default is true"
+    },
+    "transferable": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ],
+      "description": "Transferable without a marketplace sell. 0 - Never, 1 - Always"
+    },
+    "tradeMode": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ],
+      "description": "Built in marketplace system. 0 - None, 1 - Direct purchase (The user can buy the item without the need for an approval)"
+    },
+    "creationRestrictionMode": {
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "description": "Restrictions of document creation. 0 - No restrictions, 1 - Owner only, 2 - No creation (System Only)"
+    },
+    "requiresIdentityEncryptionBoundedKey": {
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "description": "Key requirements. 0 - Unique Non Replaceable, 1 - Multiple, 2 - Multiple with reference to latest key."
+    },
+    "requiresIdentityDecryptionBoundedKey": {
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "description": "Key requirements. 0 - Unique Non Replaceable, 1 - Multiple, 2 - Multiple with reference to latest key."
+    },
+    "tokenCost": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "replace": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "delete": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "transfer": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "update_price": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "purchase": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        }
+      },
+      "additionalProperties": false
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "allOf": [
           {
             "$ref": "#/$defs/documentSchema"
           }
         ],
         "unevaluatedProperties": false
       },
+      "properties": {
+        "$id": true,
+        "$ownerId": true,
+        "$revision": true,
+        "$createdAt": true,
+        "$updatedAt": true,
+        "$transferredAt": true,
+        "$createdAtBlockHeight": true,
+        "$updatedAtBlockHeight": true,
+        "$transferredAtBlockHeight": true,
+        "$createdAtCoreBlockHeight": true,
+        "$updatedAtCoreBlockHeight": true,
+        "$transferredAtCoreBlockHeight": true
+      },
+      "propertyNames": {
+        "oneOf": [
+          {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-_]{1,64}$"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "$id",
+              "$ownerId",
+              "$revision",
+              "$createdAt",
+              "$updatedAt",
+              "$transferredAt",
+              "$createdAtBlockHeight",
+              "$updatedAtBlockHeight",
+              "$transferredAtBlockHeight",
+              "$createdAtCoreBlockHeight",
+              "$updatedAtCoreBlockHeight",
+              "$transferredAtCoreBlockHeight"
+            ]
+          }
+        ]
+      },
       "minProperties": 1,
       "maxProperties": 100
     },
-    "$defs": {
-      "$ref": "#/$defs/documentProperties"
+    "transient": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "description": "List of up to 20 descriptive keywords for the contract, used in the Keyword Search contract",
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 50
+      },
+      "maxItems": 20,
+      "uniqueItems": true
+    },
+    "additionalProperties": {
+      "type": "boolean",
+      "const": false
     }
   },
   "required": [
-    "protocolVersion",
     "$schema",
-    "$id",
-    "version",
-    "ownerId",
-    "documents"
-  ],
-  "additionalProperties": false
+    "type",
+    "properties",
+    "additionalProperties"
+  ]
 }
 ```
 
-**Example**
-
-```json
-{
-  "id": "AoDzJxWSb1gUi2dSmvFeUFpSsjZQRJaqCpn7vCLkwwJj",
-  "ownerId": "7NUbPf231ixt1kVBQsBvSMMBxd7AgPad8KtdtfFGhXDP",
-  "schema": "https://schema.dash.org/dpp-0-4-0/meta/data-contract",
-  "documents": {
-    "note": {
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    }
-  }
-}
-```
+:::
 
 ### Data Contract id
 
-The data contract `$id` is a hash of the `ownerId` and entropy as shown [here](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/src/data_contract/generate_data_contract.rs).
+The data contract `id` is a hash of the `ownerId` and entropy as shown [here](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/generate_data_contract.rs).
 
 ```rust
 // From the Rust reference implementation (rs-dpp)
@@ -244,317 +730,97 @@ pub fn generate_data_contract_id_v0(
 The data contract `version` is an integer representing the current version of the contract. This  
 property must be incremented if the contract is updated.
 
-### Data Contract Documents
+### Data Contract documents
 
-The `documents` object defines each type of document required by the data contract. At a minimum, a document must consist of 1 or more properties. Documents may also define [indices](#document-indices) and a list of [required properties](#required-properties-optional). The `additionalProperties` properties keyword must be included as described in the [constraints](#additional-properties) section.
+See the [data contract documents](./data-contract-document.md) page for details.
 
-The following example shows a minimal `documents` object defining a single document (`note`) that has one property (`message`).
+### Data Contract config
 
-```json
-{
-  "note": {
-    "type": "object",
-    "properties": {
-      "message": {
-        "type": "string",
-        "position": 0
-      }
-    },
-    "additionalProperties": false
-  }
+The data contract config defines configuration options for data contracts, controlling their lifecycle, mutability, history management, and encryption requirements. Data contracts support three categories of configuration options to provide flexibility in contract design. It is only necessary to include them in a data contract when non-default values are used. The default values for these configuration options are defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/config/fields.rs).
+
+| Contract option                         | Default | Description |
+|-----------------------------------------|---------|-------------|
+| `canBeDeleted`                          | `false` | Determines if the contract can be deleted |
+| `readonly`                              | `false` | Determines if the contract is read-only. Read-only contracts cannot be updated. |
+| `keepsHistory`                          | `false` | Determines if changes to the contract itself are tracked, maintaining a historical record of contract modifications. |
+
+| Document default option                 | Default | Description |
+|-----------------------------------------|---------|-------------|
+| `documentsKeepHistory`<br>`ContractDefault`   | `false` | Sets the default behavior for tracking historical changes of documents within the contract |
+| `documentsMutable`<br>`ContractDefault`       | `true`  | Sets the default mutability of documents within the contract, indicating if documents can be edited. |
+| `documentsCanBeDeleted`<br>`ContractDefault`  | `true`  | Sets the default behavior for whether documents within the contract can be deleted |
+
+#### Key Management
+
+Dash Platform provides an advanced level of security and control by enabling the isolation of encryption and decryption keys on a contract-specific or document-specific basis. This granular approach to key management enables developers to configure their applications for whatever level of security they require.
+
+| Security option                         | Description |
+|-----------------------------------------|-------------|
+| `requiresIdentity`<br>`EncryptionBoundedKey`  | Indicates the contract requires a contract-specific identity encryption key. Key options:<br>`0` - Unique non-replaceable<br>`1` - Multiple<br>`2` - Multiple with reference to latest  |
+| `requiresIdentity`<br>`DecryptionBoundedKey`  | Indicates the contract requires a contract-specific identity decryption key. Key options:<br>`0` - Unique non-replaceable<br>`1` - Multiple<br>`2` - Multiple with reference to latest |
+
+:::{tip}
+These security options can be set at the root level of the data contract or the root level of specific documents within the contract depending on requirements.
+:::
+
+**Example**
+
+The following example (from the [DashPay contract's `contactRequest` document](https://github.com/dashpay/platform/blob/master/packages/dashpay-contract/schema/v1/dashpay.schema.json#L142-L146)) demonstrates the use of both key-related options at the document level:
+
+``` json
+"contactRequest": {
+  "requiresIdentityEncryptionBoundedKey": 2,
+  "requiresIdentityDecryptionBoundedKey": 2,
 }
 ```
 
-#### Document Properties
+See the data contract [config implementation in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/config/v0/mod.rs#L17-L42) for more details.
 
-The `properties` object defines each field that will be used by a document. Each field consists of an object that, at a minimum, must define its data `type` (`string`, `number`, `integer`, `boolean`, `array`, `object`). Fields may also apply a variety of optional JSON Schema constraints related to the format, range, length, etc. of the data.
+### Data Contract groups
 
-**Note:** The `object` type is required to have properties defined. For example, the body property shown below is an object containing a single string property (objectProperty):
+Groups can be used to distribute contract configuration and update authorization across multiple identities. They are particularly useful for contracts where multiple parties are involved in controlling or managing contract-specific features. Each group defines a set of member identities, the voting power of each member, and the required power threshold to authorize an action.
 
-```javascript
-const contractDocuments = {
-  message: {
-    "type": "object",
-    properties: {
-      body: {
-        type: "object",
-        properties: {
-          objectProperty: {
-            type: "string",
-            position: 0
-          },
-        },
-        additionalProperties: false,
-      },
-      header: {
-        type: "string",
-        position: 1
-      }
-    },
-    additionalProperties: false
-  }
-};
-```
+- Each member is assigned an integer power.
+- The group itself has a required power threshold to authorize an action.
+- Groups can have up to 256 members, each with a maximum power of 2^16 - 1.
+- Changes to a token (e.g., mint, burn, freeze) can be configured so they require group authorization.
+  - Example: "2-of-3 multisig” among three admins, each with certain voting power.
 
-**Note:** A full explanation of the capabilities of JSON Schema is beyond the scope of this document. For more information regarding its data types and the constraints that can be applied, please refer to the [JSON Schema reference](https://json-schema.org/understanding-json-schema/reference/index.html) documentation.
+See the [groups implementation in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L31-L34) for more details.
 
-##### Property Constraints
+### Data Contract tokens
 
-There are a variety of constraints currently defined for performance and security reasons.
+:::{versionadded} 2.0.0
+:::
 
-| Description | Value |
-| ----------- | ----- |
-| Minimum number of properties | [1](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L22) |
-| Maximum number of properties | [100](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L23) |
-| Minimum property name length | [1](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L20) |
-| Maximum property name length | [64](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L20) |
-| Property name characters     | Alphanumeric (`A-Z`, `a-z`, `0-9`)<br>Hyphen (`-`) <br>Underscore (`_`) |
-
-##### Required Properties (Optional)
-
-Each document may have some fields that are required for the document to be valid and other fields that are optional. Required fields are defined via the `required` array which consists of a list of the field names from the document that must be present. The `required` object should be excluded for documents without any required properties.
-
-```json
-"required": [
-  "<field name a>",
-  "<field name b>"
-]
-```
-
-**Example**  
-The following example (excerpt from the DPNS contract's `domain` document) demonstrates a document that has 6 required fields:
-
-```json
-"required": [
-  "label",
-  "normalizedLabel",
-  "normalizedParentDomainName",
-  "preorderSalt",
-  "records",
-  "subdomainRules"
-]
-```
-
-#### Document Indices
-
-Document indices may be defined if indexing on document fields is required.
-
-The `indices` array consists of:
-
-- One or more objects that each contain:
-  - A unique `name` for the index
-  - A `properties` array composed of a `<field name: sort order>` object for each document field that is part of the index (sort order: `asc` only for Dash Platform v0.23)
-  - An (optional) `unique` element that determines if duplicate values are allowed for the document type
-
-**Note:**
-
-- The `indices` object should be excluded for documents that do not require indices.
-- When defining an index with multiple properties (i.e a compound index), the order in which the properties are listed is important. Refer to the [mongoDB documentation](https://docs.mongodb.com/manual/core/index-compound/#prefixes) for details regarding the significance of the order as it relates to querying capabilities. Dash uses [GroveDB](https://github.com/dashpay/grovedb) which works similarly but does requiring listing _all_ the index's fields in query order by statements.
-
-```json
-"indices": [
-  {
-    "name": "Index1",
-    "properties": [
-      { "<field name a>": "asc" },
-      { "<field name b>": "asc" }
-    ],
-    "unique": true|false
-  },
-  {
-    "name": "Index2",
-    "properties": [
-      { "<field name c>": "asc" },
-    ],
-  }
-]
-```
-
-##### Index Constraints
-
-For performance and security reasons, indices have the following constraints. These constraints are subject to change over time.
-
-| Description | Value |
-| ----------- | ----- |
-| Minimum/maximum length of index `name` | [1](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L311) / [32](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L312) |
-| Maximum number of indices | [10](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L390) |
-| Maximum number of unique indices | [10](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-platform-version/src/version/dpp_versions/dpp_validation_versions/v2.rs#L24) |
-| Maximum number of properties in a single index | [10](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L331) |
-| Maximum length of indexed string property | [63](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/v0/mod.rs#L72) |
-| Maximum number of contested indices | [1](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-platform-version/src/version/dpp_versions/dpp_validation_versions/v2.rs#L22) |
-| Usage of `$id` in an index [disallowed](https://github.com/dashpay/platform/pull/178) | N/A |
-| **Note: Dash Platform v0.22+ [does not allow indices for arrays](https://github.com/dashpay/platform/pull/225).**<br>Maximum length of indexed byte array property | [255](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/v0/mod.rs#L73) |
-| **Note: Dash Platform v0.22+ [does not allow indices for arrays](https://github.com/dashpay/platform/pull/225).**<br>Maximum number of indexed array items         | [1024](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/v0/mod.rs#L74) |
-
-**Example**  
-The following example (excerpt from the DPNS contract's `preorder` document) creates an index named `saltedHash` on the `saltedDomainHash` property that also enforces uniqueness across all documents of that type:
-
-```json
-"indices": [
-  {
-    "name": "saltedHash",
-    "properties": [
-      {
-        "saltedDomainHash": "asc"
-      }
-    ],
-    "unique": true
-  }
-]
-```
-
-#### Full Document Syntax
-
-This example syntax shows the structure of a documents object that defines two documents, an index, and a required field.
-
-```json
-{
-  "<document name a>": {
-    "type": "object",
-    "properties": {
-      "<field name b>": {
-        "type": "<field data type>",
-        "position": "<number>"
-      },
-      "<field name c>": {
-        "type": "<field data type>",
-        "position": "<number>"
-      },
-    },
-    "indices": [
-      {
-        "name": "<index name>",
-        "properties": [
-          {
-            "<field name c>": "asc"
-          }
-        ],
-        "unique": true|false
-      },
-    ],
-    "required": [
-      "<field name c>"
-    ]
-    "additionalProperties": false
-  },
-  "<document name x>": {
-    "type": "object",
-    "properties": {
-      "<property name y>": {
-        "type": "<property data type>",
-        "position": "<number>"
-      },
-      "<property name z>": {
-        "type": "<property data type>",
-        "position": "<number>"
-      },
-    },
-    "additionalProperties": false
-  },    
-}
-```
-
-#### Document Schema
-
-Full document schema details may be found in the [rs-dpp document meta schema](https://github.com/dashpay/platform/blob/v1.7.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json).
+- Tokens provide token-related functionality within the contract, such as base supply, maximum supply, and manual minting/burning rules.  
+- Token configurations include change control rules, ensuring proper governance for modifying supply limits and token-related settings.
+- This enables contracts to define and manage tokens while ensuring compliance with governance rules (e.g., who can mint or burn tokens).
 
 ## Data Contract State Transition Details
 
-There are two data contract-related state transitions: [data contract create](#data-contract-creation) and [data contract update](#data-contract-update). Details are provided in this section.
+There are two data contract-related state transitions: [data contract create](#data-contract-create) and [data contract update](#data-contract-update). Details are provided in this section.
 
-### Data Contract Creation
+### Data Contract Create
 
 Data contracts are created on the platform by submitting the [data contract object](#data-contract-object) in a data contract create state transition consisting of:
 
-| Field | Type | Description |
-| ----- | ---- | ----------- |
-| protocolVersion      | integer        | The platform protocol version ([currently `1`](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/version/mod.rs#L9)) |
-| type                 | integer        | State transition type (`0` for data contract create)  |
-| dataContract         | [data contract object](#data-contract-object) | Object containing the data contract details |
-| entropy              | array of bytes | Entropy used to generate the data contract ID. Generated as [shown here](../protocol-ref/state-transition.md#entropy-generation). (32 bytes) |
-| signaturePublicKeyId | number         | The `id` of the [identity public key](../protocol-ref/identity.md#identity-publickeys) that signed the state transition |
-| signature            | array of bytes | Signature of state transition data (65 or 96 bytes) |
+| Field           | Type           | Size | Description |
+| --------------- | -------------- | ---- | ----------- |
+| $version        | unsigned integer | 32 bits | The platform protocol version (currently `1`) |
+| type            | unsigned integer | 8 bits  | State transition type (`0` for data contract create)  |
+| dataContract    | [data contract object](#data-contract-object) | Varies | Object containing the data contract details |
+| identityNonce   | unsigned integer     | 64 bits | Identity nonce for this transition to prevent replay attacks |
+| entropy         | array of bytes | 32 bytes | Entropy used to generate the data contract ID. Generated as [shown here](../protocol-ref/state-transition.md#entropy-generation). |
+| userFeeIncrease | unsigned integer | 16 bits | Extra fee to prioritize processing if the mempool is full. Typically set to zero. |
+| signaturePublicKeyId | unsigned integer | 32 bits | The `id` of the [identity public key](../protocol-ref/identity.md#identity-publickeys) that signed the state transition (`=> 0`) |
+| signature            | array of bytes | 65 bytes | Signature of state transition data |
 
-Each data contract state transition must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/data_contract/stateTransition/dataContractCreate.json):
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "protocolVersion": {
-      "type": "integer",
-      "$comment": "Maximum is the latest protocol version"
-    },
-    "type": {
-      "type": "integer",
-      "const": 0
-    },
-    "dataContract": {
-      "type": "object"
-    },
-    "entropy": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32
-    },
-    "signaturePublicKeyId": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "signature": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 65,
-      "maxItems": 96
-    }
-  },
-  "additionalProperties": false,
-  "required": [
-    "protocolVersion",
-    "type",
-    "dataContract",
-    "entropy",
-    "signaturePublicKeyId",
-    "signature"
-  ]
-}
-```
-
-**Example State Transition**
-
-```json
-{
-  "protocolVersion":1,
-  "type":0,
-  "signature":"IFmEb/OwyYG0yn33U4/kieH4JL63Ft25GAun+XqWOalkbDrpL9z+OH+Sb03xsyMNzoILC2T1Q8yV1q7kCmr0HuQ=",
-  "signaturePublicKeyId":0,
-  "dataContract":{
-    "protocolVersion":1,
-    "$id":"44dvUnSdVtvPPeVy6mS4vRzJ4zfABCt33VvqTWMM8VG6",
-    "$schema":"https://schema.dash.org/dpp-0-4-0/meta/data-contract",
-    "version":1,
-    "ownerId":"6YfP6tT9AK8HPVXMK7CQrhpc8VMg7frjEnXinSPvUmZC",
-    "documents":{
-      "note":{
-        "type":"object",
-        "properties":{
-          "message":{
-            "type":"string"
-          }
-        },
-        "additionalProperties":false
-      }
-    }
-  },
-  "entropy":"J2Sl/Ka9T1paYUv6f2ec5MzaaACs9lcUvOskBU0SMlo="
-}
-```
+See the [data contract create implementation in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_create_transition/v0/mod.rs#L37-L45) for more details.
 
 ### Data Contract Update
 
-Existing data contracts can be updated in certain backwards-compatible ways. The following aspects  
+Existing data contracts can be updated in certain backwards-compatible ways. The following aspects
 of a data contract can be updated:
 
 - Adding a new document
@@ -564,94 +830,25 @@ of a data contract can be updated:
 Data contracts are updated on the platform by submitting the modified [data contract  
 object](#data-contract-object) in a data contract update state transition consisting of:
 
-| Field                | Type           | Description |
-| -------------------- | -------------- | ----------- |
-| protocolVersion      | integer        | The platform protocol version ([currently `1`](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/version/mod.rs#L9)) |
-| type                 | integer        | State transition type (`4` for data contract update) |
-| dataContract         | [data contract object](#data-contract-object) | Object containing the updated data contract details<br>**Note:** the data contract's [`version` property](#data-contract-version) must be incremented with each update |
-| signaturePublicKeyId | number         | The `id` of the [identity public key](../protocol-ref/identity.md#identity-publickeys) that signed the state transition |
-| signature            | array of bytes | Signature of state transition data (65 or 96 bytes) |
+| Field           | Type           | Size | Description |
+| --------------- | -------------- | ---- | ----------- |
+| $version        | unsigned integer | 32 bits | The platform protocol version (currently `1`) |
+| type            | unsigned integer | 8 bits  | State transition type (`4` for data contract update)  |
+| dataContract    | [data contract object](#data-contract-object) | Varies | Object containing the updated data contract details<br>**Note:** the data contract's [`version` property](#data-contract-version) must be incremented with each update |
+| signaturePublicKeyId | unsigned integer | 32 bits | The `id` of the [identity public key](../protocol-ref/identity.md#identity-publickeys) that signed the state transition (`=> 0`) |
+| signature            | array of bytes | 65 bytes | Signature of state transition data |
 
-Each data contract state transition must comply with this JSON-Schema definition established in  
-[rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/data_contract/stateTransition/dataContractUpdate.json):
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "protocolVersion": {
-      "type": "integer",
-      "$comment": "Maximum is the latest protocol version"
-    },
-    "type": {
-      "type": "integer",
-      "const": 4
-    },
-    "dataContract": {
-      "type": "object"
-    },
-    "signaturePublicKeyId": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "signature": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 65,
-      "maxItems": 96
-    }
-  },
-  "additionalProperties": false,
-  "required": [
-    "protocolVersion",
-    "type",
-    "dataContract",
-    "signaturePublicKeyId",
-    "signature"
-  ]
-}
-```
-
-**Example State Transition**
-
-```json
-{
-  "protocolVersion":1,
-  "type":4,
-  "signature":"IBboAbqbGBiWzyJDyhwzs1GujR6Gb4m5Gt/QCugLV2EYcsBaQKTM/Stq7iyIm2YyqkV8VlWqOfGebW2w5Pjnfak=",
-  "signaturePublicKeyId":0,
-  "dataContract":{
-    "protocolVersion":1,
-    "$id":"44dvUnSdVtvPPeVy6mS4vRzJ4zfABCt33VvqTWMM8VG6",
-    "$schema":"https://schema.dash.org/dpp-0-4-0/meta/data-contract",
-    "version":2,
-    "ownerId":"6YfP6tT9AK8HPVXMK7CQrhpc8VMg7frjEnXinSPvUmZC",
-    "documents":{
-      "note":{
-        "type":"object",
-        "properties":{
-          "message":{
-            "type":"string"
-          },
-          "author":{
-            "type":"string"
-          }
-        },
-        "additionalProperties":false
-      }
-    }
-  }
-}
-```
+See the [data contract update implementation in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_update_transition/v0/mod.rs#L33-L45) for more details.
 
 ### Data Contract State Transition Signing
 
-Data contract state transitions must be signed by a private key associated with the contract owner's identity.
+Data contract state transitions must be signed by a private key associated with the contract owner's identity. See the [state transition signing](./state-transition.md#state-transition-signing) page for full signing details.
 
-The process to sign a data contract state transition consists of the following steps:
+```{toctree}
+:maxdepth: 2
+:titlesonly:
+:hidden:
 
-1. Canonical CBOR encode the state transition data - this include all ST fields except the `signature` and `signaturePublicKeyId`
-2. Sign the encoded data with a private key associated with the `ownerId`
-3. Set the state transition `signature` to the value of the signature created in the previous step
-4. Set the state transition`signaturePublicKeyId` to the [public key `id`](../protocol-ref/identity.md#public-key-id) corresponding to the key used to sign
+data-contract-document
+data-contract-token
+```
