@@ -8,7 +8,34 @@
 
 Data contracts define the schema (structure) of data an application will store on Dash Platform. Contracts are described using [JSON Schema](https://json-schema.org/understanding-json-schema/) which allows the platform to validate the contract-related data submitted to it.
 
-The following sections provide details that developers need to construct valid contracts. All data contracts must define one or more [documents](#data-contract-documents) or [tokens](#data-contract-tokens), whereas definitions are optional and may not be used for simple contracts.
+The following sections provide details that developers need to construct valid contracts. All data contracts must define at least one [document](#data-contract-documents) or [token](#data-contract-tokens). A contract may define multiple documents and/or tokens.
+
+### Fees
+
+Dash Platform charges fees for registering data contracts based on complexity. These fees compensate evonodes for their role in storing and processing contract-related data.
+
+The table below outlines the current fee structure for various data contract components. Fees are denominated in DASH and are charged at registration time based on the structure of the contract.
+
+| Fee Component                                          | Amount (DASH) | Description |
+|--------------------------------------------------------|-------------------|---------|
+| `base_contract_registration_fee`                       | 0.1  | Fixed fee for every data contract. Covers the baseline cost of anchoring a contract into platform state. |
+| `document_type_registration_fee`                       | 0.02 | Charged per [document type](./data-contract-document.md#contract-documents). Reflects indexing and storage schema overhead. |
+| `document_type_base_non_unique`<br>`_index_registration_fee` | 0.01 | Per non-unique [index](./data-contract-document.md#document-indices) in a document type. Supports query operations. |
+| `document_type_base_unique_index`<br>`_registration_fee`            | 0.01 | Per unique [index](./data-contract-document.md#document-indices). Enforces uniqueness and adds validation complexity. |
+| `document_type_base_contested`<br>`_index_registration_fee`         | 1.0  | Per [contested index](./data-contract-document.md#contested-indices). Used for identity/username resolution; requires voting and [conflict resolution](../explanations/dpns.md#conflict-resolution) by masternodes and evonodes. |
+| `token_registration_fee`                                      | 0.1  | Per token defined in the contract. Reflects additional overhead from managing balances, transfers, and supply. |
+| `token_uses_perpetual`<br>`_distribution_fee`                       | 0.1  | Additional fee for tokens that use perpetual (e.g., block-based) distribution mechanisms. These create ongoing state changes triggered by network events. |
+| `token_uses_pre_programmed`<br>`_distribution_fee`                  | 0.1  | Charged when tokens use scheduled distributions (e.g., airdrops). Adds periodic complexity. |
+| `search_keyword_fee`                                          | 0.1 per keyword   | Charged per search keyword defined. Keywords enable reverse lookups and indexing, increasing on-chain storage and filtering load. |
+
+These fees are additive. For example, a contract that defines two document types, each with one unique index, and one token using a perpetual distribution will incur the following total fee:
+
+```text
+0.1 (base) + 0.02×2 (documents) + 0.01×2 (unique indices) = 0.16 DASH
+0.1 (token) + 0.1 (perpetual) = 0.2 DASH
+
+Total fee: 0.16 + 0.2 = 0.36 DASH
+```
 
 ### General Constraints
 
@@ -40,7 +67,7 @@ Include the following at the same level as the `properties` keyword to ensure pr
 
 ## Data Contract Object
 
-The data contract object consists of the following fields as defined in the Rust reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/v1/data_contract.rs#L67-L105)):
+The data contract object consists of the following fields as defined in the Rust reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/v1/data_contract.rs#L77-L121)):
 
 | Property        | Type           | Size | Description |
 | --------------- | -------------- | ---- | ----------- |
@@ -54,6 +81,8 @@ The data contract object consists of the following fields as defined in the Rust
 | $defs           | object         | Varies       | (Optional) Definitions for `$ref` references used in the `documents` object (if present, must be a non-empty object with \<= 100 valid properties) |
 | [groups](#data-contract-groups) | Group | Varies | (Optional) Groups that allow for specific multiparty actions on the contract. |
 | [tokens](./data-contract-token.md) | object         | Varies    | (Optional \*) Token definitions (see [Contract Tokens](./data-contract-token.md) for details) |
+| keywords | array of strings | Varies | (Optional) Keywords associated with the contract to improve searchability. Maximum of 20 words. |
+| description | string | 3-100 characters | (Optional) Brief description of the contract. |
 
 \* The data contract object must define documents or tokens. It may include both documents and tokens.
 
@@ -293,7 +322,9 @@ The full schema is [defined is rs-dpp](https://github.com/dashpay/platform/blob/
                   "properties": {
                     "position": true
                   },
-                  "required": ["position"]
+                  "required": [
+                    "position"
+                  ]
                 }
               }
             }
@@ -353,6 +384,50 @@ The full schema is [defined is rs-dpp](https://github.com/dashpay/platform/blob/
           }
         }
       ]
+    },
+    "documentActionTokenCost": {
+      "type": "object",
+      "properties": {
+        "contractId": {
+          "type": "array",
+          "contentMediaType": "application/x.dash.dpp.identifier",
+          "byteArray": true,
+          "minItems": 32,
+          "maxItems": 32
+        },
+        "tokenPosition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 281474976710655
+        },
+        "effect": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "0 - TransferTokenToContractOwner (default), 1 - Burn"
+        },
+        "gasFeesPaidBy": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2
+          ],
+          "description": "0 - DocumentOwner (default), 1 - ContractOwner, 2 - PreferContractOwner"
+        }
+      },
+      "required": [
+        "tokenPosition",
+        "amount"
+      ],
+      "additionalProperties": false
     }
   },
   "properties": {
@@ -442,7 +517,9 @@ The full schema is [defined is rs-dpp](https://github.com/dashpay/platform/blob/
                 "maxLength": 256
               }
             },
-            "required": ["resolution"],
+            "required": [
+              "resolution"
+            ],
             "additionalProperties": false
           }
         },
@@ -519,6 +596,30 @@ The full schema is [defined is rs-dpp](https://github.com/dashpay/platform/blob/
       ],
       "description": "Key requirements. 0 - Unique Non Replaceable, 1 - Multiple, 2 - Multiple with reference to latest key."
     },
+    "tokenCost": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "replace": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "delete": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "transfer": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "update_price": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        },
+        "purchase": {
+          "$ref": "#/$defs/documentActionTokenCost"
+        }
+      },
+      "additionalProperties": false
+    },
     "properties": {
       "type": "object",
       "additionalProperties": {
@@ -577,6 +678,17 @@ The full schema is [defined is rs-dpp](https://github.com/dashpay/platform/blob/
       "items": {
         "type": "string"
       }
+    },
+    "keywords": {
+      "type": "array",
+      "description": "List of up to 20 descriptive keywords for the contract, used in the Keyword Search contract",
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 50
+      },
+      "maxItems": 20,
+      "uniqueItems": true
     },
     "additionalProperties": {
       "type": "boolean",

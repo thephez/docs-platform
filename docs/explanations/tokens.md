@@ -16,6 +16,7 @@ Dash Platform’s token functionality provides a straightforward, account-based 
 - **Access Control [Groups](#groups)**: Multi-party groups with user-defined thresholds support complex authorization schemes for token management
 - **Built-in [Distribution](#distribution-rules)**: Manual minting or scheduled release over time
 - **Seamless Integration**: Tokens live alongside documents in a single data contract, enabling additional use cases (e.g., ticketing, digital assets, stablecoins)
+- **Token-Based Document [Fees](#token-based-fees)**: Charge tokens for an application's document actions (e.g., create, transfer), with options to burn tokens or reward the contract owner
 
 The following sections describe the features and configuration options available for token creators
 using Dash Platform.
@@ -103,11 +104,12 @@ When creating a token, you define its configuration using the following paramete
 | Configuration Parameter | Mutable           | Default |
 |:------------------------|:------------------|:--------|
 | [Conventions](#display-conventions)      | Yes | N/A. Depends on implementation |
-| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L38) |
-| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L159) |
+| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L376) |
+| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L378) |
 | [Maximum supply](#token-supply)          | Yes | None |
 | [Keep history](#history)                 | Yes | True |
 | [Start paused](#initial-state)           | Yes | False |
+| [Allow transfer to frozen balance](#allow-transfer-to-frozen-balance) | Yes | True |
 | [Main control group](#main-control-group)| Yes | None |
 | Main control group can be modified       | Yes | NoOne |
 
@@ -136,6 +138,10 @@ When creating a token, you define its configuration using the following paramete
 - Who (or what group) can change specific parameters later
 - Whether the authority to change these parameters can be transferred or locked to "no one"
 - Example: "Only group #1 can update the max supply.” See the [Rules section](#rules) for details.
+
+#### Allow Transfer to Frozen Balance
+
+- Allow transferring and minting of tokens to frozen identity token balances
 
 #### Main Control Group
 
@@ -179,19 +185,46 @@ Rules can authorize no one, specific identities, or multiparty groups. The compl
 
 ##### Action Rules
 
-Token action rules can be configured to allow updating who has access to many [token actions](#actions). The following table summarizes the available action rules:
+Token action rules can be configured to control access to many [token actions](#actions). The
+following table summarizes the configurable rules and their default authorized parties:
 
-| Configuration Rule | Can be Changed?   | Default Authorized Party|
-|:-------------------|:------------------|:--------|
-| Conventions change rules   | Yes | NoOne |
-| Max supply change rules    | Yes | NoOne |
-| Manual minting rules       | Yes | Contract Owner |
-| Manual burning rules       | Yes | Contract Owner |
-| Freeze rules               | Yes | NoOne |
-| Unfreeze rules             | Yes | NoOne |
-| Destroy frozen funds rules | Yes | NoOne |
-| Emergency_action rules     | Yes | NoOne |
-| Main control group can be modified | Yes | NoOne |
+###### General Controls
+
+| Configuration Rule                    | Can be Changed? | Default Authorized Party |
+|:--------------------------------------|:----------------|:-------------------------|
+| Conventions change rules              | Yes             | NoOne                    |
+| Max supply change rules               | Yes             | NoOne                    |
+| Main control group can be modified    | Yes             | NoOne                    |
+
+###### Minting and Burning
+
+| Configuration Rule                    | Can be Changed? | Default Authorized Party |
+|:--------------------------------------|:----------------|:-------------------------|
+| Manual minting rules                  | Yes             | Contract Owner           |
+| Manual burning rules                  | Yes             | Contract Owner           |
+| Minting: choosing destination rules   | Yes             | NoOne                    |
+
+###### Freezing Controls
+
+| Configuration Rule                    | Can be Changed? | Default Authorized Party |
+|:--------------------------------------|:----------------|:-------------------------|
+| Freeze rules                          | Yes             | NoOne                    |
+| Unfreeze rules                        | Yes             | NoOne                    |
+| Destroy frozen funds rules            | Yes             | NoOne                    |
+
+###### Distribution
+
+| Configuration Rule                    | Can be Changed? | Default Authorized Party |
+|:--------------------------------------|:----------------|:-------------------------|
+| Perpetual distribution rules          | Yes             | NoOne                    |
+| New tokens destination identity rules | Yes             | NoOne                    |
+| Direct purchase pricing change rules  | Yes             | NoOne                    |
+
+###### Emergency
+
+| Configuration Rule                    | Can be Changed? | Default Authorized Party |
+|:--------------------------------------|:----------------|:-------------------------|
+| Emergency action rules                | Yes             | NoOne                    |
 
 ##### Distribution Rules
 
@@ -430,6 +463,21 @@ For example, a group is defined with a required threshold of 10. The group membe
 
 In this group, Member A and Member C have a combined power of 11 and can perform actions without approval from Member B. If Member B proposes an action, Member A and C must both approve to authorize the action.
 
+### Token-Based Fees
+
+Dash Platform allows developers to charge token fees for document-related actions (e.g., creating or transferring a document). This provides a way to monetize app usage or implement economic incentives using tokens. These fees are configured in the data contract and apply to all document types in the contract.
+
+Examples:
+
+- Require 1000 tokens to create a document
+- Burn 200 tokens when a document is transferred
+
+This allows for:
+
+- Spam protection (pay-to-post)
+- Revenue generation for app creators
+- Deflationary models via token burning
+
 ## Token Creation
 
 Creating a token on Dash Platform consists of creating a data contract, registering it on the network, and then creating tokens based on the schema defined in the data contract.
@@ -509,5 +557,15 @@ Once the data contract design is completed, the contract can be registered on th
 ```
 
 ## Token Trading
+
+### Direct Purchase
+
+Tokens can be configured to enable direct purchase by users. This allows the contract owner (or other authorized party) to sell the token directly to users at a fixed price or according to a tiered pricing schedule.
+
+The token’s [change control rules](#change-control-rules) include a `changeDirectPurchasePricingRules` setting to determine who is authorized to set or update the price. By default this is set to no one (`NoOne`) to disable direct sales. To allow direct sales, this rule should be set to authorize someone (e.g., the contract owner) to change pricing.
+
+When enabled, the authorized party can set the token price using a state transition. Users can purchase the token through Platform’s built-in mechanism (see [Token Set Purchase Price Transition](../protocol-ref/token.md#token-set-purchase-price-transition) and [Token Purchase Transition](../protocol-ref/token.md#token-purchase-transition)). The direct purchase system supports defining a minimum purchase amount and volume discounts via pricing tiers. The token’s price can also be removed to stop sales.
+
+### Marketplace
 
 A planned token marketplace will support the trading of tokens.
