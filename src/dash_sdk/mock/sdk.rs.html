@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/mock/sdk.rs`."><title>sdk.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/mock/sdk.rs`."><title>sdk.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">dash_sdk/mock/</div>sdk.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -427,11 +428,30 @@
 <a href="#427" id="427">427</a>
 <a href="#428" id="428">428</a>
 <a href="#429" id="429">429</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! Mocking mechanisms for Dash Platform SDK.
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a></pre></div><pre class="rust"><code><span class="doccomment">//! Mocking mechanisms for Dash Platform SDK.
 //!
 //! See [MockDashPlatformSdk] for more details.
-</span><span class="kw">use crate</span>::{
-    platform::{types::identity::IdentityRequest, DocumentQuery, Fetch, FetchMany, Query},
+</span><span class="kw">use </span><span class="kw">super</span>::MockResponse;
+<span class="kw">use crate</span>::{
+    platform::{
+        types::{evonode::EvoNode, identity::IdentityRequest},
+        DocumentQuery, Fetch, FetchMany, Query,
+    },
+    sync::block_on,
     Error, Sdk,
 };
 <span class="kw">use </span>arc_swap::ArcSwapOption;
@@ -447,12 +467,10 @@
 <span class="kw">use </span>rs_dapi_client::{
     mock::{Key, MockDapiClient},
     transport::TransportRequest,
-    DapiClient, DumpData,
+    DapiClient, DumpData, ExecutionResponse,
 };
 <span class="kw">use </span>std::{collections::BTreeMap, path::PathBuf, sync::Arc};
-<span class="kw">use </span>tokio::sync::Mutex;
-
-<span class="kw">use </span><span class="kw">super</span>::MockResponse;
+<span class="kw">use </span>tokio::sync::{Mutex, OwnedMutexGuard};
 
 <span class="doccomment">/// Mechanisms to mock Dash Platform SDK.
 ///
@@ -508,6 +526,17 @@
         <span class="self">self</span>.platform_version
     }
 
+    <span class="doccomment">/// Load all expectations from files in a directory asynchronously.
+    ///
+    /// See [MockDashPlatformSdk::load_expectations_sync()] for more details.
+    </span><span class="attr">#[deprecated(since = <span class="string">"1.4.0"</span>, note = <span class="string">"use load_expectations_sync"</span>)]
+    </span><span class="kw">pub async fn </span>load_expectations&lt;P: AsRef&lt;std::path::Path&gt; + Send + <span class="lifetime">'static</span>&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        dir: P,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, Error&gt; {
+        <span class="self">self</span>.load_expectations_sync(dir)
+    }
+
     <span class="doccomment">/// Load all expectations from files in a directory.
     ///
     ///
@@ -515,7 +544,7 @@
     /// This function can be used to load expectations after the Sdk is created, or use alternative location.
     /// Expectation files must be prefixed with [DapiClient::DUMP_FILE_PREFIX] and
     /// have `.json` extension.
-    </span><span class="kw">pub async fn </span>load_expectations&lt;P: AsRef&lt;std::path::Path&gt;&gt;(
+    </span><span class="kw">pub fn </span>load_expectations_sync&lt;P: AsRef&lt;std::path::Path&gt;&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         dir: P,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, Error&gt; {
@@ -540,99 +569,83 @@
             .map(|f| f.path())
             .collect();
 
+        <span class="kw">let </span><span class="kw-2">mut </span>dapi = block_on(<span class="self">self</span>.dapi.clone().lock_owned())<span class="question-mark">?</span>;
+
         <span class="kw">for </span>filename <span class="kw">in </span><span class="kw-2">&amp;</span>files {
             <span class="kw">let </span>basename = filename.file_name().unwrap().to_str().unwrap();
             <span class="kw">let </span>request_type = basename.split(<span class="string">'_'</span>).nth(<span class="number">1</span>).unwrap_or_default();
 
             <span class="kw">match </span>request_type {
-                <span class="string">"DocumentQuery" </span>=&gt; <span class="self">self</span>.load_expectation::&lt;DocumentQuery&gt;(filename).<span class="kw">await</span><span class="question-mark">?</span>,
+                <span class="string">"DocumentQuery" </span>=&gt; load_expectation::&lt;DocumentQuery&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
                 <span class="string">"GetEpochsInfoRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetEpochsInfoRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetEpochsInfoRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
                 <span class="string">"GetDataContractRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetDataContractRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetDataContractRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
                 <span class="string">"GetDataContractsRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetDataContractsRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetDataContractsRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
                 <span class="string">"GetDataContractHistoryRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetDataContractHistoryRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetDataContractHistoryRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
-                <span class="string">"IdentityRequest" </span>=&gt; <span class="self">self</span>.load_expectation::&lt;IdentityRequest&gt;(filename).<span class="kw">await</span><span class="question-mark">?</span>,
+                <span class="string">"IdentityRequest" </span>=&gt; load_expectation::&lt;IdentityRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
                 <span class="string">"GetIdentityRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetIdentityRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetIdentityRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
 
                 <span class="string">"GetIdentityBalanceRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetIdentityBalanceRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetIdentityBalanceRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
                 <span class="string">"GetIdentityContractNonceRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetIdentityContractNonceRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetIdentityContractNonceRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
-                <span class="string">"GetIdentityBalanceAndRevisionRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetIdentityBalanceAndRevisionRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
-                </span>}
+                <span class="string">"GetIdentityBalanceAndRevisionRequest" </span>=&gt; load_expectation::&lt;
+                    proto::GetIdentityBalanceAndRevisionRequest,
+                &gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
                 <span class="string">"GetIdentityKeysRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetIdentityKeysRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetIdentityKeysRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
-                <span class="string">"GetProtocolVersionUpgradeStateRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetProtocolVersionUpgradeStateRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
-                </span>}
+                <span class="string">"GetProtocolVersionUpgradeStateRequest" </span>=&gt; load_expectation::&lt;
+                    proto::GetProtocolVersionUpgradeStateRequest,
+                &gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
                 <span class="string">"GetProtocolVersionUpgradeVoteStatusRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetProtocolVersionUpgradeVoteStatusRequest&gt;(
-                        filename,
-                    )
-                    .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetProtocolVersionUpgradeVoteStatusRequest&gt;(
+                        <span class="kw-2">&amp;mut </span>dapi, filename,
+                    )<span class="question-mark">?
                 </span>}
                 <span class="string">"GetContestedResourcesRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourcesRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetContestedResourcesRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
-                <span class="string">"GetContestedResourceVoteStateRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourceVoteStateRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
-                </span>}
+                <span class="string">"GetContestedResourceVoteStateRequest" </span>=&gt; load_expectation::&lt;
+                    proto::GetContestedResourceVoteStateRequest,
+                &gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
                 <span class="string">"GetContestedResourceVotersForIdentityRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourceVotersForIdentityRequest&gt;(
-                        filename,
-                    )
-                    .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetContestedResourceVotersForIdentityRequest&gt;(
+                        <span class="kw-2">&amp;mut </span>dapi, filename,
+                    )<span class="question-mark">?
                 </span>}
                 <span class="string">"GetContestedResourceIdentityVotesRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetContestedResourceIdentityVotesRequest&gt;(
-                        filename,
-                    )
-                    .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetContestedResourceIdentityVotesRequest&gt;(
+                        <span class="kw-2">&amp;mut </span>dapi, filename,
+                    )<span class="question-mark">?
                 </span>}
                 <span class="string">"GetVotePollsByEndDateRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetVotePollsByEndDateRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetVotePollsByEndDateRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
-                <span class="string">"GetPrefundedSpecializedBalanceRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetPrefundedSpecializedBalanceRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
-                </span>}
+                <span class="string">"GetPrefundedSpecializedBalanceRequest" </span>=&gt; load_expectation::&lt;
+                    proto::GetPrefundedSpecializedBalanceRequest,
+                &gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
                 <span class="string">"GetPathElementsRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetPathElementsRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
+                    load_expectation::&lt;proto::GetPathElementsRequest&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?
                 </span>}
-                <span class="string">"GetTotalCreditsInPlatformRequest" </span>=&gt; {
-                    <span class="self">self</span>.load_expectation::&lt;proto::GetTotalCreditsInPlatformRequest&gt;(filename)
-                        .<span class="kw">await</span><span class="question-mark">?
-                </span>}
+                <span class="string">"GetTotalCreditsInPlatformRequest" </span>=&gt; load_expectation::&lt;
+                    proto::GetTotalCreditsInPlatformRequest,
+                &gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
+                <span class="string">"EvoNode" </span>=&gt; load_expectation::&lt;EvoNode&gt;(<span class="kw-2">&amp;mut </span>dapi, filename)<span class="question-mark">?</span>,
                 <span class="kw">_ </span>=&gt; {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Config(<span class="macro">format!</span>(
-                        <span class="string">"unknown request type {} in {}"</span>,
+                        <span class="string">"unknown request type {} in {}, missing match arm in load_expectations?"</span>,
                         request_type,
                         filename.display()
                     )))
@@ -641,21 +654,6 @@
         }
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
-    }
-
-    <span class="kw">async fn </span>load_expectation&lt;T: TransportRequest&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>PathBuf) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span>data = DumpData::&lt;T&gt;::load(path)
-            .map_err(|e| {
-                Error::Config(<span class="macro">format!</span>(
-                    <span class="string">"cannot load mock expectations from {}: {}"</span>,
-                    path.display(),
-                    e
-                ))
-            })<span class="question-mark">?
-            </span>.deserialize();
-
-        <span class="self">self</span>.dapi.lock().<span class="kw">await</span>.expect(<span class="kw-2">&amp;</span>data.<span class="number">0</span>, <span class="kw-2">&amp;</span>data.<span class="number">1</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Expect a [Fetch] request and return provided object.
@@ -729,7 +727,7 @@
     /// ## Generic Parameters
     ///
     /// - `O`: Type of the object that will be returned in response to the query.
-    /// Must implement [FetchMany]. `Vec&lt;O&gt;` must implement [MockResponse].
+    ///   Must implement [FetchMany]. `Vec&lt;O&gt;` must implement [MockResponse].
     /// - `Q`: Type of the query that will be sent to Platform. Must implement [Query] and [Mockable].
     ///
     /// ## Arguments
@@ -755,20 +753,23 @@
         K: Ord,
         O: FetchMany&lt;K, R&gt;,
         Q: Query&lt;&lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request&gt;,
-        R: FromIterator&lt;(K, <span class="prelude-ty">Option</span>&lt;O&gt;)&gt; + MockResponse + Send + Default,
+        R,
     &gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         query: Q,
         objects: <span class="prelude-ty">Option</span>&lt;R&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, Error&gt;
     <span class="kw">where
-        </span>R: MockResponse,
-        &lt;&lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response: Default,
-        R: FromProof&lt;
+        </span>R: FromIterator&lt;(K, <span class="prelude-ty">Option</span>&lt;O&gt;)&gt;
+            + MockResponse
+            + FromProof&lt;
                 &lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request,
                 Request = &lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request,
                 Response = &lt;&lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response,
-            &gt; + Sync,
+            &gt; + Sync
+            + Send
+            + Default,
+        &lt;&lt;O <span class="kw">as </span>FetchMany&lt;K, R&gt;&gt;::Request <span class="kw">as </span>TransportRequest&gt;::Response: Default,
     {
         <span class="kw">let </span>grpc_request = query.query(<span class="self">self</span>.prove()).expect(<span class="string">"query must be correct"</span>);
         <span class="self">self</span>.expect(grpc_request, objects).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -805,7 +806,14 @@
         <span class="comment">// This expectation will work for execute
         </span><span class="kw">let </span><span class="kw-2">mut </span>dapi_guard = <span class="self">self</span>.dapi.lock().<span class="kw">await</span>;
         <span class="comment">// We don't really care about the response, as it will be mocked by from_proof, so we provide default()
-        </span>dapi_guard.expect(<span class="kw-2">&amp;</span>grpc_request, <span class="kw-2">&amp;</span><span class="prelude-val">Ok</span>(Default::default()))<span class="question-mark">?</span>;
+        </span>dapi_guard.expect(
+            <span class="kw-2">&amp;</span>grpc_request,
+            <span class="kw-2">&amp;</span><span class="prelude-val">Ok</span>(ExecutionResponse {
+                inner: Default::default(),
+                retries: <span class="number">0</span>,
+                address: <span class="string">"http://127.0.0.1"</span>.parse().expect(<span class="string">"failed to parse address"</span>),
+            }),
+        )<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -855,5 +863,27 @@
             <span class="prelude-val">None
         </span>}
     }
+}
+
+<span class="doccomment">/// Load expectation from file and save it to `dapi_guard` mock Dapi client.
+///
+/// This function is used to load expectations from files in a directory.
+/// It is implemented without reference to the `MockDashPlatformSdk` object
+/// to make it easier to use in async context.
+</span><span class="kw">fn </span>load_expectation&lt;T: TransportRequest&gt;(
+    dapi_guard: <span class="kw-2">&amp;mut </span>OwnedMutexGuard&lt;MockDapiClient&gt;,
+    path: <span class="kw-2">&amp;</span>PathBuf,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span>data = DumpData::&lt;T&gt;::load(path)
+        .map_err(|e| {
+            Error::Config(<span class="macro">format!</span>(
+                <span class="string">"cannot load mock expectations from {}: {}"</span>,
+                path.display(),
+                e
+            ))
+        })<span class="question-mark">?
+        </span>.deserialize();
+    dapi_guard.expect(<span class="kw-2">&amp;</span>data.<span class="number">0</span>, <span class="kw-2">&amp;</span>data.<span class="number">1</span>)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div></section></main></body></html>

@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/sdk.rs`."><title>sdk.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/sdk.rs`."><title>sdk.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">dash_sdk/</div>sdk.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -864,17 +865,429 @@
 <a href="#864" id="864">864</a>
 <a href="#865" id="865">865</a>
 <a href="#866" id="866">866</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! [Sdk] entrypoint to Dash Platform.
+<a href="#867" id="867">867</a>
+<a href="#868" id="868">868</a>
+<a href="#869" id="869">869</a>
+<a href="#870" id="870">870</a>
+<a href="#871" id="871">871</a>
+<a href="#872" id="872">872</a>
+<a href="#873" id="873">873</a>
+<a href="#874" id="874">874</a>
+<a href="#875" id="875">875</a>
+<a href="#876" id="876">876</a>
+<a href="#877" id="877">877</a>
+<a href="#878" id="878">878</a>
+<a href="#879" id="879">879</a>
+<a href="#880" id="880">880</a>
+<a href="#881" id="881">881</a>
+<a href="#882" id="882">882</a>
+<a href="#883" id="883">883</a>
+<a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
+<a href="#892" id="892">892</a>
+<a href="#893" id="893">893</a>
+<a href="#894" id="894">894</a>
+<a href="#895" id="895">895</a>
+<a href="#896" id="896">896</a>
+<a href="#897" id="897">897</a>
+<a href="#898" id="898">898</a>
+<a href="#899" id="899">899</a>
+<a href="#900" id="900">900</a>
+<a href="#901" id="901">901</a>
+<a href="#902" id="902">902</a>
+<a href="#903" id="903">903</a>
+<a href="#904" id="904">904</a>
+<a href="#905" id="905">905</a>
+<a href="#906" id="906">906</a>
+<a href="#907" id="907">907</a>
+<a href="#908" id="908">908</a>
+<a href="#909" id="909">909</a>
+<a href="#910" id="910">910</a>
+<a href="#911" id="911">911</a>
+<a href="#912" id="912">912</a>
+<a href="#913" id="913">913</a>
+<a href="#914" id="914">914</a>
+<a href="#915" id="915">915</a>
+<a href="#916" id="916">916</a>
+<a href="#917" id="917">917</a>
+<a href="#918" id="918">918</a>
+<a href="#919" id="919">919</a>
+<a href="#920" id="920">920</a>
+<a href="#921" id="921">921</a>
+<a href="#922" id="922">922</a>
+<a href="#923" id="923">923</a>
+<a href="#924" id="924">924</a>
+<a href="#925" id="925">925</a>
+<a href="#926" id="926">926</a>
+<a href="#927" id="927">927</a>
+<a href="#928" id="928">928</a>
+<a href="#929" id="929">929</a>
+<a href="#930" id="930">930</a>
+<a href="#931" id="931">931</a>
+<a href="#932" id="932">932</a>
+<a href="#933" id="933">933</a>
+<a href="#934" id="934">934</a>
+<a href="#935" id="935">935</a>
+<a href="#936" id="936">936</a>
+<a href="#937" id="937">937</a>
+<a href="#938" id="938">938</a>
+<a href="#939" id="939">939</a>
+<a href="#940" id="940">940</a>
+<a href="#941" id="941">941</a>
+<a href="#942" id="942">942</a>
+<a href="#943" id="943">943</a>
+<a href="#944" id="944">944</a>
+<a href="#945" id="945">945</a>
+<a href="#946" id="946">946</a>
+<a href="#947" id="947">947</a>
+<a href="#948" id="948">948</a>
+<a href="#949" id="949">949</a>
+<a href="#950" id="950">950</a>
+<a href="#951" id="951">951</a>
+<a href="#952" id="952">952</a>
+<a href="#953" id="953">953</a>
+<a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
+<a href="#1024" id="1024">1024</a>
+<a href="#1025" id="1025">1025</a>
+<a href="#1026" id="1026">1026</a>
+<a href="#1027" id="1027">1027</a>
+<a href="#1028" id="1028">1028</a>
+<a href="#1029" id="1029">1029</a>
+<a href="#1030" id="1030">1030</a>
+<a href="#1031" id="1031">1031</a>
+<a href="#1032" id="1032">1032</a>
+<a href="#1033" id="1033">1033</a>
+<a href="#1034" id="1034">1034</a>
+<a href="#1035" id="1035">1035</a>
+<a href="#1036" id="1036">1036</a>
+<a href="#1037" id="1037">1037</a>
+<a href="#1038" id="1038">1038</a>
+<a href="#1039" id="1039">1039</a>
+<a href="#1040" id="1040">1040</a>
+<a href="#1041" id="1041">1041</a>
+<a href="#1042" id="1042">1042</a>
+<a href="#1043" id="1043">1043</a>
+<a href="#1044" id="1044">1044</a>
+<a href="#1045" id="1045">1045</a>
+<a href="#1046" id="1046">1046</a>
+<a href="#1047" id="1047">1047</a>
+<a href="#1048" id="1048">1048</a>
+<a href="#1049" id="1049">1049</a>
+<a href="#1050" id="1050">1050</a>
+<a href="#1051" id="1051">1051</a>
+<a href="#1052" id="1052">1052</a>
+<a href="#1053" id="1053">1053</a>
+<a href="#1054" id="1054">1054</a>
+<a href="#1055" id="1055">1055</a>
+<a href="#1056" id="1056">1056</a>
+<a href="#1057" id="1057">1057</a>
+<a href="#1058" id="1058">1058</a>
+<a href="#1059" id="1059">1059</a>
+<a href="#1060" id="1060">1060</a>
+<a href="#1061" id="1061">1061</a>
+<a href="#1062" id="1062">1062</a>
+<a href="#1063" id="1063">1063</a>
+<a href="#1064" id="1064">1064</a>
+<a href="#1065" id="1065">1065</a>
+<a href="#1066" id="1066">1066</a>
+<a href="#1067" id="1067">1067</a>
+<a href="#1068" id="1068">1068</a>
+<a href="#1069" id="1069">1069</a>
+<a href="#1070" id="1070">1070</a>
+<a href="#1071" id="1071">1071</a>
+<a href="#1072" id="1072">1072</a>
+<a href="#1073" id="1073">1073</a>
+<a href="#1074" id="1074">1074</a>
+<a href="#1075" id="1075">1075</a>
+<a href="#1076" id="1076">1076</a>
+<a href="#1077" id="1077">1077</a>
+<a href="#1078" id="1078">1078</a>
+<a href="#1079" id="1079">1079</a>
+<a href="#1080" id="1080">1080</a>
+<a href="#1081" id="1081">1081</a>
+<a href="#1082" id="1082">1082</a>
+<a href="#1083" id="1083">1083</a>
+<a href="#1084" id="1084">1084</a>
+<a href="#1085" id="1085">1085</a>
+<a href="#1086" id="1086">1086</a>
+<a href="#1087" id="1087">1087</a>
+<a href="#1088" id="1088">1088</a>
+<a href="#1089" id="1089">1089</a>
+<a href="#1090" id="1090">1090</a>
+<a href="#1091" id="1091">1091</a>
+<a href="#1092" id="1092">1092</a>
+<a href="#1093" id="1093">1093</a>
+<a href="#1094" id="1094">1094</a>
+<a href="#1095" id="1095">1095</a>
+<a href="#1096" id="1096">1096</a>
+<a href="#1097" id="1097">1097</a>
+<a href="#1098" id="1098">1098</a>
+<a href="#1099" id="1099">1099</a>
+<a href="#1100" id="1100">1100</a>
+<a href="#1101" id="1101">1101</a>
+<a href="#1102" id="1102">1102</a>
+<a href="#1103" id="1103">1103</a>
+<a href="#1104" id="1104">1104</a>
+<a href="#1105" id="1105">1105</a>
+<a href="#1106" id="1106">1106</a>
+<a href="#1107" id="1107">1107</a>
+<a href="#1108" id="1108">1108</a>
+<a href="#1109" id="1109">1109</a>
+<a href="#1110" id="1110">1110</a>
+<a href="#1111" id="1111">1111</a>
+<a href="#1112" id="1112">1112</a>
+<a href="#1113" id="1113">1113</a>
+<a href="#1114" id="1114">1114</a>
+<a href="#1115" id="1115">1115</a>
+<a href="#1116" id="1116">1116</a>
+<a href="#1117" id="1117">1117</a>
+<a href="#1118" id="1118">1118</a>
+<a href="#1119" id="1119">1119</a>
+<a href="#1120" id="1120">1120</a>
+<a href="#1121" id="1121">1121</a>
+<a href="#1122" id="1122">1122</a>
+<a href="#1123" id="1123">1123</a>
+<a href="#1124" id="1124">1124</a>
+<a href="#1125" id="1125">1125</a>
+<a href="#1126" id="1126">1126</a>
+<a href="#1127" id="1127">1127</a>
+<a href="#1128" id="1128">1128</a>
+<a href="#1129" id="1129">1129</a>
+<a href="#1130" id="1130">1130</a>
+<a href="#1131" id="1131">1131</a>
+<a href="#1132" id="1132">1132</a>
+<a href="#1133" id="1133">1133</a>
+<a href="#1134" id="1134">1134</a>
+<a href="#1135" id="1135">1135</a>
+<a href="#1136" id="1136">1136</a>
+<a href="#1137" id="1137">1137</a>
+<a href="#1138" id="1138">1138</a>
+<a href="#1139" id="1139">1139</a>
+<a href="#1140" id="1140">1140</a>
+<a href="#1141" id="1141">1141</a>
+<a href="#1142" id="1142">1142</a>
+<a href="#1143" id="1143">1143</a>
+<a href="#1144" id="1144">1144</a>
+<a href="#1145" id="1145">1145</a>
+<a href="#1146" id="1146">1146</a>
+<a href="#1147" id="1147">1147</a>
+<a href="#1148" id="1148">1148</a>
+<a href="#1149" id="1149">1149</a>
+<a href="#1150" id="1150">1150</a>
+<a href="#1151" id="1151">1151</a>
+<a href="#1152" id="1152">1152</a>
+<a href="#1153" id="1153">1153</a>
+<a href="#1154" id="1154">1154</a>
+<a href="#1155" id="1155">1155</a>
+<a href="#1156" id="1156">1156</a>
+<a href="#1157" id="1157">1157</a>
+<a href="#1158" id="1158">1158</a>
+<a href="#1159" id="1159">1159</a>
+<a href="#1160" id="1160">1160</a>
+<a href="#1161" id="1161">1161</a>
+<a href="#1162" id="1162">1162</a>
+<a href="#1163" id="1163">1163</a>
+<a href="#1164" id="1164">1164</a>
+<a href="#1165" id="1165">1165</a>
+<a href="#1166" id="1166">1166</a>
+<a href="#1167" id="1167">1167</a>
+<a href="#1168" id="1168">1168</a>
+<a href="#1169" id="1169">1169</a>
+<a href="#1170" id="1170">1170</a>
+<a href="#1171" id="1171">1171</a>
+<a href="#1172" id="1172">1172</a>
+<a href="#1173" id="1173">1173</a>
+<a href="#1174" id="1174">1174</a>
+<a href="#1175" id="1175">1175</a>
+<a href="#1176" id="1176">1176</a>
+<a href="#1177" id="1177">1177</a>
+<a href="#1178" id="1178">1178</a>
+<a href="#1179" id="1179">1179</a>
+<a href="#1180" id="1180">1180</a>
+<a href="#1181" id="1181">1181</a>
+<a href="#1182" id="1182">1182</a>
+<a href="#1183" id="1183">1183</a>
+<a href="#1184" id="1184">1184</a>
+<a href="#1185" id="1185">1185</a>
+<a href="#1186" id="1186">1186</a>
+<a href="#1187" id="1187">1187</a>
+<a href="#1188" id="1188">1188</a>
+<a href="#1189" id="1189">1189</a>
+<a href="#1190" id="1190">1190</a>
+<a href="#1191" id="1191">1191</a>
+<a href="#1192" id="1192">1192</a>
+<a href="#1193" id="1193">1193</a>
+<a href="#1194" id="1194">1194</a>
+<a href="#1195" id="1195">1195</a>
+<a href="#1196" id="1196">1196</a>
+<a href="#1197" id="1197">1197</a>
+<a href="#1198" id="1198">1198</a>
+<a href="#1199" id="1199">1199</a>
+<a href="#1200" id="1200">1200</a>
+<a href="#1201" id="1201">1201</a>
+<a href="#1202" id="1202">1202</a>
+<a href="#1203" id="1203">1203</a>
+<a href="#1204" id="1204">1204</a>
+<a href="#1205" id="1205">1205</a>
+<a href="#1206" id="1206">1206</a>
+<a href="#1207" id="1207">1207</a>
+<a href="#1208" id="1208">1208</a>
+<a href="#1209" id="1209">1209</a>
+<a href="#1210" id="1210">1210</a>
+<a href="#1211" id="1211">1211</a>
+<a href="#1212" id="1212">1212</a>
+<a href="#1213" id="1213">1213</a>
+<a href="#1214" id="1214">1214</a>
+<a href="#1215" id="1215">1215</a>
+<a href="#1216" id="1216">1216</a>
+<a href="#1217" id="1217">1217</a>
+<a href="#1218" id="1218">1218</a>
+<a href="#1219" id="1219">1219</a>
+<a href="#1220" id="1220">1220</a>
+<a href="#1221" id="1221">1221</a>
+<a href="#1222" id="1222">1222</a>
+<a href="#1223" id="1223">1223</a>
+<a href="#1224" id="1224">1224</a>
+<a href="#1225" id="1225">1225</a>
+<a href="#1226" id="1226">1226</a>
+<a href="#1227" id="1227">1227</a>
+<a href="#1228" id="1228">1228</a>
+<a href="#1229" id="1229">1229</a>
+<a href="#1230" id="1230">1230</a>
+<a href="#1231" id="1231">1231</a>
+<a href="#1232" id="1232">1232</a>
+<a href="#1233" id="1233">1233</a>
+<a href="#1234" id="1234">1234</a>
+<a href="#1235" id="1235">1235</a>
+<a href="#1236" id="1236">1236</a>
+<a href="#1237" id="1237">1237</a>
+<a href="#1238" id="1238">1238</a>
+<a href="#1239" id="1239">1239</a>
+<a href="#1240" id="1240">1240</a>
+<a href="#1241" id="1241">1241</a>
+<a href="#1242" id="1242">1242</a>
+<a href="#1243" id="1243">1243</a>
+<a href="#1244" id="1244">1244</a>
+<a href="#1245" id="1245">1245</a>
+<a href="#1246" id="1246">1246</a>
+<a href="#1247" id="1247">1247</a>
+<a href="#1248" id="1248">1248</a>
+<a href="#1249" id="1249">1249</a>
+<a href="#1250" id="1250">1250</a>
+<a href="#1251" id="1251">1251</a>
+<a href="#1252" id="1252">1252</a>
+<a href="#1253" id="1253">1253</a>
+<a href="#1254" id="1254">1254</a>
+<a href="#1255" id="1255">1255</a>
+<a href="#1256" id="1256">1256</a>
+<a href="#1257" id="1257">1257</a>
+<a href="#1258" id="1258">1258</a>
+<a href="#1259" id="1259">1259</a>
+<a href="#1260" id="1260">1260</a>
+<a href="#1261" id="1261">1261</a>
+<a href="#1262" id="1262">1262</a>
+<a href="#1263" id="1263">1263</a>
+<a href="#1264" id="1264">1264</a>
+<a href="#1265" id="1265">1265</a>
+<a href="#1266" id="1266">1266</a>
+<a href="#1267" id="1267">1267</a>
+<a href="#1268" id="1268">1268</a>
+<a href="#1269" id="1269">1269</a>
+<a href="#1270" id="1270">1270</a>
+<a href="#1271" id="1271">1271</a>
+<a href="#1272" id="1272">1272</a>
+<a href="#1273" id="1273">1273</a>
+<a href="#1274" id="1274">1274</a>
+<a href="#1275" id="1275">1275</a>
+<a href="#1276" id="1276">1276</a>
+<a href="#1277" id="1277">1277</a></pre></div><pre class="rust"><code><span class="doccomment">//! [Sdk] entrypoint to Dash Platform.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::error::Error;
+</span><span class="kw">use </span><span class="kw">crate</span>::error::{Error, StaleNodeError};
 <span class="kw">use </span><span class="kw">crate</span>::internal_cache::InternalSdkCache;
 <span class="kw">use </span><span class="kw">crate</span>::mock::MockResponse;
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::mock::{provider::GrpcContextProvider, MockDashPlatformSdk};
 <span class="kw">use </span><span class="kw">crate</span>::platform::transition::put_settings::PutSettings;
 <span class="kw">use </span><span class="kw">crate</span>::platform::{Fetch, Identifier};
+<span class="kw">use </span>arc_swap::{ArcSwapAny, ArcSwapOption};
 <span class="kw">use </span>dapi_grpc::mock::Mockable;
 <span class="kw">use </span>dapi_grpc::platform::v0::{Proof, ResponseMetadata};
+<span class="kw">use </span>dapi_grpc::tonic::transport::Certificate;
 <span class="kw">use </span>dpp::bincode;
 <span class="kw">use </span>dpp::bincode::error::DecodeError;
 <span class="kw">use </span>dpp::dashcore::Network;
@@ -892,8 +1305,7 @@
 <span class="kw">pub use </span>rs_dapi_client::AddressList;
 <span class="kw">pub use </span>rs_dapi_client::RequestSettings;
 <span class="kw">use </span>rs_dapi_client::{
-    transport::{TransportClient, TransportRequest},
-    DapiClient, DapiClientError, DapiRequestExecutor,
+    transport::TransportRequest, DapiClient, DapiClientError, DapiRequestExecutor, ExecutionResult,
 };
 <span class="kw">use </span>std::collections::btree_map::Entry;
 <span class="kw">use </span>std::fmt::Debug;
@@ -901,11 +1313,13 @@
 </span><span class="kw">use </span>std::num::NonZeroUsize;
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
 </span><span class="kw">use </span>std::path::{Path, PathBuf};
-<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>std::sync::atomic::Ordering;
+<span class="kw">use </span>std::sync::{atomic, Arc};
 <span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
 </span><span class="kw">use </span>tokio::sync::{Mutex, MutexGuard};
 <span class="kw">use </span>tokio_util::sync::{CancellationToken, WaitForCancellationFuture};
+<span class="kw">use </span>zeroize::Zeroizing;
 
 <span class="doccomment">/// How many data contracts fit in the cache.
 </span><span class="kw">pub const </span>DEFAULT_CONTRACT_CACHE_SIZE: usize = <span class="number">100</span>;
@@ -914,7 +1328,17 @@
 <span class="doccomment">/// The default identity nonce stale time in seconds
 </span><span class="kw">pub const </span>DEFAULT_IDENTITY_NONCE_STALE_TIME_S: u64 = <span class="number">1200</span>; <span class="comment">//20 mins
 
-</span><span class="doccomment">/// a type to represent staleness in seconds
+</span><span class="doccomment">/// The default request settings for the SDK, used when the user does not provide any.
+///
+/// Use [SdkBuilder::with_settings] to set custom settings.
+</span><span class="kw">const </span>DEFAULT_REQUEST_SETTINGS: RequestSettings = RequestSettings {
+    retries: <span class="prelude-val">Some</span>(<span class="number">3</span>),
+    timeout: <span class="prelude-val">None</span>,
+    ban_failed_address: <span class="prelude-val">None</span>,
+    connect_timeout: <span class="prelude-val">None</span>,
+};
+
+<span class="doccomment">/// a type to represent staleness in seconds
 </span><span class="kw">pub type </span>StalenessInSeconds = u64;
 
 <span class="doccomment">/// The last query timestamp
@@ -945,9 +1369,8 @@
 /// ## Examples
 ///
 /// See tests/ for examples of using the SDK.
-</span><span class="attr">#[derive(Clone)]
 </span><span class="kw">pub struct </span>Sdk {
-    <span class="doccomment">/// The network that the sdk is configured for (Dash (mainnet), Testnet, Devnet, Regtest)  
+    <span class="doccomment">/// The network that the sdk is configured for (Dash (mainnet), Testnet, Devnet, Regtest)
     </span><span class="kw">pub </span>network: Network,
     inner: SdkInstance,
     <span class="doccomment">/// Use proofs when retrieving data from Platform.
@@ -963,13 +1386,49 @@
     /// ## Panics
     ///
     /// Note that setting this to None can panic.
-    </span>context_provider: <span class="prelude-ty">Option</span>&lt;Arc&lt;Box&lt;<span class="kw">dyn </span>ContextProvider&gt;&gt;&gt;,
+    </span>context_provider: ArcSwapOption&lt;Box&lt;<span class="kw">dyn </span>ContextProvider&gt;&gt;,
+
+    <span class="doccomment">/// Last seen height; used to determine if the remote node is stale.
+    ///
+    /// This is clone-able and can be shared between threads.
+    </span>metadata_last_seen_height: Arc&lt;atomic::AtomicU64&gt;,
+
+    <span class="doccomment">/// How many blocks difference is allowed between the last height and the current height received in metadata.
+    ///
+    /// See [SdkBuilder::with_height_tolerance] for more information.
+    </span>metadata_height_tolerance: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+
+    <span class="doccomment">/// How many milliseconds difference is allowed between the time received in response and current local time.
+    ///
+    /// See [SdkBuilder::with_time_tolerance] for more information.
+    </span>metadata_time_tolerance_ms: <span class="prelude-ty">Option</span>&lt;u64&gt;,
 
     <span class="doccomment">/// Cancellation token; once cancelled, all pending requests should be aborted.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) cancel_token: CancellationToken,
 
+    <span class="doccomment">/// Global settings of dapi client
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) dapi_client_settings: RequestSettings,
+
     <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
     </span>dump_dir: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+}
+<span class="kw">impl </span>Clone <span class="kw">for </span>Sdk {
+    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            network: <span class="self">self</span>.network,
+            inner: <span class="self">self</span>.inner.clone(),
+            proofs: <span class="self">self</span>.proofs,
+            internal_cache: Arc::clone(<span class="kw-2">&amp;</span><span class="self">self</span>.internal_cache),
+            context_provider: ArcSwapOption::new(<span class="self">self</span>.context_provider.load_full()),
+            cancel_token: <span class="self">self</span>.cancel_token.clone(),
+            metadata_last_seen_height: Arc::clone(<span class="kw-2">&amp;</span><span class="self">self</span>.metadata_last_seen_height),
+            metadata_height_tolerance: <span class="self">self</span>.metadata_height_tolerance,
+            metadata_time_tolerance_ms: <span class="self">self</span>.metadata_time_tolerance_ms,
+            dapi_client_settings: <span class="self">self</span>.dapi_client_settings,
+            <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
+            </span>dump_dir: <span class="self">self</span>.dump_dir.clone(),
+        }
+    }
 }
 
 <span class="kw">impl </span>Debug <span class="kw">for </span>Sdk {
@@ -1013,7 +1472,7 @@
         </span>dapi: Arc&lt;Mutex&lt;MockDapiClient&gt;&gt;,
         <span class="doccomment">/// Mock SDK implementation processing mock expectations and responses.
         </span>mock: Arc&lt;Mutex&lt;MockDashPlatformSdk&gt;&gt;,
-
+        address_list: AddressList,
         <span class="doccomment">/// Platform version configured for this Sdk
         </span>version: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>PlatformVersion,
     },
@@ -1043,7 +1502,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: O::Request,
         response: O::Response,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;O&gt;, drive_proof_verifier::Error&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;O&gt;, Error&gt;
     <span class="kw">where
         </span>O::Request: Mockable,
     {
@@ -1064,32 +1523,32 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: O::Request,
         response: O::Response,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;O&gt;, ResponseMetadata), drive_proof_verifier::Error&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;O&gt;, ResponseMetadata), Error&gt;
     <span class="kw">where
         </span>O::Request: Mockable,
     {
-        <span class="kw">let </span>provider = <span class="self">self
-            </span>.context_provider
-            .as_ref()
-            .ok_or(drive_proof_verifier::Error::ContextProviderNotSet)<span class="question-mark">?</span>;
+        <span class="kw">let </span>(object, metadata, _proof) = <span class="self">self
+            </span>.parse_proof_with_metadata_and_proof(request, response)
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">match </span><span class="self">self</span>.inner {
-            SdkInstance::Dapi { .. } =&gt; O::maybe_from_proof_with_metadata(
-                request,
-                response,
-                <span class="self">self</span>.network,
-                <span class="self">self</span>.version(),
-                <span class="kw-2">&amp;</span>provider,
-            )
-            .map(|(a, b, <span class="kw">_</span>)| (a, b)),
-            <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
-            </span>SdkInstance::Mock { <span class="kw-2">ref </span>mock, .. } =&gt; {
-                <span class="kw">let </span>guard = mock.lock().<span class="kw">await</span>;
-                guard
-                    .parse_proof_with_metadata(request, response)
-                    .map(|(a, b, <span class="kw">_</span>)| (a, b))
-            }
-        }
+        <span class="prelude-val">Ok</span>((object, metadata))
+    }
+
+    <span class="doccomment">/// Verify response metadata against the current state of the SDK.
+    </span><span class="kw">fn </span>verify_response_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>, metadata: <span class="kw-2">&amp;</span>ResponseMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(height_tolerance) = <span class="self">self</span>.metadata_height_tolerance {
+            verify_metadata_height(
+                metadata,
+                height_tolerance,
+                Arc::clone(<span class="kw-2">&amp;</span>(<span class="self">self</span>.metadata_last_seen_height)),
+            )<span class="question-mark">?</span>;
+        };
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(time_tolerance) = <span class="self">self</span>.metadata_time_tolerance_ms {
+            <span class="kw">let </span>now = chrono::Utc::now().timestamp_millis() <span class="kw">as </span>u64;
+            verify_metadata_time(metadata, now, time_tolerance)<span class="question-mark">?</span>;
+        };
+
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Retrieve object `O` from proof contained in `request` (of type `R`) and `response`.
@@ -1104,16 +1563,15 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: O::Request,
         response: O::Response,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;O&gt;, ResponseMetadata, Proof), drive_proof_verifier::Error&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;O&gt;, ResponseMetadata, Proof), Error&gt;
     <span class="kw">where
         </span>O::Request: Mockable,
     {
         <span class="kw">let </span>provider = <span class="self">self
-            </span>.context_provider
-            .as_ref()
+            </span>.context_provider()
             .ok_or(drive_proof_verifier::Error::ContextProviderNotSet)<span class="question-mark">?</span>;
 
-        <span class="kw">match </span><span class="self">self</span>.inner {
+        <span class="kw">let </span>(object, metadata, proof) = <span class="kw">match </span><span class="self">self</span>.inner {
             SdkInstance::Dapi { .. } =&gt; O::maybe_from_proof_with_metadata(
                 request,
                 response,
@@ -1126,10 +1584,18 @@
                 <span class="kw">let </span>guard = mock.lock().<span class="kw">await</span>;
                 guard.parse_proof_with_metadata(request, response)
             }
-        }
+        }<span class="question-mark">?</span>;
+
+        <span class="self">self</span>.verify_response_metadata(<span class="kw-2">&amp;</span>metadata)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((object, metadata, proof))
     }
-    <span class="kw">pub fn </span>context_provider(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>ContextProvider&gt; {
-        <span class="self">self</span>.context_provider.as_ref().map(Arc::clone)
+
+    <span class="doccomment">/// Return [ContextProvider] used by the SDK.
+    </span><span class="kw">pub fn </span>context_provider(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>ContextProvider&gt; {
+        <span class="kw">let </span>provider_guard = <span class="self">self</span>.context_provider.load();
+        <span class="kw">let </span>provider = provider_guard.as_ref().map(Arc::clone);
+
+        provider
     }
 
     <span class="doccomment">/// Returns a mutable reference to the `MockDashPlatformSdk` instance.
@@ -1243,7 +1709,8 @@
         }
     }
 
-    <span class="doccomment">/// Updates or fetches the nonce for a given identity and contract pair from a cache,
+    <span class="comment">// TODO: Move to a separate struct
+    </span><span class="doccomment">/// Updates or fetches the nonce for a given identity and contract pair from a cache,
     /// querying Platform if the cached value is stale or absent. Optionally
     /// increments the nonce before storing it, based on the provided settings.
     </span><span class="kw">pub async fn </span>get_identity_contract_nonce(
@@ -1359,9 +1826,9 @@
     /// [ContextProvider] is used to access state information, like data contracts and quorum public keys.
     ///
     /// Note that this will overwrite any previous context provider.
-    </span><span class="kw">pub fn </span>set_context_provider&lt;C: ContextProvider + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, context_provider: C) {
+    </span><span class="kw">pub fn </span>set_context_provider&lt;C: ContextProvider + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, context_provider: C) {
         <span class="self">self</span>.context_provider
-            .replace(Arc::new(Box::new(context_provider)));
+            .swap(<span class="prelude-val">Some</span>(Arc::new(Box::new(context_provider))));
     }
 
     <span class="doccomment">/// Returns a future that resolves when the Sdk is cancelled (eg. shutdown was requested).
@@ -1373,6 +1840,114 @@
     </span><span class="kw">pub fn </span>shutdown(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="self">self</span>.cancel_token.cancel();
     }
+
+    <span class="doccomment">/// Return the [DapiClient] address list
+    </span><span class="kw">pub fn </span>address_list(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>AddressList {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.inner {
+            SdkInstance::Dapi { dapi, .. } =&gt; dapi.address_list(),
+            <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
+            </span>SdkInstance::Mock { address_list, .. } =&gt; address_list,
+        }
+    }
+}
+
+<span class="doccomment">/// If received metadata time differs from local time by more than `tolerance`, the remote node is considered stale.
+///
+/// ## Parameters
+///
+/// - `metadata`: Metadata of the received response
+/// - `now_ms`: Current local time in milliseconds
+/// - `tolerance_ms`: Tolerance in milliseconds
+</span><span class="kw">fn </span>verify_metadata_time(
+    metadata: <span class="kw-2">&amp;</span>ResponseMetadata,
+    now_ms: u64,
+    tolerance_ms: u64,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span>metadata_time = metadata.time_ms;
+
+    <span class="comment">// metadata_time - tolerance_ms &lt;= now_ms &lt;= metadata_time + tolerance_ms
+    </span><span class="kw">if </span>now_ms.abs_diff(metadata_time) &gt; tolerance_ms {
+        <span class="macro">tracing::warn!</span>(
+            expected_time = now_ms,
+            received_time = metadata_time,
+            tolerance_ms,
+            <span class="string">"received response with stale time; you should retry with another server"
+        </span>);
+        <span class="kw">return </span><span class="prelude-val">Err</span>(StaleNodeError::Time {
+            expected_timestamp_ms: now_ms,
+            received_timestamp_ms: metadata_time,
+            tolerance_ms,
+        }
+        .into());
+    }
+
+    <span class="macro">tracing::trace!</span>(
+        expected_time = now_ms,
+        received_time = metadata_time,
+        tolerance_ms,
+        <span class="string">"received response with valid time"
+    </span>);
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="doccomment">/// If current metadata height is behind previously seen height by more than `tolerance`, the remote node
+///  is considered stale.
+</span><span class="kw">fn </span>verify_metadata_height(
+    metadata: <span class="kw-2">&amp;</span>ResponseMetadata,
+    tolerance: u64,
+    last_seen_height: Arc&lt;atomic::AtomicU64&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>expected_height = last_seen_height.load(Ordering::Relaxed);
+    <span class="kw">let </span>received_height = metadata.height;
+
+    <span class="comment">// Same height, no need to update.
+    </span><span class="kw">if </span>received_height == expected_height {
+        <span class="macro">tracing::trace!</span>(
+            expected_height,
+            received_height,
+            tolerance,
+            <span class="string">"received message has the same height as previously seen"
+        </span>);
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+    }
+
+    <span class="comment">// If expected_height &lt;= tolerance, then Sdk just started, so we just assume what we got is correct.
+    </span><span class="kw">if </span>expected_height &gt; tolerance &amp;&amp; received_height &lt; expected_height - tolerance {
+        <span class="macro">tracing::warn!</span>(
+            expected_height,
+            received_height,
+            tolerance,
+            <span class="string">"received message with stale height; you should retry with another server"
+        </span>);
+        <span class="kw">return </span><span class="prelude-val">Err</span>(StaleNodeError::Height {
+            expected_height,
+            received_height,
+            tolerance_blocks: tolerance,
+        }
+        .into());
+    }
+
+    <span class="comment">// New height is ahead of the last seen height, so we update the last seen height.
+    </span><span class="macro">tracing::trace!</span>(
+        expected_height = expected_height,
+        received_height = received_height,
+        tolerance,
+        <span class="string">"received message with new height"
+    </span>);
+    <span class="kw">while let </span><span class="prelude-val">Err</span>(stored_height) = last_seen_height.compare_exchange(
+        expected_height,
+        received_height,
+        Ordering::SeqCst,
+        Ordering::Relaxed,
+    ) {
+        <span class="comment">// The value was changed to a higher value by another thread, so we need to retry.
+        </span><span class="kw">if </span>stored_height &gt;= metadata.height {
+            <span class="kw">break</span>;
+        }
+        expected_height = stored_height;
+    }
+
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="attr">#[async_trait::async_trait]
@@ -1381,7 +1956,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: R,
         settings: RequestSettings,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;R::Response, DapiClientError&lt;&lt;R::Client <span class="kw">as </span>TransportClient&gt;::Error&gt;&gt; {
+    ) -&gt; ExecutionResult&lt;R::Response, DapiClientError&gt; {
         <span class="kw">match </span><span class="self">self</span>.inner {
             SdkInstance::Dapi { <span class="kw-2">ref </span>dapi, .. } =&gt; dapi.execute(request, settings).<span class="kw">await</span>,
             <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
@@ -1410,14 +1985,14 @@
     ///
     /// If `None`, a mock client will be created.
     </span>addresses: <span class="prelude-ty">Option</span>&lt;AddressList&gt;,
-    settings: RequestSettings,
+    settings: <span class="prelude-ty">Option</span>&lt;RequestSettings&gt;,
 
     network: Network,
 
     core_ip: String,
     core_port: u16,
     core_user: String,
-    core_password: String,
+    core_password: Zeroizing&lt;String&gt;,
 
     <span class="doccomment">/// If true, request and verify proofs of the responses.
     </span>proofs: bool,
@@ -1436,12 +2011,26 @@
     <span class="doccomment">/// Context provider used by the SDK.
     </span>context_provider: <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>ContextProvider&gt;&gt;,
 
+    <span class="doccomment">/// How many blocks difference is allowed between the last seen metadata height and the height received in response
+    /// metadata.
+    ///
+    /// See [SdkBuilder::with_height_tolerance] for more information.
+    </span>metadata_height_tolerance: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+
+    <span class="doccomment">/// How many milliseconds difference is allowed between the time received in response metadata and current local time.
+    ///
+    /// See [SdkBuilder::with_time_tolerance] for more information.
+    </span>metadata_time_tolerance_ms: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+
     <span class="doccomment">/// directory where dump files will be stored
     </span><span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
     </span>dump_dir: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Cancellation token; once cancelled, all pending requests should be aborted.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) cancel_token: CancellationToken,
+
+    <span class="doccomment">/// CA certificate to use for TLS connections.
+    </span>ca_certificate: <span class="prelude-ty">Option</span>&lt;Certificate&gt;,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>SdkBuilder {
@@ -1449,14 +2038,16 @@
     </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             addresses: <span class="prelude-val">None</span>,
-            settings: RequestSettings::default(),
+            settings: <span class="prelude-val">None</span>,
             network: Network::Dash,
             core_ip: <span class="string">""</span>.to_string(),
             core_port: <span class="number">0</span>,
-            core_password: <span class="string">""</span>.to_string(),
+            core_password: <span class="string">""</span>.to_string().into(),
             core_user: <span class="string">""</span>.to_string(),
 
             proofs: <span class="bool-val">true</span>,
+            metadata_height_tolerance: <span class="prelude-val">Some</span>(<span class="number">1</span>),
+            metadata_time_tolerance_ms: <span class="prelude-val">None</span>,
 
             <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
             </span>data_contract_cache_size: NonZeroUsize::new(DEFAULT_CONTRACT_CACHE_SIZE)
@@ -1470,6 +2061,8 @@
             cancel_token: CancellationToken::new(),
 
             version: PlatformVersion::latest(),
+
+            ca_certificate: <span class="prelude-val">None</span>,
 
             <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
             </span>dump_dir: <span class="prelude-val">None</span>,
@@ -1520,6 +2113,41 @@
         <span class="self">self
     </span>}
 
+    <span class="doccomment">/// Configure CA certificate to use when verifying TLS connections.
+    ///
+    /// Used mainly for testing purposes and local networks.
+    ///
+    /// If not set, uses standard system CA certificates.
+    </span><span class="kw">pub fn </span>with_ca_certificate(<span class="kw-2">mut </span><span class="self">self</span>, pem_certificate: Certificate) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.ca_certificate = <span class="prelude-val">Some</span>(pem_certificate);
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Load CA certificate from file.
+    ///
+    /// This is a convenience method that reads the certificate from a file and sets it using
+    /// [SdkBuilder::with_ca_certificate()].
+    </span><span class="kw">pub fn </span>with_ca_certificate_file(
+        <span class="self">self</span>,
+        certificate_file_path: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;,
+    ) -&gt; std::io::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>pem = std::fs::read(certificate_file_path)<span class="question-mark">?</span>;
+
+        <span class="comment">// parse the certificate and check if it's valid
+        </span><span class="kw">let </span><span class="kw-2">mut </span>verified_pem = std::io::BufReader::new(pem.as_slice());
+        rustls_pemfile::certs(<span class="kw-2">&amp;mut </span>verified_pem)
+            .next()
+            .ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    <span class="string">"No valid certificates found in the file"</span>,
+                )
+            })<span class="question-mark">??</span>;
+
+        <span class="kw">let </span>cert = Certificate::from_pem(pem);
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.with_ca_certificate(cert))
+    }
+
     <span class="doccomment">/// Configure request settings.
     ///
     /// Tune request settings used to connect to the Dash Platform.
@@ -1528,7 +2156,7 @@
     ///
     /// See [`RequestSettings`] for more information.
     </span><span class="kw">pub fn </span>with_settings(<span class="kw-2">mut </span><span class="self">self</span>, settings: RequestSettings) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.settings = settings;
+        <span class="self">self</span>.settings = <span class="prelude-val">Some</span>(settings);
         <span class="self">self
     </span>}
 
@@ -1576,8 +2204,43 @@
         <span class="self">self</span>.core_ip = ip.to_string();
         <span class="self">self</span>.core_port = port;
         <span class="self">self</span>.core_user = user.to_string();
-        <span class="self">self</span>.core_password = password.to_string();
+        <span class="self">self</span>.core_password = Zeroizing::from(password.to_string());
 
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Change number of blocks difference allowed between the last height and the height received in current response.
+    ///
+    /// If height received in response metadata is behind previously seen height by more than this value, the node
+    /// is considered stale, and the request will fail.
+    ///
+    /// If None, the height is not checked.
+    ///
+    /// Note that this feature doesn't guarantee that you are getting latest data, but it significantly decreases
+    /// probability of getting old data.
+    ///
+    /// This is set to `1` by default.
+    </span><span class="kw">pub fn </span>with_height_tolerance(<span class="kw-2">mut </span><span class="self">self</span>, tolerance: <span class="prelude-ty">Option</span>&lt;u64&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.metadata_height_tolerance = tolerance;
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// How many milliseconds difference is allowed between the time received in response and current local time.
+    /// If the received time differs from local time by more than this value, the remote node is stale.
+    ///
+    /// If None, the time is not checked.
+    ///
+    /// This is set to `None` by default.
+    ///
+    /// Note that enabling this check can cause issues if the local time is not synchronized with the network time,
+    /// when the network is stalled or time between blocks increases significantly.
+    ///
+    /// Selecting a safe value for this parameter depends on maximum time between blocks mined on the network.
+    /// For example, if the network is configured to mine a block every maximum 3 minutes, setting this value
+    /// to a bit more than 6 minutes (to account for misbehaving proposers, network delays and local time
+    /// synchronization issues) should be safe.
+    </span><span class="kw">pub fn </span>with_time_tolerance(<span class="kw-2">mut </span><span class="self">self</span>, tolerance_ms: <span class="prelude-ty">Option</span>&lt;u64&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.metadata_time_tolerance_ms = tolerance_ms;
         <span class="self">self
     </span>}
 
@@ -1609,31 +2272,44 @@
     </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Sdk, Error&gt; {
         PlatformVersion::set_current(<span class="self">self</span>.version);
 
+        <span class="kw">let </span>dapi_client_settings = <span class="kw">match </span><span class="self">self</span>.settings {
+            <span class="prelude-val">Some</span>(settings) =&gt; DEFAULT_REQUEST_SETTINGS.override_by(settings),
+            <span class="prelude-val">None </span>=&gt; DEFAULT_REQUEST_SETTINGS,
+        };
+
         <span class="kw">let </span>sdk= <span class="kw">match </span><span class="self">self</span>.addresses {
             <span class="comment">// non-mock mode
             </span><span class="prelude-val">Some</span>(addresses) =&gt; {
-                <span class="kw">let </span>dapi = DapiClient::new(addresses, <span class="self">self</span>.settings);
+                <span class="kw">let </span><span class="kw-2">mut </span>dapi = DapiClient::new(addresses, dapi_client_settings);
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(pem) = <span class="self">self</span>.ca_certificate {
+                    dapi = dapi.with_ca_certificate(pem);
+                }
+
                 <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
                 </span><span class="kw">let </span>dapi = dapi.dump_dir(<span class="self">self</span>.dump_dir.clone());
 
                 <span class="attr">#[allow(unused_mut)] </span><span class="comment">// needs to be mutable for #[cfg(feature = "mocks")]
                 </span><span class="kw">let </span><span class="kw-2">mut </span>sdk= Sdk{
                     network: <span class="self">self</span>.network,
+                    dapi_client_settings,
                     inner:SdkInstance::Dapi { dapi,  version:<span class="self">self</span>.version },
                     proofs:<span class="self">self</span>.proofs,
-                    context_provider: <span class="self">self</span>.context_provider.map(Arc::new),
+                    context_provider: ArcSwapOption::new( <span class="self">self</span>.context_provider.map(Arc::new)),
                     cancel_token: <span class="self">self</span>.cancel_token,
+                    internal_cache: Default::default(),
+                    <span class="comment">// Note: in future, we need to securely initialize initial height during Sdk bootstrap or first request.
+                    </span>metadata_last_seen_height: Arc::new(atomic::AtomicU64::new(<span class="number">0</span>)),
+                    metadata_height_tolerance: <span class="self">self</span>.metadata_height_tolerance,
+                    metadata_time_tolerance_ms: <span class="self">self</span>.metadata_time_tolerance_ms,
                     <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
                     </span>dump_dir: <span class="self">self</span>.dump_dir,
-                    internal_cache: Default::default(),
                 };
                 <span class="comment">// if context provider is not set correctly (is None), it means we need to fallback to core wallet
-                </span><span class="kw">if  </span>sdk.context_provider.is_none() {
+                </span><span class="kw">if  </span>sdk.context_provider.load().is_none() {
                     <span class="attr">#[cfg(feature = <span class="string">"mocks"</span>)]
                     </span><span class="kw">if </span>!<span class="self">self</span>.core_ip.is_empty() {
-                        <span class="macro">tracing::warn!</span>(<span class="string">"ContextProvider not set; mocking with Dash Core. \
-                        Please provide your own ContextProvider with SdkBuilder::with_context_provider()."</span>);
-
+                        <span class="macro">tracing::warn!</span>(
+                            <span class="string">"ContextProvider not set, falling back to a mock one; use SdkBuilder::with_context_provider() to set it up"</span>);
                         <span class="kw">let </span><span class="kw-2">mut </span>context_provider = GrpcContextProvider::new(<span class="prelude-val">None</span>,
                             <span class="kw-2">&amp;</span><span class="self">self</span>.core_ip, <span class="self">self</span>.core_port, <span class="kw-2">&amp;</span><span class="self">self</span>.core_user, <span class="kw-2">&amp;</span><span class="self">self</span>.core_password,
                             <span class="self">self</span>.data_contract_cache_size, <span class="self">self</span>.quorum_public_keys_cache_size)<span class="question-mark">?</span>;
@@ -1644,15 +2320,19 @@
                         <span class="comment">// We have cyclical dependency Sdk &lt;-&gt; GrpcContextProvider, so we just do some
                         // workaround using additional Arc.
                         </span><span class="kw">let </span>context_provider= Arc::new(context_provider);
-                        sdk.context_provider.replace(Arc::new(Box::new(context_provider.clone())));
+                        sdk.context_provider.swap(<span class="prelude-val">Some</span>(Arc::new(Box::new(context_provider.clone()))));
                         context_provider.set_sdk(<span class="prelude-val">Some</span>(sdk.clone()));
                     } <span class="kw">else</span>{
-                        <span class="macro">tracing::warn!</span>(
-                            <span class="string">"Configure ContextProvider with Sdk::with_context_provider(); otherwise Sdk will fail"</span>);
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Config(<span class="macro">concat!</span>(
+                            <span class="string">"context provider is not set, configure it with SdkBuilder::with_context_provider() "</span>,
+                            <span class="string">"or configure Core access with SdkBuilder::with_core() to use mock context provider"</span>)
+                            .to_string()));
                     }
                     <span class="attr">#[cfg(not(feature = <span class="string">"mocks"</span>))]
-                    </span><span class="macro">tracing::warn!</span>(
-                        <span class="string">"Configure ContextProvider with Sdk::with_context_provider(); otherwise Sdk will fail"</span>);
+                    </span><span class="kw">return </span><span class="prelude-val">Err</span>(Error::Config(<span class="macro">concat!</span>(
+                        <span class="string">"context provider is not set, configure it with SdkBuilder::with_context_provider() "</span>,
+                        <span class="string">"or enable `mocks` feature to use mock context provider"</span>)
+                        .to_string()));
                 };
 
                 sdk
@@ -1674,22 +2354,26 @@
                 <span class="kw">let </span>mock_sdk = Arc::new(Mutex::new(mock_sdk));
                 <span class="kw">let </span>sdk= Sdk {
                     network: <span class="self">self</span>.network,
+                    dapi_client_settings,
                     inner:SdkInstance::Mock {
                         mock:mock_sdk.clone(),
                         dapi,
-                        version:<span class="self">self</span>.version,
-
+                        address_list: AddressList::new(),
+                        version: <span class="self">self</span>.version,
                     },
                     dump_dir: <span class="self">self</span>.dump_dir.clone(),
                     proofs:<span class="self">self</span>.proofs,
                     internal_cache: Default::default(),
-                    context_provider:<span class="prelude-val">Some</span>(Arc::new(context_provider)),
+                    context_provider:ArcSwapAny::new( <span class="prelude-val">Some</span>(Arc::new(context_provider))),
                     cancel_token: <span class="self">self</span>.cancel_token,
+                    metadata_last_seen_height: Arc::new(atomic::AtomicU64::new(<span class="number">0</span>)),
+                    metadata_height_tolerance: <span class="self">self</span>.metadata_height_tolerance,
+                    metadata_time_tolerance_ms: <span class="self">self</span>.metadata_time_tolerance_ms,
                 };
                 <span class="kw">let </span><span class="kw-2">mut </span>guard = mock_sdk.try_lock().expect(<span class="string">"mock sdk is in use by another thread and connot be reconfigured"</span>);
                 guard.set_sdk(sdk.clone());
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>dump_dir) = <span class="self">self</span>.dump_dir {
-                    pollster::block_on(   guard.load_expectations(dump_dir))<span class="question-mark">?</span>;
+                    guard.load_expectations_sync(dump_dir)<span class="question-mark">?</span>;
                 };
 
                 sdk
@@ -1729,5 +2413,143 @@
         hex::encode(<span class="kw-2">&amp;</span>proof.block_id_hash),
         proof.quorum_type,
     )
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span>std::sync::Arc;
+
+    <span class="kw">use </span>dapi_grpc::platform::v0::ResponseMetadata;
+    <span class="kw">use </span>test_case::test_matrix;
+
+    <span class="kw">use </span><span class="kw">crate</span>::SdkBuilder;
+
+    <span class="attr">#[test_matrix(<span class="number">97</span>..<span class="number">102</span>, <span class="number">100</span>, <span class="number">2</span>, <span class="bool-val">false</span>; <span class="string">"valid height"</span>)]
+    #[test_case(<span class="number">103</span>, <span class="number">100</span>, <span class="number">2</span>, <span class="bool-val">true</span>; <span class="string">"invalid height"</span>)]
+    </span><span class="kw">fn </span>test_verify_metadata_height(
+        expected_height: u64,
+        received_height: u64,
+        tolerance: u64,
+        expect_err: bool,
+    ) {
+        <span class="kw">let </span>metadata = ResponseMetadata {
+            height: received_height,
+            ..Default::default()
+        };
+
+        <span class="kw">let </span>last_seen_height =
+            std::sync::Arc::new(std::sync::atomic::AtomicU64::new(expected_height));
+
+        <span class="kw">let </span>result =
+            <span class="kw">super</span>::verify_metadata_height(<span class="kw-2">&amp;</span>metadata, tolerance, Arc::clone(<span class="kw-2">&amp;</span>last_seen_height));
+
+        <span class="macro">assert_eq!</span>(result.is_err(), expect_err);
+        <span class="kw">if </span>result.is_ok() {
+            <span class="macro">assert_eq!</span>(
+                last_seen_height.load(std::sync::atomic::Ordering::Relaxed),
+                received_height,
+                <span class="string">"previous height should be updated"
+            </span>);
+        }
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>cloned_sdk_verify_metadata_height() {
+        <span class="kw">let </span>sdk1 = SdkBuilder::new_mock()
+            .build()
+            .expect(<span class="string">"mock Sdk should be created"</span>);
+
+        <span class="comment">// First message verified, height 1.
+        </span><span class="kw">let </span>metadata = ResponseMetadata {
+            height: <span class="number">1</span>,
+            ..Default::default()
+        };
+
+        sdk1.verify_response_metadata(<span class="kw-2">&amp;</span>metadata)
+            .expect(<span class="string">"metadata should be valid"</span>);
+
+        <span class="macro">assert_eq!</span>(
+            sdk1.metadata_last_seen_height
+                .load(std::sync::atomic::Ordering::Relaxed),
+            metadata.height,
+            <span class="string">"initial height"
+        </span>);
+
+        <span class="comment">// now, we clone sdk and do two requests.
+        </span><span class="kw">let </span>sdk2 = sdk1.clone();
+        <span class="kw">let </span>sdk3 = sdk1.clone();
+
+        <span class="comment">// Second message verified, height 2.
+        </span><span class="kw">let </span>metadata = ResponseMetadata {
+            height: <span class="number">2</span>,
+            ..Default::default()
+        };
+        sdk2.verify_response_metadata(<span class="kw-2">&amp;</span>metadata)
+            .expect(<span class="string">"metadata should be valid"</span>);
+
+        <span class="macro">assert_eq!</span>(
+            sdk1.metadata_last_seen_height
+                .load(std::sync::atomic::Ordering::Relaxed),
+            metadata.height,
+            <span class="string">"first sdk should see height from second sdk"
+        </span>);
+        <span class="macro">assert_eq!</span>(
+            sdk3.metadata_last_seen_height
+                .load(std::sync::atomic::Ordering::Relaxed),
+            metadata.height,
+            <span class="string">"third sdk should see height from second sdk"
+        </span>);
+
+        <span class="comment">// Third message verified, height 3.
+        </span><span class="kw">let </span>metadata = ResponseMetadata {
+            height: <span class="number">3</span>,
+            ..Default::default()
+        };
+        sdk3.verify_response_metadata(<span class="kw-2">&amp;</span>metadata)
+            .expect(<span class="string">"metadata should be valid"</span>);
+
+        <span class="macro">assert_eq!</span>(
+            sdk1.metadata_last_seen_height
+                .load(std::sync::atomic::Ordering::Relaxed),
+            metadata.height,
+            <span class="string">"first sdk should see height from third sdk"
+        </span>);
+
+        <span class="macro">assert_eq!</span>(
+            sdk2.metadata_last_seen_height
+                .load(std::sync::atomic::Ordering::Relaxed),
+            metadata.height,
+            <span class="string">"second sdk should see height from third sdk"
+        </span>);
+
+        <span class="comment">// Now, using sdk1 for height 1 again should fail, as we are already at 3, with default tolerance 1.
+        </span><span class="kw">let </span>metadata = ResponseMetadata {
+            height: <span class="number">1</span>,
+            ..Default::default()
+        };
+
+        sdk1.verify_response_metadata(<span class="kw-2">&amp;</span>metadata)
+            .expect_err(<span class="string">"metadata should be invalid"</span>);
+    }
+
+    <span class="attr">#[test_matrix([<span class="number">90</span>,<span class="number">91</span>,<span class="number">100</span>,<span class="number">109</span>,<span class="number">110</span>]</span>, <span class="number">100</span>, <span class="number">10</span>, <span class="bool-val">false</span>; <span class="string">"valid time"</span>)]
+    <span class="attr">#[test_matrix([<span class="number">0</span>,<span class="number">89</span>,<span class="number">111</span>]</span>, <span class="number">100</span>, <span class="number">10</span>, <span class="bool-val">true</span>; <span class="string">"invalid time"</span>)]
+    <span class="attr">#[test_matrix([<span class="number">0</span>,<span class="number">100</span>]</span>, [<span class="number">0</span>,<span class="number">100</span>], <span class="number">100</span>, <span class="bool-val">false</span>; <span class="string">"zero time"</span>)]
+    <span class="attr">#[test_matrix([<span class="number">99</span>,<span class="number">101</span>]</span>, <span class="number">100</span>, <span class="number">0</span>, <span class="bool-val">true</span>; <span class="string">"zero tolerance"</span>)]
+    <span class="kw">fn </span>test_verify_metadata_time(
+        received_time: u64,
+        now_time: u64,
+        tolerance: u64,
+        expect_err: bool,
+    ) {
+        <span class="kw">let </span>metadata = ResponseMetadata {
+            time_ms: received_time,
+            ..Default::default()
+        };
+
+        <span class="kw">let </span>result = <span class="kw">super</span>::verify_metadata_time(<span class="kw-2">&amp;</span>metadata, now_time, tolerance);
+
+        <span class="macro">assert_eq!</span>(result.is_err(), expect_err);
+    }
 }
 </code></pre></div></section></main></body></html>

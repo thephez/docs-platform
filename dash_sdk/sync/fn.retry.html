@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Retry the provided closure."><title>retry in dash_sdk::sync - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../dash_sdk/index.html">dash_<wbr>sdk</a><span class="version">1.8.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">retry</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#parameters" title="Parameters">Parameters</a></li><li><a href="#returns" title="Returns">Returns</a></li><li><a href="#example" title="Example">Example</a></li><li><a href="#troubleshooting" title="Troubleshooting">Troubleshooting</a></li><li><a href="#see-also" title="See also">See also</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In dash_<wbr>sdk::<wbr>sync</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">dash_sdk</a>::<wbr><a href="index.html">sync</a></span><h1>Function <span class="fn">retry</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/dash_sdk/sync.rs.html#162-241">source</a> </span></div><pre class="rust item-decl"><code>pub async fn retry&lt;Fut, FutureFactoryFn, R, E&gt;(
+    address_list: &amp;<a class="struct" href="../sdk/struct.AddressList.html" title="struct dash_sdk::sdk::AddressList">AddressList</a>,
+    settings: <a class="struct" href="../struct.RequestSettings.html" title="struct dash_sdk::RequestSettings">RequestSettings</a>,
+    future_factory_fn: FutureFactoryFn,
+) -&gt; ExecutionResult&lt;R, E&gt;<div class="where">where
+    Fut: <a class="trait" href="https://doc.rust-lang.org/1.83.0/core/future/future/trait.Future.html" title="trait core::future::future::Future">Future</a>&lt;Output = ExecutionResult&lt;R, E&gt;&gt;,
+    FutureFactoryFn: <a class="trait" href="https://doc.rust-lang.org/1.83.0/core/ops/function/trait.FnMut.html" title="trait core::ops::function::FnMut">FnMut</a>(<a class="struct" href="../struct.RequestSettings.html" title="struct dash_sdk::RequestSettings">RequestSettings</a>) -&gt; Fut,
+    E: CanRetry + <a class="trait" href="https://doc.rust-lang.org/1.83.0/core/fmt/trait.Display.html" title="trait core::fmt::Display">Display</a> + <a class="trait" href="https://doc.rust-lang.org/1.83.0/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a>,</div></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Retry the provided closure.</p>
+<p>This function is used to retry async code. It takes into account number of retries already executed by lower
+layers and stops retrying once the maximum number of retries is reached.</p>
+<p>The <code>settings</code> should contain maximum number of retries that should be executed. In case of failure, total number of
+requests sent is expected to be at least <code>settings.retries + 1</code> (initial request + <code>retries</code> configured in settings).
+The actual number of requests sent can be higher, as the lower layers can retry the request multiple times.</p>
+<p><code>future_factory_fn</code> should be a <code>FnMut()</code> closure that returns a future that should be retried.
+It takes <a href="../struct.RequestSettings.html" title="struct dash_sdk::RequestSettings"><code>RequestSettings</code></a> as an argument and returns [<code>ExecutionResult</code>].
+Retry mechanism can change <a href="../struct.RequestSettings.html" title="struct dash_sdk::RequestSettings"><code>RequestSettings</code></a> between invocations of the <code>future_factory_fn</code> closure
+to limit the number of retries for lower layers.</p>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li><code>address_list</code> - list of addresses to be used for the requests.</li>
+<li><code>settings</code> - global settings with any request-specific settings overrides applied.</li>
+<li><code>future_factory_fn</code> - closure that returns a future that should be retried. It should take <a href="../struct.RequestSettings.html" title="struct dash_sdk::RequestSettings"><code>RequestSettings</code></a> as
+an argument and return [<code>ExecutionResult</code>].</li>
+</ul>
+<h3 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h3>
+<p>Returns future that resolves to [<code>ExecutionResult</code>].</p>
+<h3 id="example"><a class="doc-anchor" href="#example">§</a>Example</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">async fn </span>retry_test_function(settings: RequestSettings) -&gt; ExecutionResult&lt;(), dash_sdk::Error&gt; {
+<span class="comment">// do something
+    </span><span class="prelude-val">Err</span>(ExecutionError {
+        inner: Error::StaleNode(StaleNodeError::Height{
+            expected_height: <span class="number">10</span>,
+            received_height: <span class="number">3</span>,
+            tolerance_blocks: <span class="number">1</span>,
+        }),
+       retries: <span class="number">0</span>,
+      address: <span class="prelude-val">None</span>,
+   })
+}
+<span class="attr">#[tokio::main]
+    </span><span class="kw">async fn </span>main() {
+    <span class="kw">let </span>address_list = rs_dapi_client::AddressList::default();
+    <span class="kw">let </span>global_settings = RequestSettings::default();
+    dash_sdk::sync::retry(<span class="kw-2">&amp;</span>address_list, global_settings, retry_test_function).<span class="kw">await</span>.expect_err(<span class="string">"should fail"</span>);
+}</code></pre></div>
+<h3 id="troubleshooting"><a class="doc-anchor" href="#troubleshooting">§</a>Troubleshooting</h3>
+<p>Compiler error: <code>no method named retry found for closure</code>:</p>
+<ul>
+<li>ensure returned value is [<code>ExecutionResult</code>].,</li>
+<li>consider adding <code>.await</code> at the end of the closure.</li>
+</ul>
+<h3 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h3>
+<ul>
+<li>[<code>::backon</code>] crate that is used by this function.</li>
+</ul>
+</div></details></section></div></main></body></html>

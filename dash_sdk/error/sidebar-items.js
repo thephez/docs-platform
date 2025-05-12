@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ContextProviderError","Error"]};
+window.SIDEBAR_ITEMS = {"enum":["ContextProviderError","Error","StaleNodeError"]};

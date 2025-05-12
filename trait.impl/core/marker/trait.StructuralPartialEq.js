@@ -1,3 +1,9 @@
-(function() {var implementors = {
-"dash_sdk":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.80.1/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"struct\" href=\"dash_sdk/platform/types/identity/struct.PublicKeyHash.html\" title=\"struct dash_sdk::platform::types::identity::PublicKeyHash\">PublicKeyHash</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {
+    var implementors = Object.fromEntries([["dash_sdk",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.83.0/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"struct\" href=\"dash_sdk/platform/struct.DocumentQuery.html\" title=\"struct dash_sdk::platform::DocumentQuery\">DocumentQuery</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.83.0/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"struct\" href=\"dash_sdk/platform/types/identity/struct.PublicKeyHash.html\" title=\"struct dash_sdk::platform::types::identity::PublicKeyHash\">PublicKeyHash</a>"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[712]}

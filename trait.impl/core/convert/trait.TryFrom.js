@@ -1,3 +1,9 @@
-(function() {var implementors = {
-"dash_sdk":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.80.1/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;<a class=\"struct\" href=\"dash_sdk/platform/struct.DocumentQuery.html\" title=\"struct dash_sdk::platform::DocumentQuery\">DocumentQuery</a>&gt; for <a class=\"struct\" href=\"dash_sdk/platform/proto/struct.GetDocumentsRequest.html\" title=\"struct dash_sdk::platform::proto::GetDocumentsRequest\">GetDocumentsRequest</a>"],["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.80.1/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;&amp;'a <a class=\"struct\" href=\"dash_sdk/platform/struct.DocumentQuery.html\" title=\"struct dash_sdk::platform::DocumentQuery\">DocumentQuery</a>&gt; for <a class=\"struct\" href=\"dash_sdk/platform/struct.DriveDocumentQuery.html\" title=\"struct dash_sdk::platform::DriveDocumentQuery\">DriveDocumentQuery</a>&lt;'a&gt;"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {
+    var implementors = Object.fromEntries([["dash_sdk",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.83.0/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;<a class=\"struct\" href=\"dash_sdk/platform/struct.DocumentQuery.html\" title=\"struct dash_sdk::platform::DocumentQuery\">DocumentQuery</a>&gt; for <a class=\"struct\" href=\"dash_sdk/platform/proto/struct.GetDocumentsRequest.html\" title=\"struct dash_sdk::platform::proto::GetDocumentsRequest\">GetDocumentsRequest</a>"],["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.83.0/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;&amp;'a <a class=\"struct\" href=\"dash_sdk/platform/struct.DocumentQuery.html\" title=\"struct dash_sdk::platform::DocumentQuery\">DocumentQuery</a>&gt; for <a class=\"struct\" href=\"dash_sdk/platform/struct.DriveDocumentQuery.html\" title=\"struct dash_sdk::platform::DriveDocumentQuery\">DriveDocumentQuery</a>&lt;'a&gt;"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[984]}

@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/transition/withdraw_from_identity.rs`."><title>withdraw_from_identity.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/transition/withdraw_from_identity.rs`."><title>withdraw_from_identity.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">dash_sdk/platform/transition/</div>withdraw_from_identity.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -73,67 +74,35 @@
 <a href="#73" id="73">73</a>
 <a href="#74" id="74">74</a>
 <a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>dapi_grpc::platform::VersionedGrpcResponse;
-<span class="kw">use </span>dpp::dashcore::Address;
+<a href="#76" id="76">76</a></pre></div><pre class="rust"><code><span class="kw">use </span>dpp::dashcore::Address;
 <span class="kw">use </span>dpp::identity::accessors::IdentityGettersV0;
 
 <span class="kw">use </span>dpp::identity::core_script::CoreScript;
 <span class="kw">use </span>dpp::identity::signer::Signer;
-<span class="kw">use </span>dpp::identity::Identity;
-<span class="kw">use </span>dpp::prelude::UserFeeIncrease;
+<span class="kw">use </span>dpp::identity::{Identity, IdentityPublicKey};
 
-<span class="kw">use </span>dpp::state_transition::identity_credit_withdrawal_transition::IdentityCreditWithdrawalTransition;
-<span class="kw">use </span>drive_proof_verifier::error::ContextProviderError;
-<span class="kw">use </span>drive_proof_verifier::DataContractProvider;
-
-<span class="kw">use </span><span class="kw">crate</span>::platform::block_info_from_metadata::block_info_from_metadata;
-<span class="kw">use </span><span class="kw">crate</span>::platform::transition::broadcast_request::BroadcastRequestForStateTransition;
+<span class="kw">use </span><span class="kw">crate</span>::platform::transition::broadcast::BroadcastStateTransition;
 <span class="kw">use </span><span class="kw">crate</span>::platform::transition::put_settings::PutSettings;
 <span class="kw">use crate</span>::{Error, Sdk};
-<span class="kw">use </span>dpp::state_transition::identity_credit_withdrawal_transition::methods::IdentityCreditWithdrawalTransitionMethodsV0;
+<span class="kw">use </span>dpp::state_transition::identity_credit_withdrawal_transition::methods::{
+    IdentityCreditWithdrawalTransitionMethodsV0, PreferredKeyPurposeForSigningWithdrawal,
+};
+<span class="kw">use </span>dpp::state_transition::identity_credit_withdrawal_transition::IdentityCreditWithdrawalTransition;
 <span class="kw">use </span>dpp::state_transition::proof_result::StateTransitionProofResult;
 <span class="kw">use </span>dpp::withdrawal::Pooling;
-<span class="kw">use </span>drive::drive::Drive;
-<span class="kw">use </span>rs_dapi_client::{DapiRequest, RequestSettings};
 
 <span class="attr">#[async_trait::async_trait]
 </span><span class="kw">pub trait </span>WithdrawFromIdentity {
     <span class="doccomment">/// Function to withdraw credits from an identity. Returns the final identity balance.
+    /// If signing_withdrawal_key_to_use is not set, we will try to use one in the signer that is
+    /// available for withdrawal
     </span><span class="kw">async fn </span>withdraw&lt;S: Signer + Send&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         sdk: <span class="kw-2">&amp;</span>Sdk,
-        address: Address,
+        address: <span class="prelude-ty">Option</span>&lt;Address&gt;,
         amount: u64,
         core_fee_per_byte: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-        user_fee_increase: <span class="prelude-ty">Option</span>&lt;UserFeeIncrease&gt;,
+        signing_withdrawal_key_to_use: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>IdentityPublicKey&gt;,
         signer: S,
         settings: <span class="prelude-ty">Option</span>&lt;PutSettings&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;u64, Error&gt;;
@@ -144,60 +113,37 @@
     <span class="kw">async fn </span>withdraw&lt;S: Signer + Send&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         sdk: <span class="kw-2">&amp;</span>Sdk,
-        address: Address,
+        address: <span class="prelude-ty">Option</span>&lt;Address&gt;,
         amount: u64,
         core_fee_per_byte: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-        user_fee_increase: <span class="prelude-ty">Option</span>&lt;UserFeeIncrease&gt;,
+        signing_withdrawal_key_to_use: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>IdentityPublicKey&gt;,
         signer: S,
         settings: <span class="prelude-ty">Option</span>&lt;PutSettings&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;u64, Error&gt; {
         <span class="kw">let </span>new_identity_nonce = sdk.get_identity_nonce(<span class="self">self</span>.id(), <span class="bool-val">true</span>, settings).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>script = address.map(|address| CoreScript::new(address.script_pubkey()));
+        <span class="kw">let </span>user_fee_increase = settings.and_then(|settings| settings.user_fee_increase);
         <span class="kw">let </span>state_transition = IdentityCreditWithdrawalTransition::try_from_identity(
             <span class="self">self</span>,
-            <span class="prelude-val">None</span>,
-            CoreScript::new(address.script_pubkey()),
+            script,
             amount,
             Pooling::Never,
             core_fee_per_byte.unwrap_or(<span class="number">1</span>),
             user_fee_increase.unwrap_or_default(),
             signer,
+            signing_withdrawal_key_to_use,
+            PreferredKeyPurposeForSigningWithdrawal::TransferPreferred,
             new_identity_nonce,
             sdk.version(),
             <span class="prelude-val">None</span>,
         )<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>request = state_transition.broadcast_request_for_state_transition()<span class="question-mark">?</span>;
-
-        request
-            .clone()
-            .execute(sdk, settings.unwrap_or_default().request_settings)
-            .<span class="kw">await</span><span class="question-mark">?</span>;
-
-        <span class="kw">let </span>request = state_transition.wait_for_state_transition_result_request()<span class="question-mark">?</span>;
-
-        <span class="kw">let </span>response = request.execute(sdk, RequestSettings::default()).<span class="kw">await</span><span class="question-mark">?</span>;
-
-        <span class="kw">let </span>block_info = block_info_from_metadata(response.metadata()<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-
-        <span class="kw">let </span>proof = response.proof_owned()<span class="question-mark">?</span>;
-        <span class="kw">let </span>context_provider =
-            sdk.context_provider()
-                .ok_or(Error::from(ContextProviderError::Config(
-                    <span class="string">"Context provider not initialized"</span>.to_string(),
-                )))<span class="question-mark">?</span>;
-
-        <span class="kw">let </span>(<span class="kw">_</span>, result) = Drive::verify_state_transition_was_executed_with_proof(
-            <span class="kw-2">&amp;</span>state_transition,
-            <span class="kw-2">&amp;</span>block_info,
-            proof.grovedb_proof.as_slice(),
-            <span class="kw-2">&amp;</span>context_provider.as_contract_lookup_fn(),
-            sdk.version(),
-        )<span class="question-mark">?</span>;
+        <span class="kw">let </span>result = state_transition.broadcast_and_wait(sdk, settings).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">match </span>result {
             StateTransitionProofResult::VerifiedPartialIdentity(identity) =&gt; {
                 identity.balance.ok_or(Error::DapiClientError(
-                    <span class="string">"expected an identity balance"</span>.to_string(),
+                    <span class="string">"expected an identity balance after withdrawal"</span>.to_string(),
                 ))
             }
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(Error::DapiClientError(<span class="string">"proved a non identity"</span>.to_string())),

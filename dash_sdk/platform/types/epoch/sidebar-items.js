@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["EpochQuery"]};
+window.SIDEBAR_ITEMS = {"struct":["EpochQuery"],"type":["Epoch"]};

@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/fetch_many.rs`."><title>fetch_many.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/fetch_many.rs`."><title>fetch_many.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">dash_sdk/platform/</div>fetch_many.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -373,24 +374,195 @@
 <a href="#373" id="373">373</a>
 <a href="#374" id="374">374</a>
 <a href="#375" id="375">375</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! Fetch multiple objects from Platform.
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
+<a href="#485" id="485">485</a>
+<a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
+<a href="#490" id="490">490</a>
+<a href="#491" id="491">491</a>
+<a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
+<a href="#494" id="494">494</a>
+<a href="#495" id="495">495</a>
+<a href="#496" id="496">496</a>
+<a href="#497" id="497">497</a>
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
+<a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a></pre></div><pre class="rust"><code><span class="doccomment">//! Fetch multiple objects from Platform.
 //!
 //! This module provides a trait to fetch multiple objects from Platform.
 //!
 //! ## Traits
 //! - `[FetchMany]`: An async trait that fetches multiple items of a specific type from Platform.
-</span><span class="kw">use crate</span>::{
+
+</span><span class="kw">use </span><span class="kw">super</span>::LimitQuery;
+<span class="kw">use crate</span>::{
     error::Error,
     mock::MockResponse,
     platform::{document_query::DocumentQuery, query::Query},
+    sync::retry,
     Sdk,
 };
 <span class="kw">use </span>dapi_grpc::platform::v0::{
     GetContestedResourceIdentityVotesRequest, GetContestedResourceVoteStateRequest,
     GetContestedResourceVotersForIdentityRequest, GetContestedResourcesRequest,
-    GetDataContractsRequest, GetDocumentsResponse, GetEpochsInfoRequest, GetIdentityKeysRequest,
-    GetProtocolVersionUpgradeStateRequest, GetProtocolVersionUpgradeVoteStatusRequest,
-    GetVotePollsByEndDateRequest,
+    GetDataContractsRequest, GetEpochsInfoRequest, GetEvonodesProposedEpochBlocksByIdsRequest,
+    GetEvonodesProposedEpochBlocksByRangeRequest, GetIdentitiesBalancesRequest,
+    GetIdentityKeysRequest, GetPathElementsRequest, GetProtocolVersionUpgradeStateRequest,
+    GetProtocolVersionUpgradeVoteStatusRequest, GetVotePollsByEndDateRequest, Proof,
+    ResponseMetadata,
 };
 <span class="kw">use </span>dashcore_rpc::dashcore::ProTxHash;
 <span class="kw">use </span>dpp::data_contract::DataContract;
@@ -403,16 +575,19 @@
     block::extended_epoch_info::ExtendedEpochInfo, voting::votes::resource_vote::ResourceVote,
 };
 <span class="kw">use </span>dpp::{document::Document, voting::contender_structs::ContenderWithSerializedDocument};
+<span class="kw">use </span>drive::grovedb::query_result_type::Key;
+<span class="kw">use </span>drive::grovedb::Element;
 <span class="kw">use </span>drive_proof_verifier::types::{
-    Contenders, ContestedResource, ContestedResources, DataContracts, ExtendedEpochInfos,
-    IdentityPublicKeys, MasternodeProtocolVote, MasternodeProtocolVotes, ProtocolVersionUpgrades,
-    ResourceVotesByIdentity, VotePollsGroupedByTimestamp, Voter, Voters,
+    Contenders, ContestedResource, ContestedResources, DataContracts, Elements, ExtendedEpochInfos,
+    IdentityBalances, IdentityPublicKeys, MasternodeProtocolVote, MasternodeProtocolVotes,
+    ProposerBlockCountById, ProposerBlockCountByRange, ProposerBlockCounts,
+    ProtocolVersionUpgrades, ResourceVotesByIdentity, VotePollsGroupedByTimestamp, Voter, Voters,
 };
 <span class="kw">use </span>drive_proof_verifier::{types::Documents, FromProof};
-<span class="kw">use </span>rs_dapi_client::{transport::TransportRequest, DapiRequest, RequestSettings};
-<span class="kw">use </span>std::collections::BTreeMap;
-
-<span class="kw">use </span><span class="kw">super</span>::LimitQuery;
+<span class="kw">use </span>rs_dapi_client::{
+    transport::TransportRequest, DapiRequest, ExecutionError, ExecutionResponse, InnerInto,
+    IntoInner, RequestSettings,
+};
 
 <span class="doccomment">/// Fetch multiple objects from Platform.
 ///
@@ -513,22 +688,113 @@
         sdk: <span class="kw-2">&amp;</span>Sdk,
         query: Q,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;O, Error&gt; {
-        <span class="kw">let </span>request = query.query(sdk.prove())<span class="question-mark">?</span>;
+        <span class="self">Self</span>::fetch_many_with_metadata_and_proof(sdk, query, <span class="prelude-val">None</span>)
+            .<span class="kw">await
+            </span>.map(|(objects, <span class="kw">_</span>, <span class="kw">_</span>)| objects)
+    }
 
-        <span class="kw">let </span>response = request
-            .clone()
-            .execute(sdk, RequestSettings::default())
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="doccomment">/// Fetch multiple objects from Platform with metadata.
+    ///
+    /// Fetch objects from Platform that satisfy the provided [Query].
+    /// This method allows you to retrieve the metadata associated with the response.
+    ///
+    /// ## Parameters
+    ///
+    /// - `sdk`: An instance of [Sdk].
+    /// - `query`: A query parameter implementing [`crate::platform::query::Query`] to specify the data to be fetched.
+    /// - `settings`: An optional `RequestSettings` to give greater flexibility on the request.
+    ///
+    /// ## Returns
+    ///
+    /// Returns a `Result` containing either:
+    ///
+    /// * A tuple `(O, ResponseMetadata)` where `O` is the collection of fetched objects, and `ResponseMetadata` contains metadata about the response.
+    /// * [`Error`](crate::error::Error) when an error occurs.
+    ///
+    /// ## Error Handling
+    ///
+    /// Any errors encountered during the execution are returned as [Error] instances.
+    </span><span class="kw">async fn </span>fetch_many_with_metadata&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request&gt;&gt;(
+        sdk: <span class="kw-2">&amp;</span>Sdk,
+        query: Q,
+        settings: <span class="prelude-ty">Option</span>&lt;RequestSettings&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(O, ResponseMetadata), Error&gt; {
+        <span class="self">Self</span>::fetch_many_with_metadata_and_proof(sdk, query, settings)
+            .<span class="kw">await
+            </span>.map(|(objects, metadata, <span class="kw">_</span>)| (objects, metadata))
+    }
 
-        <span class="kw">let </span>object_type = std::any::type_name::&lt;<span class="self">Self</span>&gt;().to_string();
-        <span class="macro">tracing::trace!</span>(request = <span class="question-mark">?</span>request, response = <span class="question-mark">?</span>response, object_type, <span class="string">"fetched object from platform"</span>);
+    <span class="doccomment">/// Fetch multiple objects from Platform with metadata and underlying proof.
+    ///
+    /// Fetch objects from Platform that satisfy the provided [Query].
+    /// This method allows you to retrieve the metadata and the underlying proof associated with the response.
+    ///
+    /// ## Parameters
+    ///
+    /// - `sdk`: An instance of [Sdk].
+    /// - `query`: A query parameter implementing [`crate::platform::query::Query`] to specify the data to be fetched.
+    /// - `settings`: An optional `RequestSettings` to give greater flexibility on the request.
+    ///
+    /// ## Returns
+    ///
+    /// Returns a `Result` containing either:
+    ///
+    /// * A tuple `(O, ResponseMetadata, Proof)` where `O` is the collection of fetched objects, `ResponseMetadata` contains metadata about the response, and `Proof` is the underlying proof.
+    /// * [`Error`](crate::error::Error) when an error occurs.
+    ///
+    /// ## Error Handling
+    ///
+    /// Any errors encountered during the execution are returned as [Error] instances.
+    </span><span class="kw">async fn </span>fetch_many_with_metadata_and_proof&lt;Q: Query&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request&gt;&gt;(
+        sdk: <span class="kw-2">&amp;</span>Sdk,
+        query: Q,
+        settings: <span class="prelude-ty">Option</span>&lt;RequestSettings&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(O, ResponseMetadata, Proof), Error&gt; {
+        <span class="kw">let </span>request = <span class="kw-2">&amp;</span>query.query(sdk.prove())<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>object: O = sdk
-            .parse_proof::&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request, O&gt;(request, response)
-            .<span class="kw">await</span><span class="question-mark">?
-            </span>.unwrap_or_default();
+        <span class="kw">let </span>fut = |settings: RequestSettings| <span class="kw">async move </span>{
+            <span class="kw">let </span>ExecutionResponse {
+                address,
+                retries,
+                inner: response,
+            } = request
+                .clone()
+                .execute(sdk, settings)
+                .<span class="kw">await
+                </span>.map_err(|e| e.inner_into())<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(object)
+            <span class="kw">let </span>object_type = std::any::type_name::&lt;<span class="self">Self</span>&gt;().to_string();
+            <span class="macro">tracing::trace!</span>(
+                request = <span class="question-mark">?</span>request,
+                response = <span class="question-mark">?</span>response,
+                <span class="question-mark">?</span>address,
+                retries,
+                object_type,
+                <span class="string">"fetched objects from platform"
+            </span>);
+
+            sdk.parse_proof_with_metadata_and_proof::&lt;&lt;<span class="self">Self </span><span class="kw">as </span>FetchMany&lt;K, O&gt;&gt;::Request, O&gt;(
+                request.clone(),
+                response,
+            )
+            .<span class="kw">await
+            </span>.map_err(|e| ExecutionError {
+                inner: e,
+                address: <span class="prelude-val">Some</span>(address.clone()),
+                retries,
+            })
+            .map(|(o, metadata, proof)| ExecutionResponse {
+                inner: (o.unwrap_or_default(), metadata, proof),
+                retries,
+                address: address.clone(),
+            })
+        };
+
+        <span class="kw">let </span>settings = sdk
+            .dapi_client_settings
+            .override_by(settings.unwrap_or_default());
+
+        retry(sdk.address_list(), settings, fut).<span class="kw">await</span>.into_inner()
     }
 
     <span class="doccomment">/// Fetch multiple objects from Platform by their identifiers.
@@ -557,7 +823,7 @@
 
     <span class="doccomment">/// Fetch multiple objects from Platform with limit.
     ///
-    /// Fetches up to `limit` objects matching the `query`.    
+    /// Fetches up to `limit` objects matching the `query`.
     /// See [FetchMany] and [FetchMany::fetch_many()] for more detailed documentation.
     ///
     /// ## Parameters
@@ -601,21 +867,38 @@
         sdk: <span class="kw-2">&amp;</span>Sdk,
         query: Q,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Documents, Error&gt; {
-        <span class="kw">let </span>document_query: DocumentQuery = query.query(sdk.prove())<span class="question-mark">?</span>;
+        <span class="kw">let </span>document_query: <span class="kw-2">&amp;</span>DocumentQuery = <span class="kw-2">&amp;</span>query.query(sdk.prove())<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>request = document_query.clone();
-        <span class="kw">let </span>response: GetDocumentsResponse =
-            request.execute(sdk, RequestSettings::default()).<span class="kw">await</span><span class="question-mark">?</span>;
+        retry(sdk.address_list(), sdk.dapi_client_settings, |settings| <span class="kw">async move </span>{
+            <span class="kw">let </span>request = document_query.clone();
 
-        <span class="macro">tracing::trace!</span>(request=<span class="question-mark">?</span>document_query, response=<span class="question-mark">?</span>response, <span class="string">"fetch multiple documents"</span>);
+            <span class="kw">let </span>ExecutionResponse {
+                address,
+                retries,
+                inner: response
+            } = request.execute(sdk, settings).<span class="kw">await</span>.map_err(|e| e.inner_into())<span class="question-mark">?</span>;
 
-        <span class="comment">// let object: Option&lt;BTreeMap&lt;K,Document&gt;&gt; = sdk
-        </span><span class="kw">let </span>documents: BTreeMap&lt;Identifier, <span class="prelude-ty">Option</span>&lt;Document&gt;&gt; = sdk
-            .parse_proof::&lt;DocumentQuery, Documents&gt;(document_query, response)
-            .<span class="kw">await</span><span class="question-mark">?
-            </span>.unwrap_or_default();
+            <span class="macro">tracing::trace!</span>(request=<span class="question-mark">?</span>document_query, response=<span class="question-mark">?</span>response, <span class="question-mark">?</span>address, retries, <span class="string">"fetch multiple documents"</span>);
 
-        <span class="prelude-val">Ok</span>(documents)
+            <span class="comment">// let object: Option&lt;BTreeMap&lt;K,Document&gt;&gt; = sdk
+            </span><span class="kw">let </span>documents = sdk
+                .parse_proof::&lt;DocumentQuery, Documents&gt;(document_query.clone(), response)
+                .<span class="kw">await
+                </span>.map_err(|e| ExecutionError {
+                    inner: e,
+                    retries,
+                    address: <span class="prelude-val">Some</span>(address.clone()),
+                })<span class="question-mark">?
+                </span>.unwrap_or_default();
+
+            <span class="prelude-val">Ok</span>(ExecutionResponse {
+                inner: documents,
+                retries,
+                address,
+            })
+        })
+        .<span class="kw">await
+        </span>.into_inner()
     }
 }
 
@@ -639,9 +922,9 @@
 ///
 /// * [EpochQuery](super::types::epoch::EpochQuery) - query that specifies epoch matching criteria
 /// * [EpochIndex](dpp::block::epoch::EpochIndex) - epoch index of first object to find; will return up to
-/// [DEFAULT_EPOCH_QUERY_LIMIT](super::query::DEFAULT_EPOCH_QUERY_LIMIT) objects starting from this index
+///   [DEFAULT_EPOCH_QUERY_LIMIT](super::query::DEFAULT_EPOCH_QUERY_LIMIT) objects starting from this index
 /// * [`LimitQuery&lt;EpochQuery&gt;`](super::LimitQuery), [`LimitQuery&lt;EpochIndex&gt;`](super::LimitQuery) - limit query
-/// that allows to specify maximum number of objects to fetch; see also [FetchMany::fetch_many_with_limit()].
+///   that allows to specify maximum number of objects to fetch; see also [FetchMany::fetch_many_with_limit()].
 </span><span class="kw">impl </span>FetchMany&lt;EpochIndex, ExtendedEpochInfos&gt; <span class="kw">for </span>ExtendedEpochInfo {
     <span class="kw">type </span>Request = GetEpochsInfoRequest;
 }
@@ -658,12 +941,12 @@
 /// ## Example
 ///
 /// ```rust
-/// use dash_sdk::{Sdk, platform::FetchMany};
-/// use drive_proof_verifier::types::ProtocolVersionVoteCount;
+/// use dash_sdk::{Sdk, platform::FetchMany, Error};
+/// use drive_proof_verifier::types::{ProtocolVersionUpgrades, ProtocolVersionVoteCount};
 ///
 /// # tokio_test::block_on(async {
 /// let sdk = Sdk::new_mock();
-/// let result = ProtocolVersionVoteCount::fetch_many(&amp;sdk, ()).await;
+/// let result: Result&lt;ProtocolVersionUpgrades, Error&gt; = ProtocolVersionVoteCount::fetch_many(&amp;sdk, ()).await;
 /// # });
 /// ```
 </span><span class="kw">impl </span>FetchMany&lt;ProtocolVersion, ProtocolVersionUpgrades&gt; <span class="kw">for </span>ProtocolVersionVoteCount {
@@ -679,13 +962,44 @@
 /// ## Supported query types
 ///
 /// * [ProTxHash](dashcore_rpc::dashcore::ProTxHash) - proTxHash of first object to find; will return up to
-/// [DEFAULT_NODES_VOTING_LIMIT](super::query::DEFAULT_NODES_VOTING_LIMIT) objects
+///   [DEFAULT_NODES_VOTING_LIMIT](super::query::DEFAULT_NODES_VOTING_LIMIT) objects
 /// * [`Option&lt;ProTxHash&gt;`](dashcore_rpc::dashcore::ProTxHash) - proTxHash that can be and [Option]; if it is `None`,
-/// the query will return all objects
+///   the query will return all objects
 /// * [`LimitQuery&lt;ProTxHash&gt;`](super::LimitQuery) - limit query that allows to specify maximum number of objects
-/// to fetch; see also [FetchMany::fetch_many_with_limit()].
+///   to fetch; see also [FetchMany::fetch_many_with_limit()].
 </span><span class="kw">impl </span>FetchMany&lt;ProTxHash, MasternodeProtocolVotes&gt; <span class="kw">for </span>MasternodeProtocolVote {
     <span class="kw">type </span>Request = GetProtocolVersionUpgradeVoteStatusRequest;
+}
+
+<span class="doccomment">/// Fetch information about the proposed block count by proposers for a given epoch.
+///
+/// Returns list of [ProposerBlockCounts](drive_proof_verifier::types::ProposerBlockCounts)
+/// indexed by [ProTxHash](dashcore_rpc::dashcore::ProTxHash). Each item in this list represents
+/// node protxhash and the amount of blocks that were proposed.
+///
+/// ## Supported query types
+///
+/// * [ProTxHash](dashcore_rpc::dashcore::ProTxHash) - proTxHash of first object to find; will return up to
+///   [DEFAULT_NODES_VOTING_LIMIT](super::query::DEFAULT_NODES_VOTING_LIMIT) objects
+/// * [`Option&lt;ProTxHash&gt;`](dashcore_rpc::dashcore::ProTxHash) - proTxHash that can be and [Option]; if it is `None`,
+///   the query will return all objects
+/// * [`LimitQuery&lt;ProTxHash&gt;`](super::LimitQuery) - limit query that allows to specify maximum number of objects
+///   to fetch; see also [FetchMany::fetch_many_with_limit()].
+</span><span class="kw">impl </span>FetchMany&lt;ProTxHash, ProposerBlockCounts&gt; <span class="kw">for </span>ProposerBlockCountByRange {
+    <span class="kw">type </span>Request = GetEvonodesProposedEpochBlocksByRangeRequest;
+}
+
+<span class="doccomment">/// Fetch information about the proposed block count by proposers for a given epoch.
+///
+/// Returns list of [ProposerBlockCounts](drive_proof_verifier::types::ProposerBlockCounts)
+/// indexed by [ProTxHash](dashcore_rpc::dashcore::ProTxHash). Each item in this list represents
+/// node pro_tx_hash and the amount of blocks that were proposed.
+///
+/// ## Supported query types
+///
+/// * [ProTxHash](dashcore_rpc::dashcore::ProTxHash) - proTxHash of an evonode to find; will return one evonode block count
+</span><span class="kw">impl </span>FetchMany&lt;ProTxHash, ProposerBlockCounts&gt; <span class="kw">for </span>ProposerBlockCountById {
+    <span class="kw">type </span>Request = GetEvonodesProposedEpochBlocksByIdsRequest;
 }
 
 <span class="doccomment">/// Fetch multiple data contracts.
@@ -747,5 +1061,25 @@
 /// * [VotePollsByEndDateDriveQuery]
 </span><span class="kw">impl </span>FetchMany&lt;TimestampMillis, VotePollsGroupedByTimestamp&gt; <span class="kw">for </span>VotePoll {
     <span class="kw">type </span>Request = GetVotePollsByEndDateRequest;
+}
+
+<span class="comment">//
+</span><span class="doccomment">/// Fetch multiple identity balances.
+///
+/// ## Supported query types
+///
+/// * [Vec&lt;Identifier&gt;](dpp::prelude::Identifier) - list of identifiers of identities whose balance we want to fetch
+</span><span class="kw">impl </span>FetchMany&lt;Identifier, IdentityBalances&gt; <span class="kw">for </span>drive_proof_verifier::types::IdentityBalance {
+    <span class="kw">type </span>Request = GetIdentitiesBalancesRequest;
+}
+
+<span class="comment">//
+</span><span class="doccomment">/// Fetch multiple elements.
+///
+/// ## Supported query types
+///
+/// * [KeysInPath]
+</span><span class="kw">impl </span>FetchMany&lt;Key, Elements&gt; <span class="kw">for </span>Element {
+    <span class="kw">type </span>Request = GetPathElementsRequest;
 }
 </code></pre></div></section></main></body></html>

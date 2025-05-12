@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["epoch","identity","version_votes"]};
+window.SIDEBAR_ITEMS = {"mod":["epoch","evonode","identity","proposed_blocks","version_votes"]};

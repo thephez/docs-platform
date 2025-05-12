@@ -1,3 +1,9 @@
-(function() {var implementors = {
-"dash_sdk":[["impl <a class=\"trait\" href=\"dash_sdk/platform/trait.ContextProvider.html\" title=\"trait dash_sdk::platform::ContextProvider\">ContextProvider</a> for <a class=\"struct\" href=\"dash_sdk/mock/provider/struct.GrpcContextProvider.html\" title=\"struct dash_sdk::mock::provider::GrpcContextProvider\">GrpcContextProvider</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {
+    var implementors = Object.fromEntries([["dash_sdk",[["impl <a class=\"trait\" href=\"dash_sdk/platform/trait.ContextProvider.html\" title=\"trait dash_sdk::platform::ContextProvider\">ContextProvider</a> for <a class=\"struct\" href=\"dash_sdk/mock/provider/struct.GrpcContextProvider.html\" title=\"struct dash_sdk::mock::provider::GrpcContextProvider\">GrpcContextProvider</a>"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[343]}

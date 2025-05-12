@@ -1,3 +1,9 @@
-(function() {var implementors = {
-"dash_sdk":[["impl <a class=\"trait\" href=\"dash_sdk/mock/trait.Mockable.html\" title=\"trait dash_sdk::mock::Mockable\">Mockable</a> for <a class=\"enum\" href=\"dash_sdk/platform/types/identity/enum.IdentityRequest.html\" title=\"enum dash_sdk::platform::types::identity::IdentityRequest\">IdentityRequest</a>"],["impl <a class=\"trait\" href=\"dash_sdk/mock/trait.Mockable.html\" title=\"trait dash_sdk::mock::Mockable\">Mockable</a> for <a class=\"enum\" href=\"dash_sdk/platform/types/identity/enum.IdentityResponse.html\" title=\"enum dash_sdk::platform::types::identity::IdentityResponse\">IdentityResponse</a>"],["impl <a class=\"trait\" href=\"dash_sdk/mock/trait.Mockable.html\" title=\"trait dash_sdk::mock::Mockable\">Mockable</a> for <a class=\"struct\" href=\"dash_sdk/platform/struct.DocumentQuery.html\" title=\"struct dash_sdk::platform::DocumentQuery\">DocumentQuery</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {
+    var implementors = Object.fromEntries([["dash_sdk",[["impl <a class=\"trait\" href=\"dash_sdk/mock/trait.Mockable.html\" title=\"trait dash_sdk::mock::Mockable\">Mockable</a> for <a class=\"enum\" href=\"dash_sdk/platform/types/identity/enum.IdentityRequest.html\" title=\"enum dash_sdk::platform::types::identity::IdentityRequest\">IdentityRequest</a>"],["impl <a class=\"trait\" href=\"dash_sdk/mock/trait.Mockable.html\" title=\"trait dash_sdk::mock::Mockable\">Mockable</a> for <a class=\"enum\" href=\"dash_sdk/platform/types/identity/enum.IdentityResponse.html\" title=\"enum dash_sdk::platform::types::identity::IdentityResponse\">IdentityResponse</a>"],["impl <a class=\"trait\" href=\"dash_sdk/mock/trait.Mockable.html\" title=\"trait dash_sdk::mock::Mockable\">Mockable</a> for <a class=\"struct\" href=\"dash_sdk/platform/struct.DocumentQuery.html\" title=\"struct dash_sdk::platform::DocumentQuery\">DocumentQuery</a>"],["impl <a class=\"trait\" href=\"dash_sdk/mock/trait.Mockable.html\" title=\"trait dash_sdk::mock::Mockable\">Mockable</a> for <a class=\"struct\" href=\"dash_sdk/platform/types/evonode/struct.EvoNode.html\" title=\"struct dash_sdk::platform::types::evonode::EvoNode\">EvoNode</a>"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[1177]}

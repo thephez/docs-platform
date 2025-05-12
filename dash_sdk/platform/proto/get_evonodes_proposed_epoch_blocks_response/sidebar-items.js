@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Version"],"mod":["get_evonodes_proposed_epoch_blocks_response_v0"],"struct":["GetEvonodesProposedEpochBlocksResponseV0"]};

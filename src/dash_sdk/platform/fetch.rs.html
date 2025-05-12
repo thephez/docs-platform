@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/fetch.rs`."><title>fetch.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/fetch.rs`."><title>fetch.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">dash_sdk/platform/</div>fetch.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -282,7 +283,17 @@
 <a href="#282" id="282">282</a>
 <a href="#283" id="283">283</a>
 <a href="#284" id="284">284</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! # Fetch Module
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a></pre></div><pre class="rust"><code><span class="doccomment">//! # Fetch Module
 //!
 //! This module provides an abstract way to fetch data from a platform using the `Fetch` trait.
 //! It allows fetching of various types of data such as `Identity`, `DataContract`, and `Document`.
@@ -293,6 +304,7 @@
 //!   traits. The associated [Fetch::Request]` type needs to implement [TransportRequest].
 
 </span><span class="kw">use </span><span class="kw">crate</span>::mock::MockResponse;
+<span class="kw">use </span><span class="kw">crate</span>::sync::retry;
 <span class="kw">use crate</span>::{error::Error, platform::query::Query, Sdk};
 <span class="kw">use </span>dapi_grpc::platform::v0::{<span class="self">self </span><span class="kw">as </span>platform_proto, Proof, ResponseMetadata};
 <span class="kw">use </span>dpp::voting::votes::Vote;
@@ -302,6 +314,7 @@
 };
 <span class="kw">use </span>drive_proof_verifier::FromProof;
 <span class="kw">use </span>rs_dapi_client::{transport::TransportRequest, DapiRequest, RequestSettings};
+<span class="kw">use </span>rs_dapi_client::{ExecutionError, ExecutionResponse, InnerInto, IntoInner};
 <span class="kw">use </span>std::fmt::Debug;
 
 <span class="kw">use </span><span class="kw">super</span>::types::identity::IdentityRequest;
@@ -403,23 +416,9 @@
         query: Q,
         settings: <span class="prelude-ty">Option</span>&lt;RequestSettings&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata), Error&gt; {
-        <span class="kw">let </span>request = query.query(sdk.prove())<span class="question-mark">?</span>;
-
-        <span class="kw">let </span>response = request
-            .clone()
-            .execute(sdk, settings.unwrap_or_default())
-            .<span class="kw">await</span><span class="question-mark">?</span>;
-
-        <span class="kw">let </span>object_type = std::any::type_name::&lt;<span class="self">Self</span>&gt;().to_string();
-        <span class="macro">tracing::trace!</span>(request = <span class="question-mark">?</span>request, response = <span class="question-mark">?</span>response, object_type, <span class="string">"fetched object from platform"</span>);
-
-        <span class="kw">let </span>(object, response_metadata): (<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata) =
-            sdk.parse_proof_with_metadata(request, response).<span class="kw">await</span><span class="question-mark">?</span>;
-
-        <span class="kw">match </span>object {
-            <span class="prelude-val">Some</span>(item) =&gt; <span class="prelude-val">Ok</span>((item.into(), response_metadata)),
-            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, response_metadata)),
-        }
+        <span class="self">Self</span>::fetch_with_metadata_and_proof(sdk, query, settings)
+            .<span class="kw">await
+            </span>.map(|(object, metadata, <span class="kw">_</span>)| (object, metadata))
     }
 
     <span class="doccomment">/// Fetch single object from Platform with metadata and underlying proof.
@@ -451,24 +450,47 @@
         query: Q,
         settings: <span class="prelude-ty">Option</span>&lt;RequestSettings&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata, Proof), Error&gt; {
-        <span class="kw">let </span>request = query.query(sdk.prove())<span class="question-mark">?</span>;
+        <span class="kw">let </span>request: <span class="kw-2">&amp;</span>&lt;<span class="self">Self </span><span class="kw">as </span>Fetch&gt;::Request = <span class="kw-2">&amp;</span>query.query(sdk.prove())<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>response = request
-            .clone()
-            .execute(sdk, settings.unwrap_or_default())
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>fut = |settings: RequestSettings| <span class="kw">async move </span>{
+            <span class="kw">let </span>ExecutionResponse {
+                address,
+                retries,
+                inner: response,
+            } = request
+                .clone()
+                .execute(sdk, settings)
+                .<span class="kw">await
+                </span>.map_err(|execution_error| execution_error.inner_into())<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>object_type = std::any::type_name::&lt;<span class="self">Self</span>&gt;().to_string();
-        <span class="macro">tracing::trace!</span>(request = <span class="question-mark">?</span>request, response = <span class="question-mark">?</span>response, object_type, <span class="string">"fetched object from platform"</span>);
+            <span class="kw">let </span>object_type = std::any::type_name::&lt;<span class="self">Self</span>&gt;().to_string();
+            <span class="macro">tracing::trace!</span>(request = <span class="question-mark">?</span>request, response = <span class="question-mark">?</span>response, <span class="question-mark">?</span>address, retries, object_type, <span class="string">"fetched object from platform"</span>);
 
-        <span class="kw">let </span>(object, response_metadata, proof): (<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata, Proof) = sdk
-            .parse_proof_with_metadata_and_proof(request, response)
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+            <span class="kw">let </span>(object, response_metadata, proof): (<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, ResponseMetadata, Proof) = sdk
+                .parse_proof_with_metadata_and_proof(request.clone(), response)
+                .<span class="kw">await
+                </span>.map_err(|e| ExecutionError {
+                    inner: e,
+                    address: <span class="prelude-val">Some</span>(address.clone()),
+                    retries,
+                })<span class="question-mark">?</span>;
 
-        <span class="kw">match </span>object {
-            <span class="prelude-val">Some</span>(item) =&gt; <span class="prelude-val">Ok</span>((item.into(), response_metadata, proof)),
-            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, response_metadata, proof)),
-        }
+            <span class="kw">match </span>object {
+                <span class="prelude-val">Some</span>(item) =&gt; <span class="prelude-val">Ok</span>((item.into(), response_metadata, proof)),
+                <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, response_metadata, proof)),
+            }
+            .map(|x| ExecutionResponse {
+                inner: x,
+                address,
+                retries,
+            })
+        };
+
+        <span class="kw">let </span>settings = sdk
+            .dapi_client_settings
+            .override_by(settings.unwrap_or_default());
+
+        retry(sdk.address_list(), settings, fut).<span class="kw">await</span>.into_inner()
     }
 
     <span class="doccomment">/// Fetch single object from Platform.

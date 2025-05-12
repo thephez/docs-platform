@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Result"],"struct":["EvonodeProposedBlocks","EvonodesProposedBlocks"]};

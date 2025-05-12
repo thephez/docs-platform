@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/types/identity.rs`."><title>identity.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/platform/types/identity.rs`."><title>identity.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">dash_sdk/platform/types/</div>identity.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -144,13 +145,35 @@
 <a href="#144" id="144">144</a>
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! Identity related types and functions
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a></pre></div><pre class="rust"><code><span class="doccomment">//! Identity related types and functions
 
 </span><span class="kw">use </span><span class="kw">crate</span>::delegate_enum;
 <span class="kw">use crate</span>::{
     platform::{proto, Query},
     Error,
 };
+
+<span class="kw">use </span>dapi_grpc::platform::v0::get_identities_balances_request::GetIdentitiesBalancesRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_balance_and_revision_request::GetIdentityBalanceAndRevisionRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_balance_request::GetIdentityBalanceRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_by_public_key_hash_request::GetIdentityByPublicKeyHashRequestV0;
@@ -158,13 +181,15 @@
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_nonce_request::GetIdentityNonceRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::get_identity_request::GetIdentityRequestV0;
 <span class="kw">use </span>dapi_grpc::platform::v0::{
-    get_identity_balance_and_revision_request, get_identity_balance_request,
-    get_identity_by_public_key_hash_request, get_identity_contract_nonce_request,
-    get_identity_nonce_request, get_identity_request, GetIdentityBalanceAndRevisionRequest,
-    GetIdentityBalanceRequest, GetIdentityByPublicKeyHashRequest, GetIdentityContractNonceRequest,
-    GetIdentityNonceRequest, GetIdentityRequest, ResponseMetadata,
+    get_identities_balances_request, get_identity_balance_and_revision_request,
+    get_identity_balance_request, get_identity_by_public_key_hash_request,
+    get_identity_contract_nonce_request, get_identity_nonce_request, get_identity_request,
+    GetIdentitiesBalancesRequest, GetIdentityBalanceAndRevisionRequest, GetIdentityBalanceRequest,
+    GetIdentityByPublicKeyHashRequest, GetIdentityContractNonceRequest, GetIdentityNonceRequest,
+    GetIdentityRequest, ResponseMetadata,
 };
 <span class="kw">use </span>dpp::prelude::Identity;
+<span class="kw">use </span>rs_dapi_client::transport::TransportError;
 
 <span class="comment">// Create enum [IdentityRequest] and [IdentityResponse] that will wrap all possible
 // request/response types for [Identity] object.
@@ -185,7 +210,7 @@
         <span class="prelude-val">Ok</span>(IdentityRequest::GetIdentity(GetIdentityRequest {
             version: <span class="prelude-val">Some</span>(get_identity_request::Version::V0(GetIdentityRequestV0 {
                 id,
-                prove: <span class="bool-val">true</span>,
+                prove,
             })),
         }))
     }
@@ -284,6 +309,23 @@
         <span class="kw">let </span>request: GetIdentityBalanceAndRevisionRequest = GetIdentityBalanceAndRevisionRequest {
             version: <span class="prelude-val">Some</span>(get_identity_balance_and_revision_request::Version::V0(
                 GetIdentityBalanceAndRevisionRequestV0 { id, prove },
+            )),
+        };
+
+        <span class="prelude-val">Ok</span>(request)
+    }
+}
+
+<span class="kw">impl </span>Query&lt;GetIdentitiesBalancesRequest&gt; <span class="kw">for </span>Vec&lt;dpp::prelude::Identifier&gt; {
+    <span class="kw">fn </span>query(<span class="self">self</span>, prove: bool) -&gt; <span class="prelude-ty">Result</span>&lt;GetIdentitiesBalancesRequest, Error&gt; {
+        <span class="kw">if </span>!prove {
+            <span class="macro">unimplemented!</span>(<span class="string">"queries without proofs are not supported yet"</span>);
+        }
+        <span class="kw">let </span>ids = <span class="self">self</span>.into_iter().map(|a| a.to_vec()).collect();
+
+        <span class="kw">let </span>request: GetIdentitiesBalancesRequest = GetIdentitiesBalancesRequest {
+            version: <span class="prelude-val">Some</span>(get_identities_balances_request::Version::V0(
+                GetIdentitiesBalancesRequestV0 { ids, prove },
             )),
         };
 

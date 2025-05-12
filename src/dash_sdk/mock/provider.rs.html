@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/mock/provider.rs`."><title>provider.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `packages/rs-sdk/src/mock/provider.rs`."><title>provider.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="dash_sdk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">dash_sdk/mock/</div>provider.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -248,16 +249,16 @@
 <a href="#248" id="248">248</a>
 <a href="#249" id="249">249</a>
 <a href="#250" id="250">250</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! Example ContextProvider that uses the Core gRPC API to fetch data from Platform.
+<a href="#251" id="251">251</a></pre></div><pre class="rust"><code><span class="doccomment">//! Example ContextProvider that uses the Core gRPC API to fetch data from Platform.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::core_client::CoreClient;
+</span><span class="kw">use </span><span class="kw">crate</span>::core::LowLevelDashCoreClient;
 <span class="kw">use </span><span class="kw">crate</span>::platform::Fetch;
+<span class="kw">use </span><span class="kw">crate</span>::sync::block_on;
 <span class="kw">use crate</span>::{Error, Sdk};
 <span class="kw">use </span>arc_swap::ArcSwapAny;
 <span class="kw">use </span>dpp::prelude::{CoreBlockHeight, DataContract, Identifier};
 <span class="kw">use </span>drive_proof_verifier::error::ContextProviderError;
 <span class="kw">use </span>drive_proof_verifier::ContextProvider;
-<span class="kw">use </span>pollster::FutureExt;
 <span class="kw">use </span>std::hash::Hash;
 <span class="kw">use </span>std::num::NonZeroUsize;
 <span class="kw">use </span>std::sync::Arc;
@@ -267,7 +268,7 @@
 /// Example [ContextProvider] used by the Sdk for testing purposes.
 </span><span class="kw">pub struct </span>GrpcContextProvider {
     <span class="doccomment">/// Core client
-    </span>core: CoreClient,
+    </span>core: LowLevelDashCoreClient,
     <span class="doccomment">/// [Sdk] to use when fetching data from Platform
     ///
     /// Note that if the `sdk` is `None`, the context provider will not be able to fetch data itself and will rely on
@@ -312,7 +313,8 @@
         data_contracts_cache_size: NonZeroUsize,
         quorum_public_keys_cache_size: NonZeroUsize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
-        <span class="kw">let </span>core_client = CoreClient::new(core_ip, core_port, core_user, core_password)<span class="question-mark">?</span>;
+        <span class="kw">let </span>core_client =
+            LowLevelDashCoreClient::new(core_ip, core_port, core_user, core_password)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             core: core_client,
             sdk: ArcSwapAny::new(Arc::new(sdk)),
@@ -447,9 +449,9 @@
 
         <span class="kw">let </span>sdk_cloned = sdk.clone();
 
-        <span class="kw">let </span>data_contract: <span class="prelude-ty">Option</span>&lt;DataContract&gt; = DataContract::fetch(<span class="kw-2">&amp;</span>sdk_cloned, contract_id)
-            .block_on()
-            .map_err(|e| ContextProviderError::DataContractFailure(e.to_string()))<span class="question-mark">?</span>;
+        <span class="kw">let </span>data_contract: <span class="prelude-ty">Option</span>&lt;DataContract&gt; =
+            block_on(<span class="kw">async move </span>{ DataContract::fetch(<span class="kw-2">&amp;</span>sdk_cloned, contract_id).<span class="kw">await </span>})<span class="question-mark">?
+                </span>.map_err(|e| ContextProviderError::DataContractFailure(e.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>dc) = data_contract {
             <span class="self">self</span>.data_contracts_cache.put(<span class="kw-2">*</span>data_contract_id, dc.clone());

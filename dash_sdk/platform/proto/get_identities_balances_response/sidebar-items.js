@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Version"],"mod":["get_identities_balances_response_v0"],"struct":["GetIdentitiesBalancesResponseV0"]};
