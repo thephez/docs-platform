@@ -1,4 +1,30 @@
 #!/usr/bin/env python3
+
+"""
+sync_sidebar.py
+
+This script keeps the custom Jinja template sidebar in sync with Sphinx’s
+auto-generated navigation. It performs the following steps:
+
+1. Locate and parse the built Sphinx HTML ( _build/html/docs/index.html ).
+2. Extract the <nav class="bd-docs-nav"> element that contains the
+   freshly generated table of contents.
+3. Normalize its attributes (classes, id, aria-label) to match the template.
+4. Prefix all non-external links with “docs/” so they continue pointing at
+   the correct relative paths.
+5. Load the existing template file ( _templates/sidebar-main.html ) and
+   locate its old <nav id="bd-docs-nav"> block.
+6. From that old block, pull out any manually maintained sections
+   (e.g. “Core Docs”, “User Docs”) so they aren't lost.
+7. Inject those manual extras at the bottom of the new nav's <div class="bd-toc-item">.
+8. Replace the old <nav> entirely with the newly merged one.
+9. Write the updated HTML back to your template file, using BeautifulSoup's
+   prettify() to keep indentation tidy.
+
+Run this script whenever rebuilding docs to automatically keep the
+sidebar template up-to-date without losing any custom links.
+"""
+
 import sys
 from pathlib import Path
 from bs4 import BeautifulSoup, Tag
