@@ -10,6 +10,14 @@ As described briefly in the [Dash Platform Protocol explanation](../explanations
 
 The first two data contracts are the [DashPay wallet](https://www.dash.org/dashpay/) and [Dash Platform Name Service (DPNS)](../explanations/dpns.md). The concept of the social, username-based DashPay wallet served as the catalyst for development of the platform, with DPNS providing the mechanism to support usernames.
 
+```{eval-rst}
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-bottom: 1em; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube-nocookie.com/embed/nGDhMzqF4Ys" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
+```
+
 ## Details
 
 ### Ownership
