@@ -99,6 +99,7 @@ Security groups provide a way to distribute token configuration and update autho
 | [`getIdentitiesTokenBalances`](../reference/dapi-endpoints-platform-endpoints.md#getidentitiestokenbalances) | Retrieves the token balances for a list of specified identities. |
 | [`getIdentityTokenInfos`](../reference/dapi-endpoints-platform-endpoints.md#getidentitytokeninfos) | Retrieves information about specified tokens for a given identity. |
 | [`getIdentitiesTokenInfos`](../reference/dapi-endpoints-platform-endpoints.md#getidentitiestokeninfos) | Retrieves token information for a list of specified identities. |
+| [`getTokenContractInfo`](../reference/dapi-endpoints-platform-endpoints.md#gettokencontractinfo) | Retrieves contract information associated with a specific token ID. |
 | [`getTokenDirectPurchasePrices`](../reference/dapi-endpoints-platform-endpoints.md#gettokendirectpurchaseprices) | Retrieves direct purchase prices defined for the specified token IDs. |
 | [`getTokenPerpetualDistributionLastClaim`](../reference/dapi-endpoints-platform-endpoints.md#gettokenperpetualdistributionlastclaim) | Retrieves the last-claim timestamp for a token’s perpetual distribution for a specific identity. |
 | [`getTokenPreProgrammedDistributions`](../reference/dapi-endpoints-platform-endpoints.md#gettokenpreprogrammeddistributions) | Retrieves pre-programmed distributions of a specified token. |

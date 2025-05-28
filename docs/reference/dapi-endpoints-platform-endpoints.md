@@ -3482,6 +3482,61 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+### getTokenContractInfo
+
+Retrieves contract information for a specific token ID.
+
+**Returns**: Token contract info or a cryptographic proof.
+
+**Parameters**:
+
+| Name       | Type    | Required | Description                                                                      |
+| ---------- | ------- | -------- | -------------------------------------------------------------------------------- |
+| `token_id` | Bytes   | Yes      | The 32-byte ID of the token whose contract information is being requested        |
+| `prove`    | Boolean | No       | Set to `true` to receive a proof that contains the requested token contract info |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "token_id": "2wXv5jz2WxOqZ6RtN4xkGAMeA9ElvZyMvP9pshHylrs=",
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getTokenContractInfo
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "data": {
+      "contract_id": "VGhpcyBpcyBhIHRlc3QgY29udHJhY3QgaWQ=",
+      "token_contract_position": 3
+    },
+    "metadata": {
+      "height": "2900",
+      "coreChainLockedHeight": 1087500,
+      "epoch": 762,
+      "timeMs": "1724100000000",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
 ### getTokenDirectPurchasePrices
 
 Retrieves direct purchase prices defined for the specified token IDs.
