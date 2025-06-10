@@ -46,7 +46,7 @@ without introducing issues for endpoint consumers.
 | [`getIdentityByNonUniquePublicKeyHash`](../reference/dapi-endpoints-platform-endpoints.md#getidentitybynonuniquepublickeyhash) | **Added in Dash Platform v2.0.0**<br>Returns one or more identities associated with a public key hash, including for non-unique masternode keys. |
 | [`getIdentityByPublicKeyHash`](../reference/dapi-endpoints-platform-endpoints.md#getidentitybypublickeyhash) | Returns the identity associated with the provided public key hash |
 | [`getIdentityContractNonce`](../reference/dapi-endpoints-platform-endpoints.md#getidentitycontractnonce) | Returns the identity contract nonce |
-| [`getIdentityKeys`](../reference/dapi-endpoints-platform-endpoints.md#getidentitykeys) | Returns the requested identity keys
+| [`getIdentityKeys`](../reference/dapi-endpoints-platform-endpoints.md#getidentitykeys) | Returns the requested identity keys |
 | [`getIdentityNonce`](../reference/dapi-endpoints-platform-endpoints.md#getidentitynonce) | Returns the current identity nonce |
 | [`getIdentitiesBalances`](../reference/dapi-endpoints-platform-endpoints.md#getidentitiesbalances) | *Added in Dash Platform v1.3.0*<br>Retrieves the balances for a list of identities |
 | [`getIdentitiesContractKeys`](../reference/dapi-endpoints-platform-endpoints.md#getidentitiescontractkeys) | *Added in Dash Platform v1.0.0*<br>Returns keys associated to a specific contract for multiple Identities |
@@ -79,11 +79,12 @@ Security groups provide a way to distribute token configuration and update autho
 | [`getCurrentQuorumsInfo`](../reference/dapi-endpoints-platform-endpoints.md#getcurrentquorumsinfo) | *Added in Dash Platform v1.4.0*<br>Retrieves current quorum details, including validator sets and metadata for each quorum. |
 | [`getEvonodesProposedEpochBlocksByIds`](../reference/dapi-endpoints-platform-endpoints.md#getevonodesproposedepochblocksbyids) | *Added in Dash Platform v1.3.0*<br>Retrieves the number of blocks proposed by the specified evonodes in a certain epoch, based on their IDs |
 | [`getEvonodesProposedEpochBlocksByRange`](../reference/dapi-endpoints-platform-endpoints.md#getevonodesproposedepochblocksbyrange) | *Added in Dash Platform v1.3.0*<br>Retrieves the number of blocks proposed by evonodes for a specified epoch |
-| [`getEpochsInfo`](../reference/dapi-endpoints-platform-endpoints.md#getepochsinfo) | Returns information about the requested epoch(s)
+| [`getEpochsInfo`](../reference/dapi-endpoints-platform-endpoints.md#getepochsinfo) | Returns information about the requested epoch(s) |
+| [`getFinalizedEpochInfos`](../reference/dapi-endpoints-platform-endpoints.md#getfinalizedepochinfos) | **Added in Dash Platform v2.0.0**<br>Retrieves finalized epoch information within a specified index range |
 | [`getPathElements`](../reference/dapi-endpoints-platform-endpoints.md#getpathelements) | *Added in Dash Platform v1.0.0*<br>Returns elements for a specified path in the Platform |
 | [`getPrefundedSpecializedBalance`](../reference/dapi-endpoints-platform-endpoints.md#getprefundedspecializedbalance) | *Added in Dash Platform v1.0.0*<br>Returns the pre-funded specialized balance for a specific identity |
 | `getProofs` | **Disabled for external use in Dash Platform v1.0.0**<br>Returns proof information for the requested identities, contracts, and/or document(s) |
-| [`getProtocolVersionUpgradeState`](../reference/dapi-endpoints-platform-endpoints.md#getprotocolversionupgradestate) | Returns the number of votes cast for each protocol version
+| [`getProtocolVersionUpgradeState`](../reference/dapi-endpoints-platform-endpoints.md#getprotocolversionupgradestate) | Returns the number of votes cast for each protocol version |
 | [`getProtocolVersionUpgradeVoteStatus`](../reference/dapi-endpoints-platform-endpoints.md#getprotocolversionupgradevotestatus) | Returns protocol version upgrade status |
 | [`getStatus`](../reference/dapi-endpoints-platform-endpoints.md#getstatus) | *Added in Dash Platform v1.2.0*<br>Retrieves status information related to Dash Platform |
 | [`getTotalCreditsInPlatform`](../reference/dapi-endpoints-platform-endpoints.md#gettotalcreditsinplatform) | *Added in Dash Platform v1.1.0*<br>Retrieves the total credits in the platform |

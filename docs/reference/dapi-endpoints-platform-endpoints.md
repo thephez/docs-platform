@@ -2770,6 +2770,88 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+### getFinalizedEpochInfos
+
+Retrieves finalized epoch information within a specified index range.
+
+**Returns**: A list of finalized epoch information entries or a cryptographic proof.
+
+**Parameters**:
+
+| Name                         | Type    | Required | Description |
+| ---------------------------- | ------- | -------- | ----------- |
+| `start_epoch_index`          | Integer | No       | Starting epoch index for the query |
+| `start_epoch_index_included` | Boolean | No       | Whether to include the `start_epoch_index` in the results |
+| `end_epoch_index`            | Integer | No       | Ending epoch index for the query |
+| `end_epoch_index_included`   | Boolean | No       | Whether to include the `end_epoch_index` in the results |
+| `prove`                      | Boolean | No       | Set to `true` to receive a cryptographic proof instead of epoch data |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "start_epoch_index": 30,
+      "start_epoch_index_included": true,
+      "end_epoch_index": 32,
+      "end_epoch_index_included": false,
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getFinalizedEpochInfos
+```
+
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "epochs": {
+      "finalizedEpochInfos": [
+        {
+          "number": 30,
+          "firstBlockHeight": "21343",
+          "firstCoreBlockHeight": 1078560,
+          "firstBlockTime": "1712340000000",
+          "feeMultiplier": 1.5,
+          "protocolVersion": 9,
+          "totalBlocksInEpoch": "72",
+          "nextEpochStartCoreBlockHeight": 1078720,
+          "totalProcessingFees": "850000",
+          "totalDistributedStorageFees": "400000",
+          "totalCreatedStorageFees": "900000",
+          "coreBlockRewards": "1500000",
+          "blockProposers": [
+            {
+              "proposerId": "pA9f...",
+              "blockCount": 27
+            }
+          ]
+        }
+      ]
+    },
+    "metadata": {
+      "height": "2880",
+      "coreChainLockedHeight": 1086889,
+      "epoch": 762,
+      "timeMs": "1724094057890",
+      "protocolVersion": 1,
+      "chainId": "dash-testnet-50"
+    }
+  }
+}
+```
+:::
+::::
+
 ### getPathElements
 
 Retrieves elements for a specified path in the platform.
