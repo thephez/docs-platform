@@ -2740,28 +2740,30 @@ grpcurl -proto protos/platform/v0/platform.proto \
     "epochs": {
       "epochInfos": [
         {
-          "number": 849,
-          "firstBlockHeight": "6822",
-          "firstCoreBlockHeight": 927030,
-          "startTime": "1701976758619",
-          "feeMultiplier": 2
+          "number": 7859,
+          "firstBlockHeight": "157927",
+          "firstCoreBlockHeight": 1268167,
+          "startTime": "1749645648076",
+          "feeMultiplier": 1,
+          "protocolVersion": 9
         },
         {
-          "number": 850,
-          "firstBlockHeight": "6840",
-          "firstCoreBlockHeight": 927061,
-          "startTime": "1701980303210",
-          "feeMultiplier": 2
+          "number": 7860,
+          "firstBlockHeight": "157947",
+          "firstCoreBlockHeight": 1268194,
+          "startTime": "1749649302574",
+          "feeMultiplier": 1,
+          "protocolVersion": 9
         }
       ]
     },
     "metadata": {
-      "height": "6843",
-      "coreChainLockedHeight": 927065,
-      "epoch": 850,
-      "timeMs": "1701980850126",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-37"
+      "height": "157955",
+      "coreChainLockedHeight": 1268198,
+      "epoch": 7860,
+      "timeMs": "1749650378981",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -2795,9 +2797,9 @@ Retrieves finalized epoch information within a specified index range.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "start_epoch_index": 30,
+      "start_epoch_index": 7850,
       "start_epoch_index_included": true,
-      "end_epoch_index": 32,
+      "end_epoch_index": 7851,
       "end_epoch_index_included": false,
       "prove": false
     }
@@ -2817,34 +2819,105 @@ grpcurl -proto protos/platform/v0/platform.proto \
     "epochs": {
       "finalizedEpochInfos": [
         {
-          "number": 30,
-          "firstBlockHeight": "21343",
-          "firstCoreBlockHeight": 1078560,
-          "firstBlockTime": "1712340000000",
-          "feeMultiplier": 1.5,
+          "number": 7850,
+          "firstBlockHeight": "157747",
+          "firstCoreBlockHeight": 1267938,
+          "firstBlockTime": "1749613360443",
+          "feeMultiplier": 1,
           "protocolVersion": 9,
-          "totalBlocksInEpoch": "72",
-          "nextEpochStartCoreBlockHeight": 1078720,
-          "totalProcessingFees": "850000",
-          "totalDistributedStorageFees": "400000",
-          "totalCreatedStorageFees": "900000",
-          "coreBlockRewards": "1500000",
+          "totalBlocksInEpoch": "19",
+          "nextEpochStartCoreBlockHeight": 1267964,
+          "totalDistributedStorageFees": "38925829",
+          "totalCreatedStorageFees": "760",
+          "coreBlockRewards": "1947189353778",
           "blockProposers": [
             {
-              "proposerId": "pA9f...",
-              "blockCount": 27
+              "proposerId": "BbaHl4NE+iQzsqqZ1B9kPi2FgaeJzcIwhIic7KUkTqg=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "FD3Namt2hP3gHoihDl1l3popJExezVhtFKNCZXAl8RM=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "IBB+xQ6BiA3KGBeLt+U+LQRJwHNBBqYHJTua8v/qAGw=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "LkhlGi6cDLTy+3q4dAYapK8M0otZaVYx5qNa85UO9vs=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "OXQa2D3XkeHnOPGe2ugtbAMily5qRVmBQk2jdps9vUo=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "QHhPP5p2HGAVb5JEqQLAYm+LyP4AN4bHDx/GvkHaRn0=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "XGVCdmYVOHGDcV2VipJVUkcvkzNfoWEogEI+S72u9DY=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "YdM/R4kzeXvk3og1PHwthDwhMQ9tAPbv8xQkp1buffs=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "bRsYW6A2781Ep34Fqar2mgxOQJdq7ACwR3PlKGMyCWY=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "dxjtrTceRtIPrTAIbkrPSgXCtmDfauXypoSuvfG+QpA=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "hfFaMdODgpOpwdcqGg+iHmYRDOIIeL1MECTErh1b6CQ=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "hwdSNKxHNTtCu5fORjMMtnzUZIwB8LI5PX5ymw1niRg=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "iCUb1LEk7+uHU33qvuxU9sj1dfTfgfEM9ejuoHMJK28=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "iRe7VGMY80ENGnkBx7hGpzRGMRtRZLRaA/DmE/II8jQ=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "i40Rk6/SLlOM4Mn7UP7hVdD2F2ymjmXaaExdzi0eCBU=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "jeixKVL3BY2Ce9BM3/HCF12Hu/ifKLUkUqY3vJea3cQ=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "uozh3HKFe0Fo4zJyVx33+6+Ewxbf5IIXrdz2WV4lQhY=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "2bCQz8Gcry4n1RLmnEOBKidL3ynAgdCt5P0nKtVqX4k=",
+              "blockCount": 1
+            },
+            {
+              "proposerId": "/yYdLBx2kHoq2K62xWEXlvA7XL2IrpJFKkcn4T9PSsk=",
+              "blockCount": 1
             }
           ]
         }
       ]
     },
     "metadata": {
-      "height": "2880",
-      "coreChainLockedHeight": 1086889,
-      "epoch": 762,
-      "timeMs": "1724094057890",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "157957",
+      "coreChainLockedHeight": 1268201,
+      "epoch": 7860,
+      "timeMs": "1749650741098",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3322,8 +3395,8 @@ Retrieves token balances for a specified identity.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-      "token_ids": ["1122334455667788", "99aabbccddeeff00"],
+      "identity_id": "HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=",
+      "token_ids": ["rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=", "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="],
       "prove": false
     }
   }' \
@@ -3339,24 +3412,23 @@ grpcurl -proto protos/platform/v0/platform.proto \
 {
   "v0": {
     "tokenBalances": {
-      "token_balances": [
+      "tokenBalances": [
         {
-          "token_id": "1122334455667788",
-          "balance": 1000
+          "tokenId": "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="
         },
         {
-          "token_id": "99aabbccddeeff00",
-          "balance": 500
+          "tokenId": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
+          "balance": "101820"
         }
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "157980",
+      "coreChainLockedHeight": 1268232,
+      "epoch": 7861,
+      "timeMs": "1749654828318",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3386,8 +3458,8 @@ Retrieves the token balances for a list of specified identities.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-      "identity_ids": ["HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=", "02abcdef"],
+      "token_id": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
+      "identity_ids": ["HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=", "tBRF8/5pzZtmKQ7SHfkm0B3WOUmm3/EfZldNi8sdaDk="],
       "prove": false
     }
   }' \
@@ -3402,25 +3474,25 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "identity_token_balances": {
-      "identity_token_balances": [
+    "identityTokenBalances": {
+      "identityTokenBalances": [
         {
-          "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-          "balance": "500"
+          "identityId": "HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=",
+          "balance": "101820"
         },
         {
-          "identity_id": "02abcdef",
-          "balance": "1000"
+          "identityId": "tBRF8/5pzZtmKQ7SHfkm0B3WOUmm3/EfZldNi8sdaDk=",
+          "balance": "5"
         }
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "157980",
+      "coreChainLockedHeight": 1268232,
+      "epoch": 7861,
+      "timeMs": "1749654828318",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3450,8 +3522,8 @@ Retrieves information about specified tokens for a given identity.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-      "token_ids": ["01abcdef", "02abcdef"],
+      "identity_id": "tBRF8/5pzZtmKQ7SHfkm0B3WOUmm3/EfZldNi8sdaDk=",
+      "token_ids": ["rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=", "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="],
       "prove": false
     }
   }' \
@@ -3466,16 +3538,13 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "token_infos": {
-      "token_infos": [
+    "tokenInfos": {
+      "tokenInfos": [
         {
-          "token_id": "01abcdef",
-          "info": {
-            "frozen": false
-          }
+          "tokenId": "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="
         },
         {
-          "token_id": "02abcdef",
+          "tokenId": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
           "info": {
             "frozen": true
           }
@@ -3483,12 +3552,12 @@ grpcurl -proto protos/platform/v0/platform.proto \
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "157984",
+      "coreChainLockedHeight": 1268234,
+      "epoch": 7861,
+      "timeMs": "1749655176587",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3518,8 +3587,8 @@ Retrieves token information for a list of specified identities.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-      "identity_ids": ["HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=", "02abcdef"],
+      "token_id": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
+      "identity_ids": ["HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=", "tBRF8/5pzZtmKQ7SHfkm0B3WOUmm3/EfZldNi8sdaDk="],
       "prove": false
     }
   }' \
@@ -3534,16 +3603,13 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "identity_token_infos": {
-      "token_infos": [
+    "identityTokenInfos": {
+      "tokenInfos": [
         {
-          "identity_id": "HxUSbKaFxbuvTUprfr5a0yU6u4EasTdSWvSxOwKjmxw=",
-          "info": {
-            "frozen": false
-          }
+          "identityId": "HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ="
         },
         {
-          "identity_id": "02abcdef",
+          "identityId": "tBRF8/5pzZtmKQ7SHfkm0B3WOUmm3/EfZldNi8sdaDk=",
           "info": {
             "frozen": true
           }
@@ -3551,12 +3617,12 @@ grpcurl -proto protos/platform/v0/platform.proto \
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "157984",
+      "coreChainLockedHeight": 1268234,
+      "epoch": 7861,
+      "timeMs": "1749655176587",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3586,7 +3652,7 @@ Retrieves contract information for a specific token ID.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "2wXv5jz2WxOqZ6RtN4xkGAMeA9ElvZyMvP9pshHylrs=",
+      "token_id": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
       "prove": false
     }
   }' \
@@ -3602,16 +3668,15 @@ grpcurl -proto protos/platform/v0/platform.proto \
 {
   "v0": {
     "data": {
-      "contract_id": "VGhpcyBpcyBhIHRlc3QgY29udHJhY3QgaWQ=",
-      "token_contract_position": 3
+      "contractId": "L+2jKoiBdmhzIAg82a3nnOn8/K5sQiaIW/Tinw0ypNM="
     },
     "metadata": {
-      "height": "2900",
-      "coreChainLockedHeight": 1087500,
-      "epoch": 762,
-      "timeMs": "1724100000000",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "157984",
+      "coreChainLockedHeight": 1268234,
+      "epoch": 7861,
+      "timeMs": "1749655176587",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3642,7 +3707,7 @@ This endpoint provides pricing data for tokens that support direct purchases. Ea
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_ids": ["2f8d91fe65b3b9f1d473ad729f7861e27159be9a93d5748591ecdbbda5e776c0"],
+      "token_ids": ["rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=", "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="],
       "prove": false
     }
   }' \
@@ -3660,18 +3725,21 @@ grpcurl -proto protos/platform/v0/platform.proto \
     "tokenDirectPurchasePrices": {
       "tokenDirectPurchasePrice": [
         {
-          "tokenId": "2f8d91fe65b3b9f1d473ad729f7861e27159be9a93d5748591ecdbbda5e776c0",
-          "fixedPrice": "1000"
+          "tokenId": "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="
+        },
+        {
+          "tokenId": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
+          "fixedPrice": "10000000000"
         }
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "158027",
+      "coreChainLockedHeight": 1268261,
+      "epoch": 7862,
+      "timeMs": "1749659877672",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3685,20 +3753,23 @@ grpcurl -proto protos/platform/v0/platform.proto \
     "tokenDirectPurchasePrices": {
       "tokenDirectPurchasePrice": [
         {
-          "tokenId": "ab1c23d4ef567890fedcba9876543210ab1c23d4ef567890fedcba9876543210",
+          "tokenId": "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="
+        },
+        {
+          "tokenId": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
           "variablePrice": {
             "priceForQuantity": [
               {
                 "quantity": "1",
-                "price": "1000"
+                "price": "10000000000"
               },
               {
                 "quantity": "10",
-                "price": "900"
+                "price": "7000000000"
               },
               {
-                "quantity": "100",
-                "price": "750"
+                "quantity": "50",
+                "price": "5000000000"
               }
             ]
           }
@@ -3706,12 +3777,12 @@ grpcurl -proto protos/platform/v0/platform.proto \
       ]
     },
     "metadata": {
-      "height": "2880",
-      "coreChainLockedHeight": 1086890,
-      "epoch": 762,
-      "timeMs": "1724095000000",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "158017",
+      "coreChainLockedHeight": 1268248,
+      "epoch": 7862,
+      "timeMs": "1749658213296",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3744,8 +3815,8 @@ Retrieves the last-claim timestamp for a token’s perpetual distribution for a 
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "2wXv5jz2WxOqZ6RtN4xkGAMeA9ElvZyMvP9pshHylrs=",
-      "identity_id": "HpGErJllHxDvKnetz9d88452CCfWsbm8s+SLq7hn1v4=",
+      "token_id": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
+      "identity_id": "HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=",
       "prove": false
     }
   }' \
@@ -3761,15 +3832,15 @@ grpcurl -proto protos/platform/v0/platform.proto \
 {
   "v0": {
     "lastClaim": {
-      "timestampMs": "1744857654321"
+      "rawBytes": "AAABl1+BUYA="
     },
     "metadata": {
-      "height": "164312",
-      "coreChainLockedHeight": 2256151,
-      "epoch": 25,
-      "timeMs": "1744857654873",
-      "protocolVersion": 8,
-      "chainId": "evo1"
+      "height": "158030",
+      "coreChainLockedHeight": 1268268,
+      "epoch": 7863,
+      "timeMs": "1749660288110",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3803,12 +3874,7 @@ Retrieves pre-programmed distributions of a specified token.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-      "start_at_info": {
-        "start_time_ms": 1724094056000,
-        "start_recipient": "01abcdef",
-        "start_recipient_included": true
-      },
+      "token_id": "qa3VvNgqTlRQEfBbqHFQrVJJqO8fcxHMCy4PNrBR4Ho=",
       "limit": 10,
       "prove": false
     }
@@ -3824,30 +3890,44 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "token_distributions": {
-      "token_distributions": [
+    "tokenDistributions": {
+      "tokenDistributions": [
         {
-          "timestamp": 1724094056000,
+          "timestamp": "1749662152621",
           "distributions": [
             {
-              "recipient_id": "01abcdef",
-              "amount": "500"
-            },
+              "recipientId": "HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=",
+              "amount": "100"
+            }
+          ]
+        },
+        {
+          "timestamp": "1749665692621",
+          "distributions": [
             {
-              "recipient_id": "02abcdef",
+              "recipientId": "HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=",
               "amount": "1000"
+            }
+          ]
+        },
+        {
+          "timestamp": "1781198092621",
+          "distributions": [
+            {
+              "recipientId": "HVkP3Jq7Rx6O4+TDMIe9emp4NUx2xOjvPSgYJqPqTPQ=",
+              "amount": "1000000"
             }
           ]
         }
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "158043",
+      "coreChainLockedHeight": 1268281,
+      "epoch": 7863,
+      "timeMs": "1749662275384",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3876,7 +3956,7 @@ Retrieves the statuses of specified tokens.
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_ids": ["01abcdef", "02abcdef"],
+      "token_ids": ["rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=", "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="],
       "prove": false
     }
   }' \
@@ -3891,25 +3971,24 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "token_statuses": {
-      "token_statuses": [
+    "tokenStatuses": {
+      "tokenStatuses": [
         {
-          "token_id": "01abcdef",
-          "paused": false
+          "tokenId": "LP44w8MPMx6hjEL1fBbCWVoekxUzyK/fdiHURk1jl7U="
         },
         {
-          "token_id": "02abcdef",
-          "paused": true
+          "tokenId": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
+          "paused": false
         }
       ]
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "158031",
+      "coreChainLockedHeight": 1268271,
+      "epoch": 7863,
+      "timeMs": "1749660469151",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
@@ -3938,7 +4017,7 @@ Retrieves the total supply of a specified token, including aggregated user accou
 grpcurl -proto protos/platform/v0/platform.proto \
   -d '{
     "v0": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+      "token_id": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
       "prove": false
     }
   }' \
@@ -3953,18 +4032,18 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```json
 {
   "v0": {
-    "token_total_supply": {
-      "token_id": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-      "total_aggregated_amount_in_user_accounts": "1000000",
-      "total_system_amount": "500000"
+    "tokenTotalSupply": {
+      "tokenId": "rHb8c3C+RFDdsmSXv7dV4F5daFa1xiMpJx4A9YWHyOQ=",
+      "totalAggregatedAmountInUserAccounts": "102060",
+      "totalSystemAmount": "102060"
     },
     "metadata": {
-      "height": "2876",
-      "coreChainLockedHeight": 1086885,
-      "epoch": 761,
-      "timeMs": "1724094056585",
-      "protocolVersion": 1,
-      "chainId": "dash-testnet-50"
+      "height": "158031",
+      "coreChainLockedHeight": 1268271,
+      "epoch": 7863,
+      "timeMs": "1749660469151",
+      "protocolVersion": 9,
+      "chainId": "dash-testnet-51"
     }
   }
 }
