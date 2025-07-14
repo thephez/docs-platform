@@ -95,7 +95,7 @@ html_sidebars = {
 }
 
 html_theme_options = {
-   "announcement": "This development version of documentation covers unreleased features.<br>See the <a href='https://docs.dash.org/platform'>stable version of the documentation</a> for information about the currently deployed Platform.",
+#    "announcement": "This development version of documentation covers unreleased features.<br>See the <a href='https://docs.dash.org/platform'>stable version of the documentation</a> for information about the currently deployed Platform.",
     "external_links": [
         {"name": "Core docs", "url": "https://docs.dash.org/en/stable/docs/core/index.html"},
         {"name": "User docs", "url": "https://docs.dash.org/"},
