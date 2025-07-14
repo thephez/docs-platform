@@ -4,199 +4,82 @@
 
 # Document
 
-## Document Submission
+## Document Overview
 
-Documents are sent to the platform by submitting the them in a document batch state transition consisting of:
+Once a [data contract](./data-contract.md) has been created, data can be stored by submitting documents that comply with the document structure specified in the contract. Each document consists of one or more fields and the indices necessary to support querying. Documents are [created](#document-create-transition), [updated](#document-replace-transition), or [deleted](#document-delete-transition) by sending by submitting them to the platform in a [batch state transition](./state-transition.md#batch).
 
-| Field | Type | Description|
-| - | - | - |
-| protocolVersion | integer | The platform protocol version (currently `1`) |
-| type | integer | State transition type (`1` for document batch) |
-| ownerId | array | [Identity](../protocol-ref/identity.md) submitting the document(s) (32 bytes) |
-| transitions | array of transition objects | Document `create`, `replace`, or `delete` transitions (up to 10 objects) |
-| signaturePublicKeyId | number | The `id` of the [identity public key](../protocol-ref/identity.md#identity-publickeys) that signed the state transition |
-| signature | array | Signature of state transition data (65 or 96 bytes) |
+## Document State Transition Details
 
-Each document batch state transition must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/document/stateTransition/documentsBatch.json):
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "protocolVersion": {
-      "type": "integer",
-      "$comment": "Maximum is the latest protocol version"
-    },
-    "type": {
-      "type": "integer",
-      "const": 1
-    },
-    "ownerId": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    },
-    "transitions": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      },
-      "minItems": 1,
-      "maxItems": 10
-    },
-    "signaturePublicKeyId": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "signature": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 65,
-      "maxItems": 96
-    }
-  },
-  "additionalProperties": false,
-  "required": [
-    "protocolVersion",
-    "type",
-    "ownerId",
-    "transitions",
-    "signaturePublicKeyId",
-    "signature"
-  ]
-}
-```
+All document transitions include the [document base transition fields](#document-base-transition). Some document transitions (.e.g., [document create](#document-create-transition)) require additional fields to provide their functionality.
 
 ### Document Base Transition
 
-All document transitions in a document batch state transition are built on the base schema and include the following fields:
+The following fields are included in all document transitions:
 
-| Field | Type | Description|
-| - | - | - |
-| $id | array | The [document ID](#document-id) (32 bytes)|
-| $type | string | Name of a document type found in the data contract associated with the `dataContractId` (1-64 characters) |
-| $action | array of integers | [Action](#document-transition-action) the platform should take for the associated document |
-| $dataContractId | array | Data contract ID [generated](../protocol-ref/data-contract.md#data-contract-id) from the data contract's `ownerId` and `entropy` (32 bytes) |
+| Field | Type | Size | Description|
+| ----- | ---- | ---- | ---------- |
+| [$id](#document-id) | array | 32 bytes | The [document ID](#document-id) |
+| [$action](#document-transition-action) | array of integers | Varies | [Action](#document-transition-action) the platform should take for the associated document |
+| $identityContractNonce | unsigned integer | 64 bits  | Identity contract nonce |
+| $type | string | 1-64 characters | Name of a document type found in the data contract associated with the `dataContractId`|
+| $dataContractId | array | 32 bytes | Data contract ID [generated](../protocol-ref/data-contract.md#data-contract-id) from the data contract's `ownerId` and `entropy` |
 
-Each document transition must comply with the document transition [base schema](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/document/stateTransition/documentTransition/base.json):
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "$id": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    },
-    "$type": {
-      "type": "string"
-    },
-    "$action": {
-      "type": "integer",
-      "enum": [0, 1, 3]
-    },
-    "$dataContractId": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    }
-  },
-  "required": [
-    "$id",
-    "$type",
-    "$action",
-    "$dataContractId"
-  ],
-  "additionalProperties": false
-}
-```
+Each document transition must comply with the [document base transition defined in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_base_transition/v0/mod.rs#L43-L61).
 
 #### Document id
 
-The document `$id` is created by hashing the document's `dataContractId`, `ownerId`, `type`, and `entropy` as shown in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/document/generate_document_id.rs).
+The document `$id` is created by double sha256 hashing the document's `dataContractId`, `ownerId`, `type`, and `entropy` as shown in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/document/generate_document_id.rs).
 
 ```rust
 // From the Rust reference implementation (rs-dpp)
 // generate_document_id.rs
-pub fn generate_document_id(
+pub fn generate_document_id_v0(
     contract_id: &Identifier,
     owner_id: &Identifier,
-    document_type: &str,
+    document_type_name: &str,
     entropy: &[u8],
 ) -> Identifier {
     let mut buf: Vec<u8> = vec![];
 
     buf.extend_from_slice(&contract_id.to_buffer());
     buf.extend_from_slice(&owner_id.to_buffer());
-    buf.extend_from_slice(document_type.as_bytes());
+    buf.extend_from_slice(document_type_name.as_bytes());
     buf.extend_from_slice(entropy);
 
-    Identifier::from_bytes(&hash(&buf)).unwrap()
+    Identifier::from_bytes(&hash_double_to_vec(&buf)).unwrap()
 }
 ```
 
 #### Document Transition Action
 
+Document transition actions indicate what operation platform should perform with the provided transition data. Documents provide CRUD functionality, ownership transfer, and NFT features as [defined in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_transition_action_type.rs#L6-L14).
+
 | Action | Name | Description |
 | :-: | - | - |
-| 0 | Create | Create a new document with the provided data |
-| 1 | Replace | Replace an existing document with the provided data |
-| 2 | Delete | Delete the referenced document |
-| 3 | Transfer | Transfer the referenced document to a new owner |
-| 4 | Purchase | Purchase the referenced document |
-| 5 | Update price | Update the price for the document |
+| 0 | [Create](#document-create-transition) | Create a new document with the provided data |
+| 1 | [Replace](#document-replace-transition) | Replace an existing document with the provided data |
+| 2 | [Delete](#document-delete-transition) | Delete the referenced document |
+| 3 | [Transfer](#document-transfer-transition) | Transfer the referenced document to a new owner |
+| 4 | [Purchase](#document-purchase-transition) | Purchase the referenced document |
+| 5 | [Update price](#document-update-price-transition) | Update the price for the document |
 
 ### Document Create Transition
 
-The document create transition extends the base schema to include the following additional fields:
+The document create transition extends the [base transition](#document-base-transition) to include the following additional fields:
 
-| Field | Type | Description|
-| - | - | - |
-| $entropy | array | Entropy used in creating the [document ID](#document-id). Generated as [shown here](../protocol-ref/state-transition.md#entropy-generation). (32 bytes) |
-| $createdAt | integer | (Optional)  | Time (in milliseconds) the document was created |
-| $updatedAt | integer | (Optional)  | Time (in milliseconds) the document was last updated |
+| Field | Type | Size | Description |
+| - | - | - | - |
+| $entropy | array | 32 bytes | Entropy used in creating the [document ID](#document-id). Generated as [shown here](../protocol-ref/state-transition.md#entropy-generation). |
+| data | | Varies | Document data being submitted. |
+| $prefundedVotingBalance | | Varies | (Optional) Prefunded amount of credits reserved for unique index conflict resolution voting (e.g., [premium DPNS name](../explanations/dpns.md#conflict-resolution)).|
 
-Each document create transition must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/document/stateTransition/documentTransition/create.json) (in addition to the document transition [base schema](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/document/stateTransition/documentTransition/base.json)) that is required for all document transitions):
+Each document create transition must comply with the structure defined in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_create_transition/v0/mod.rs#L56-L80) (in addition to the [document base transition](#document-base-transition) that is required for all document transitions).
 
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "$entropy": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32
-    },
-    "$createdAt": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "$updatedAt": {
-      "type": "integer",
-      "minimum": 0
-    }
-  },
-  "required": [
-    "$entropy"
-  ],
-  "additionalProperties": false
-}
-```
+::: {note}
+The document create transition data field must include all [required document properties](./data-contract-document.md#required-properties) specified in the data contract.
+:::
 
-**Note:** The document create transition must also include all required properties of the document as defined in the data contract.
-
-The following example document create transition and subsequent table demonstrate how the document transition base, document create transition, and data contract document definitions are assembled into a complete transition for inclusion in a [state transition](#document-submission):
+The following example document create transition and subsequent table demonstrate how the document transition base, document create transition, and data contract document definitions are assembled into a complete transition for inclusion in a [state transition](#document-overview):
 
 ```json
 {
@@ -220,39 +103,20 @@ The following example document create transition and subsequent table demonstrat
 
 ### Document Replace Transition
 
-The document replace transition extends the base schema to include the following additional fields:
+The document replace transition extends the [base transition](#document-base-transition) to include the following additional fields:
 
-| Field | Type | Description|
-| - | - | - |
-| $revision | integer | Document revision (=> 1) |
-| $updatedAt | integer | (Optional)  | Time (in milliseconds) the document was last updated |
+| Field | Type | Size | Description |
+| - | - | - | - |
+| $revision | unsigned integer | 64 bits | Document revision (=> 1) |
+| data | | Varies | Document data being updated |
 
-Each document replace transition must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/document/stateTransition/documentTransition/replace.json) (in addition to the document transition [base schema](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/schema/document/stateTransition/documentTransition/base.json)) that is required for all document transitions):
+Each document replace transition must comply with the structure defined in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_replace_transition/v0/mod.rs#L35-L45) (in addition to the [document base transition](#document-base-transition) that is required for all document transitions).
 
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "$revision": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "$updatedAt": {
-      "type": "integer",
-      "minimum": 0
-    }
-  },
-  "required": [
-    "$revision"
-  ],
-  "additionalProperties": false
-}
-```
+::: {note}
+The document replace transition data field must include all [required document properties](./data-contract-document.md#required-properties) specified in the data contract.
+:::
 
-**Note:** The document create transition must also include all required properties of the document as defined in the data contract.
-
-The following example document create transition and subsequent table demonstrate how the document transition base, document create transition, and data contract document definitions are assembled into a complete transition for inclusion in a [state transition](#document-submission):
+The following example document create transition and subsequent table demonstrate how the document transition base, document create transition, and data contract document definitions are assembled into a complete transition for inclusion in a [state transition](#document-overview):
 
 ```json
 {
@@ -276,104 +140,62 @@ The following example document create transition and subsequent table demonstrat
 
 ### Document Delete Transition
 
-The document delete transition only requires the fields found in the [base document transition](#document-base-transition).
+The document delete transition only requires the fields found in the [base document transition](#document-base-transition). See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_delete_transition/v0/mod.rs#L21-L24) for details.
 
-### Example Document Batch State Transition
+### Document Transfer Transition
 
-```json
-{
-  "protocolVersion": 1,
-  "type": 1,
-  "signature": "ICu/H7MoqxNUzznP9P2aTVEo91VVy0T8M3QWCH/7dg2UVokG98TbD4DQB4E8SD4GzHoRrBMycJ75SbT2AaF9hFc=",
-  "signaturePublicKeyId": 0,
-  "ownerId": "4ZJsE1Yg8AosmC4hAeo3GJgso4N9pCoa6eCTDeXsvdhn",
-  "transitions": [
-    {
-      "$id": "8jm8iHsYE6ENENvFVeFVFMCwfgEqo5P1iR2q4KAYgpbS",
-      "$type": "note",
-      "$action": 1,
-      "$dataContractId": "AnmBaYH13RyiuvBkBD6qkdc36H5DKt6ToMrkqgUnnywz",
-      "message": "Updated document @ Mon, 26 Oct 2020 14:58:31 GMT",
-      "$revision": 2
-    }
-  ]
-}
-```
+The document transfer transition allows a document owner to transfer document ownership directly to another identity without making it available for purchase. This transition extends the [base transition](#document-base-transition) to include the following additional fields:
+
+| Field | Type | Size | Description |
+| - | - | - | - |
+| $revision | unsigned integer | 64 bits | Document revision (=> 1) |
+| recipientOwnerId | array of bytes | 32 bytes | Identifier of the recipient (new owner). See the [NFT page](../explanations/nft.md#transfer-and-trade) for more details. |
+
+Each document transfer transition must comply with the structure defined in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_transfer_transition/v0/mod.rs#L33-L46) (in addition to the [document base transition](#document-base-transition) that is required for all document transitions).
+
+### Document Purchase Transition
+
+The document purchase transition allows an identity to purchase a document previously made available for sale by the current document owner. This transition extends the [document base transition](#document-base-transition) to include the following additional fields:
+
+| Field | Type | Size | Description |
+| - | - | - | - |
+| $revision | unsigned integer | 64 bits | Document revision (=> 1) |
+| price | unsigned integer | 64 bits | Number of credits being offered for the purchase. See the [NFT page](../explanations/nft.md#transfer-and-trade) for more details. |
+
+Each document purchase transition must comply with the structure defined in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_purchase_transition/v0/mod.rs#L23-L33) (in addition to the [document base transition](#document-base-transition) that is required for all document transitions).
+
+### Document Update Price Transition
+
+The document update price transition allows a document owner to set or update the minimum price they will accept in exchange for transferring document ownership to another party. This transition extends the [document base transition](#document-base-transition) to include the following additional fields:
+
+| Field | Type | Size | Description |
+| - | - | - | - |
+| $revision | unsigned integer | 64 bits | Document revision (=> 1) |
+| $price | unsigned integer | 64 bits | Updated price for the document. Can only be set by the current document owner. See the [NFT page](../explanations/nft.md#transfer-and-trade) for more details. |
+
+Each document update price transition must comply with the structure defined in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/batched_transition/document_update_price_transition/v0/mod.rs#L27-L40) (in addition to the [document base transition](#document-base-transition) that is required for all document transitions).
 
 ## Document Object
 
-The document object represents the data provided by the platform in response to a query. Responses consist of an array of these objects containing the following fields as defined in the Rust reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/schema/document/documentExtended.json)):
+The document object represents the data provided by the platform in response to a query. Responses consist of an array of these objects containing the following fields as defined in the Rust reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v2.0-dev/packages/rs-dpp/src/document/v0/mod.rs#L35-L105)):
 
 | Property | Type | Required | Description |
 | - | - | - | - |
 | protocolVersion | integer | Yes | The platform protocol version (currently `1`) |
 | $id | array | Yes | The [document ID](#document-id) (32 bytes)|
 | $type | string | Yes  | Document type defined in the referenced contract (1-64 characters) |
-| $revision | integer | No | Document revision (=>1) |
+| $revision | unsigned integer (64 bits) | No | Document revision (=>1) if the document is mutable |
 | $dataContractId | array | Yes | Data contract ID [generated](../protocol-ref/data-contract.md#data-contract-id) from the data contract's `ownerId` and `entropy` (32 bytes) |
 | $ownerId | array | Yes | [Identity](../protocol-ref/identity.md) of the user submitting the document (32 bytes) |
-| $createdAt | integer | (Optional)  | Time (in milliseconds) the document was created |
-| $updatedAt | integer | (Optional)  | Time (in milliseconds) the document was last updated |
-
-Each document object must comply with this JSON-Schema definition established in [rs-dpp](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/schema/document/documentExtended.json):
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "$protocolVersion": {
-      "type": "integer",
-      "$comment": "Maximum is the latest protocol version"
-    },
-    "$id": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    },
-    "$type": {
-      "type": "string"
-    },
-    "$revision": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "$dataContractId": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    },
-    "$ownerId": {
-      "type": "array",
-      "byteArray": true,
-      "minItems": 32,
-      "maxItems": 32,
-      "contentMediaType": "application/x.dash.dpp.identifier"
-    },
-    "$createdAt": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "$updatedAt": {
-      "type": "integer",
-      "minimum": 0
-    }
-  },
-  "required": [
-    "$protocolVersion",
-    "$id",
-    "$type",
-    "$revision",
-    "$dataContractId",
-    "$ownerId"
-  ],
-  "additionalProperties": false
-}
-```
+| $createdAt | unsigned integer (64 bits) | No | Time (in milliseconds) at document creation, if required by the document type schema |
+| $updatedAt | unsigned integer (64 bits) | No | Last document update time in milliseconds, if required by the document type schema |
+|$transferredAt | unsigned integer (64 bits) | No | Last transferred time in milliseconds, if required by the document type schema |
+| $createdAt<br>BlockHeight | unsigned integer (64 bits) |  No | Block height at document creation, if required by the schema |
+| $updatedAt<br>BlockHeight | unsigned integer (64 bits) | No | Block height at the document's last update, if required by the schema |
+| $transferredAt<br>BlockHeight | unsigned integer (64 bits) | No | Block height when document was last transferred, if required by the schema |
+| $createdAt<br>CoreBlockHeight | unsigned integer (64 bits) | No | Core block height at document creation, if required by the schema |
+| $updatedAt<br>CoreBlockHeight | unsigned integer (64 bits) | No |Core block height at the document's last update, if required by the schema |
+| $transferredAt<br>CoreBlockHeight | unsigned integer (64 bits) | No |Core block height when document was last transferred, if required by the schema |
 
 ### Example Document Object
 

@@ -54,7 +54,7 @@ hoverxref_role_types = {
 
 # -- Myst parser configuration -----------------------------------------------
 # Auto-generate header anchors for md headings
-myst_heading_anchors = 5
+myst_heading_anchors = 6
 
 # Enable colon_fence for better markdown compatibility
 # https://myst.tools/docs/mystjs/syntax-overview#directives
@@ -95,9 +95,9 @@ html_sidebars = {
 }
 
 html_theme_options = {
-#    "announcement": "Test build of Dash Core documentation migrated from <a href='https://dashcore.readme.io'>Readme.io</a>!",
+#    "announcement": "This development version of documentation covers unreleased features.<br>See the <a href='https://docs.dash.org/platform'>stable version of the documentation</a> for information about the currently deployed Platform.",
     "external_links": [
-        {"name": "Core docs", "url": "https://docs.dash.org/projects/core/en/stable/docs/index.html"},
+        {"name": "Core docs", "url": "https://docs.dash.org/en/stable/docs/core/index.html"},
         {"name": "User docs", "url": "https://docs.dash.org/"},
         {"name": "Dash.org", "url": "https://www.dash.org"},
         {"name": "Forum", "url": "https://www.dash.org/forum"},
