@@ -132,5 +132,10 @@ html_context = {
 googleanalytics_id = 'G-B3JNYGTPR0'
 googleanalytics_enabled = True
 
+# -- Algolia search config
+docsearch_app_id = "J3H09FN9YG"
+docsearch_api_key = "3c3efd71d9f4ea3a4000d1a54aab4829"
+docsearch_index_name = "Dash docs site"
+
 def setup(app):
     app.add_js_file('js/pydata-search-close.js')
