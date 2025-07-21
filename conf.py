@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Dash Platform'
-copyright = '2024, Dash Core Group, Inc'
+copyright = '2025, Dash Core Group, Inc'
 author = 'thephez'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -32,6 +32,8 @@ extensions = [
   'sphinx.ext.intersphinx',
 ]
 
+extensions += ["sphinx_docsearch"]
+
 templates_path = ['_templates']
 exclude_patterns = [
     '_build',
@@ -42,7 +44,8 @@ exclude_patterns = [
     'scripts',
     'img/dev/gifs/README.md',
     'docs/other',
-    'docs/ai-prompt.md'
+    'docs/ai-prompt.md',
+    'platform-src/*',
 ]
 
 # The master toctree document.
@@ -121,7 +124,7 @@ html_context = {
     # "github_url": "https://github.com", # or your GitHub Enterprise site
     "github_user": "dashpay",
     "github_repo": "docs-platform",
-    "github_version": "1.0.0",
+    "github_version": "2.0.0",
     "doc_path": "",
 }
 
@@ -129,6 +132,11 @@ html_context = {
 
 googleanalytics_id = 'G-B3JNYGTPR0'
 googleanalytics_enabled = True
+
+# -- Algolia search config
+docsearch_app_id = "J3H09FN9YG"
+docsearch_api_key = "3c3efd71d9f4ea3a4000d1a54aab4829"
+docsearch_index_name = "Dash docs site"
 
 def setup(app):
     app.add_js_file('js/pydata-search-close.js')
