@@ -44,7 +44,8 @@ exclude_patterns = [
     'scripts',
     'img/dev/gifs/README.md',
     'docs/other',
-    'docs/ai-prompt.md'
+    'docs/ai-prompt.md',
+    'platform-src/*',
 ]
 
 # The master toctree document.
