@@ -32,6 +32,8 @@ extensions = [
   'sphinx.ext.intersphinx',
 ]
 
+extensions += ["sphinx_docsearch"]
+
 templates_path = ['_templates']
 exclude_patterns = [
     '_build',
