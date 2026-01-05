@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Dash Platform'
-copyright = '2025, Dash Core Group, Inc'
+copyright = '2026, Dash Core Group, Inc'
 author = 'thephez'
 
 # The version info for the project you're documenting, acts as replacement for
