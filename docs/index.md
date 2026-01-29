@@ -165,6 +165,7 @@ protocol-ref/state-transition
 protocol-ref/document
 protocol-ref/token
 protocol-ref/data-trigger
+protocol-ref/address-system
 protocol-ref/protocol-constants
 protocol-ref/errors
 ```
