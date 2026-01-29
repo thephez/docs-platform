@@ -26,7 +26,7 @@ The list of common fields used by multiple state transitions is defined in [rs-d
 | Field           | Type           | Size | Description |
 | --------------- | -------------- | ---- | ----------- |
 | $version        | unsigned integer | 32 bits | The platform protocol version (currently `1`) |
-| type            | unsigned integer | 8 bits  | State transition type:<br>`0` - [data contract create](../protocol-ref/data-contract.md#data-contract-create)<br>`1` - [batch](#batch)<br>`2` - [identity create](../protocol-ref/identity.md#identity-create)<br>`3` - [identity topup](identity.md#identity-topup)<br>`4` - [data contract update](data-contract.md#data-contract-update)<br>`5` - [identity update](identity.md#identity-update)<br>`6` - [identity credit transfer](identity.md#identity-credit-transfer)<br>`7` - [identity credit withdrawal](identity.md#identity-credit-withdrawal)<br>`8` - [masternode vote](#masternode-vote) |
+| type            | unsigned integer | 8 bits  | State transition type:<br>`0` - [data contract create](../protocol-ref/data-contract.md#data-contract-create)<br>`1` - [batch](#batch)<br>`2` - [identity create](../protocol-ref/identity.md#identity-create)<br>`3` - [identity topup](identity.md#identity-topup)<br>`4` - [data contract update](data-contract.md#data-contract-update)<br>`5` - [identity update](identity.md#identity-update)<br>`6` - [identity credit transfer](identity.md#identity-credit-transfer)<br>`7` - [identity credit withdrawal](identity.md#identity-credit-withdrawal)<br>`8` - [masternode vote](#masternode-vote)<br>`9` - [identity credit transfer to addresses](address-system.md#type-9-identitycredittransfertoaddresses)<br>`10` - [identity create from addresses](address-system.md#type-10-identitycreatefromaddresses)<br>`11` - [identity topup from addresses](address-system.md#type-11-identitytopupfromaddresses)<br>`12` - [address funds transfer](address-system.md#type-12-addressfundstransfer)<br>`13` - [address funding from asset lock](address-system.md#type-13-addressfundingfromassetlock)<br>`14` - [address credit withdrawal](address-system.md#type-14-addresscreditwithdrawal) |
 | userFeeIncrease | unsigned integer | 16 bits | Extra fee to prioritize processing if the mempool is full. Typically set to zero. |
 | signature       | array of bytes | 65 bytes |Signature of state transition data |
 
@@ -144,14 +144,19 @@ See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0
 ## State Transition Signing
 
 State transitions must be cryptographically signed to prove that an authorized party submitted them.
-There are two ways to sign state transitions, with the difference being the source of the private
+There are three ways to sign state transitions, with the difference being the source of the private
 key used for signing. The following table specifies which signing method is used by each state
 transition type:
 
 | Signing Method | State Transitions |
 | -------------- | ----------------- |
-| [Identity](#signing-with-identity)     | Batch, Contract create, Contract update, Identity update, Identity credit transfer, Identity credit withdrawal, Masternode vote |
-| [Asset lock](#signing-with-asset-lock) | Identity create, Identity topup                                                                       |
+| [Identity](#signing-with-identity)     | Batch, Contract create, Contract update, Identity update, Identity credit transfer, Identity credit transfer to addresses, Identity credit withdrawal, Masternode vote |
+| [Asset lock](#signing-with-asset-lock) | Identity create, Identity topup, Address funding from asset lock |
+| [Address witness](#signing-with-address-witness) | Identity create from addresses, Identity topup from addresses, Address funds transfer, Address credit withdrawal |
+
+:::{note}
+Address-based state transitions (types 9-14) were introduced in Protocol Version 11. For detailed information on these transitions, see [Address-Based State Transitions](address-system.md).
+:::
 
 ### Signing with Asset Lock
 
@@ -185,6 +190,23 @@ The process to sign state transitions using an identity consists of the followin
 4. **Store the signature** in the state transition's `signature` field
 5. **For _identity update_ only, sign any added public keys** as described in the [signing public keys](#signing-public-keys) section.
 6. **Finalize the state transition** by re-encoding it with Bincode, including all previously excluded fields such as `signature`.
+
+### Signing with Address Witness
+
+Address-based state transitions (types 10-12, 14) use address witnesses to prove ownership of Platform addresses. Unlike identity-signed transitions, these do not require an existing identity. Instead, each input address requires a corresponding witness containing cryptographic proof of address ownership.
+
+The process to sign state transitions using address witnesses consists of the following steps:
+
+1. **Create a canonical, signable state transition** encoded using [Bincode](https://github.com/bincode-org/bincode).
+   - Exclude the `input_witnesses` field and any other non-signable fields.
+2. **Calculate the double SHA-256 hash** of the encoded signable state transition.
+3. **For each input address**, create an appropriate witness:
+   - **P2PKH addresses**: Create a recoverable ECDSA signature (65 bytes) using the private key that derives the address.
+   - **P2SH multisig addresses**: Collect the required number of signatures and include the redeem script.
+4. **Store witnesses** in the state transition's `input_witnesses` field in the same order as inputs.
+5. **Finalize the state transition** by re-encoding it with Bincode, including all previously excluded fields.
+
+For detailed information on address witnesses and Platform addresses, see [Address-Based State Transitions](address-system.md#common-components).
 
 ### Signing public keys
 
