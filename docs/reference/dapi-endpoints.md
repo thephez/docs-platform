@@ -144,7 +144,7 @@ The following endpoints provide information about the Core chain.
 
 :::{note}
 The previous version of documentation can be [viewed
-here](https://docs.dash.org/projects/platform/en/1.0.0/docs/reference/dapi-endpoints.html).
+here](https://docs.dash.org/projects/platform/en/2.0.0/docs/reference/dapi-endpoints.html).
 :::
 
 ```{toctree}

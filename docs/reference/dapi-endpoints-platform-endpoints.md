@@ -4053,7 +4053,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 ## Deprecated Endpoints
 
-The following endpoints were recently deprecated. See the [previous version of documentation](https://docs.dash.org/projects/platform/en/1.0.0/docs/reference/dapi-endpoints-platform-endpoints.html) for additional information on these endpoints.
+The following endpoints were recently deprecated. See the [previous version of documentation](https://docs.dash.org/projects/platform/en/2.0.0/docs/reference/dapi-endpoints-platform-endpoints.html) for additional information on these endpoints.
 
 ### getIdentities
 
