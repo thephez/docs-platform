@@ -780,11 +780,54 @@ See the data contract [config implementation in rs-dpp](https://github.com/dashp
 
 Groups can be used to distribute contract configuration and update authorization across multiple identities. They are particularly useful for contracts where multiple parties are involved in controlling or managing contract-specific features. Each group defines a set of member identities, the voting power of each member, and the required power threshold to authorize an action.
 
-- Each member is assigned an integer power.
-- The group itself has a required power threshold to authorize an action.
-- Groups can have up to 256 members, each with a maximum power of 2^16 - 1.
-- Changes to a token (e.g., mint, burn, freeze) can be configured so they require group authorization.
-  - Example: "2-of-3 multisig” among three admins, each with certain voting power.
+#### Group Structure
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `members` | Map\<Identifier, MemberPower\> | Map of identity IDs to their voting power |
+| `requiredPower` | GroupRequiredPower | Threshold power needed to authorize actions |
+
+#### Group Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `max_contract_group_size` | 256 | Maximum members per group |
+| Maximum member power | 65,535 (u16::MAX) | Maximum voting power per member |
+| Maximum required power | 4,294,967,295 (u32::MAX) | Maximum threshold power |
+
+#### Group Action Info
+
+When submitting a group-authorized action, the transition includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `groupContractPosition` | u16 | Position of the group in the contract |
+| `signerPower` | GroupMemberPower | Power of the signing member |
+
+#### Use Cases
+
+- **Multi-party token control**: Require multiple administrators to approve minting or burning
+- **Governance**: Implement weighted voting for configuration changes
+- **Security**: Distribute control to prevent single points of failure
+
+**Example: 2-of-3 Multisig**
+
+```json
+{
+  "groups": {
+    "0": {
+      "members": {
+        "<identity_id_1>": 1,
+        "<identity_id_2>": 1,
+        "<identity_id_3>": 1
+      },
+      "requiredPower": 2
+    }
+  }
+}
+```
+
+In this example, any two of the three members can authorize an action.
 
 See the [groups implementation in rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L32-L35) for more details.
 
