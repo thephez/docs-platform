@@ -70,26 +70,6 @@ cryptocurrency. Let's jump right in!
         
         +++
         :ref:`Click to begin <resources-faq>`
-
-    .. grid-item-card:: 🛠️ Dash SDK
-        :margin: 2 2 auto auto
-        :link-type: ref
-        :link: sdk-js-index
-        
-        JavaScript SDK documentation
-        
-        +++
-        :ref:`Click to begin <sdk-js-index>`
-
-    .. grid-item-card:: 🛠️ DAPI Client
-        :margin: 2 2 auto auto
-        :link-type: ref
-        :link: dapi-client-js-index
-        
-        JavaScript DAPI-Client documentation
-        
-        +++
-        :ref:`Click to begin <dapi-client-js-index>`
 ```
 
 ```{toctree}
@@ -177,26 +157,11 @@ protocol-ref/errors
 
 resources/faq
 resources/repository-overview
+Platform Bridge <https://bridge.thepasta.org/>
 Platform Explorer <https://platform-explorer.com/>
 Testnet Block Explorer <https://insight.testnet.networks.dash.org/insight/>
 Testnet Faucet <https://faucet.testnet.networks.dash.org/>
-JavaScript SDK <https://github.com/dashpay/platform/tree/master/packages/js-dash-sdk#readme>
-resources/source-code
-Previous Version of Docs <https://docs.dash.org/projects/platform/en/1.0.0/docs/>
-```
-
-```{toctree}
-:maxdepth: 2
-:titlesonly:
-:caption: JavaScript SDK
-:hidden:
-
-sdk-js/overview
-sdk-js/examples/examples
-sdk-js/getting-started/getting-started
-sdk-js/platform/platform
-sdk-js/usage/usage
-sdk-js/wallet/wallet
+Previous Version of Docs <https://docs.dash.org/projects/platform/en/2.0.0/docs/>
 ```
 
 ```{toctree}
@@ -207,15 +172,4 @@ sdk-js/wallet/wallet
 
 sdk-rs/overview
 sdk-rs/quick-start
-```
-
-```{toctree}
-:maxdepth: 2
-:titlesonly:
-:caption: DAPI Client
-:hidden:
-
-dapi-client-js/overview
-dapi-client-js/quick-start
-dapi-client-js/usage/usage
 ```
