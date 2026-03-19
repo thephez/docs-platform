@@ -23,13 +23,15 @@ mappings:
     block_id:
       caption: create-wallet.mjs
 
+  - source: send-funds.mjs
+    doc: send-funds.md
+    block_id:
+      caption: send-funds.mjs
+
   - source: setupDashClient.mjs
     doc: setup-sdk-client.md
     block_id:
       caption: setupDashClient.mjs
-
-  # send-funds.md excluded: source file uses old CommonJS SDK,
-  # docs already migrated to Evo SDK. Add when platform-tutorials updates.
 
   # -- Identities and Names --
 
