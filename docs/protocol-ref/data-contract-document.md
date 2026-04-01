@@ -4,6 +4,10 @@
 
 The `documents` object defines each type of document in the data contract. At a minimum, a document must consist of 1 or more properties. The `additionalProperties` properties keyword must be included as described in the [constraints](./data-contract.md#additional-properties) section and each property must be [assigned a position](#assigning-position).
 
+:::{note}
+The `$schema` property is required for each document type but is automatically injected by the platform during [contract enrichment](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/document_type/schema/enrich_with_base_schema/v0/mod.rs). Do not include it in user-submitted document type definitions — providing it will result in a validation error.
+:::
+
 The following example shows a minimal `documents` object defining a single document (`note`) with one property (`message`).
 
 ```json
@@ -117,10 +121,10 @@ There are a variety of constraints currently defined for performance and securit
 
 | Description | Value |
 | ----------- | ----- |
-| Minimum number of properties | [1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L22) |
-| Maximum number of properties | [100](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L23) |
-| Minimum property name length | [1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L20) |
-| Maximum property name length | [64](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L20) |
+| Minimum number of properties | [1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L22) |
+| Maximum number of properties | [100](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L23) |
+| Minimum property name length | [1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L20) |
+| Maximum property name length | [64](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L20) |
 | Property name characters     | Alphanumeric (`A-Z`, `a-z`, `0-9`)<br>Hyphen (`-`) <br>Underscore (`_`) |
 
 ## Document Indices
@@ -130,7 +134,7 @@ Document indices may be defined if indexing on document fields is required. The 
 The `indices` array consists of one or more objects that each contain:
 
 * A unique `name` for the index
-* A `properties` array composed of a `<field name: sort order>` object for each document field that is part of the index
+* A `properties` array composed of a `<field name: sort order>` object for each document field that is part of the index (only `asc` is currently supported)
   
   :::{admonition} Compound Indices
   :class: attention
@@ -145,8 +149,8 @@ The `indices` array consists of one or more objects that each contain:
   {
     "name": "<index name a>",
     "properties": [
-      { "<field name a>": "<asc"|"desc>" },
-      { "<field name b>": "<asc"|"desc>" }
+      { "<field name a>": "asc" },
+      { "<field name b>": "asc" }
     ],
     "unique": true|false,
     "nullSearchable": true|false,
@@ -163,7 +167,7 @@ The `indices` array consists of one or more objects that each contain:
   {
     "name": "<index name b>",
     "properties": [
-      { "<field name c>": "<asc"|"desc>" },
+      { "<field name c>": "asc" },
     ],
   }
 ]
@@ -207,15 +211,15 @@ For performance and security reasons, indices have the following constraints. Th
 
 | Description | Value |
 | ----------- | ----- |
-| Minimum/maximum length of index `name` | [1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L357) / [32](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L358) |
-| Maximum number of indices | [10](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L438) |
-| Maximum number of unique indices | [10](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-platform-version/src/version/dpp_versions/dpp_validation_versions/v2.rs#L27) |
-| Maximum number of contested indices | [1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-platform-version/src/version/dpp_versions/dpp_validation_versions/v2.rs#L26) |
-| Maximum number of properties in a single index | [10](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L377) |
-| Maximum length of indexed string property | [63](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/mod.rs#L35) |
+| Minimum/maximum length of index `name` | [1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L357) / [32](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L358) |
+| Maximum number of indices | [10](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L438) |
+| Maximum number of unique indices | [10](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/dpp_versions/dpp_validation_versions/v2.rs#L27) |
+| Maximum number of contested indices | [1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/dpp_versions/dpp_validation_versions/v2.rs#L26) |
+| Maximum number of properties in a single index | [10](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L377) |
+| Maximum length of indexed string property | [63](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/mod.rs#L22) |
 | Usage of `$id` in an index [disallowed](https://github.com/dashpay/platform/pull/178) | N/A |
-| **Note: Dash Platform [does not allow indices for arrays](https://github.com/dashpay/platform/pull/225).**<br>Maximum length of indexed byte array property | [255](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/mod.rs#L36) |
-| **Note: Dash Platform [does not allow indices for arrays](https://github.com/dashpay/platform/pull/225).**<br>Maximum number of indexed array items         | [1024](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/mod.rs#L37) |
+| **Note: Dash Platform [does not allow indices for arrays](https://github.com/dashpay/platform/pull/225).**<br>Maximum length of indexed byte array property | [255](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/mod.rs#L24) |
+| **Note: Dash Platform [does not allow indices for arrays](https://github.com/dashpay/platform/pull/225).**<br>Maximum number of indexed array items         | [1024](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/mod.rs#L25) |
 
 :::{seealso}
 For all protocol constants, see [Protocol Constants](protocol-constants.md).
@@ -250,6 +254,7 @@ Documents support the following configuration options to provide flexibility in 
 | `transferable`                       | integer  | Transferable without a marketplace sell:<br>`0` - Never<br>`1` - Always<br>See the [NFT page](../explanations/nft.md#transfer-and-trade) for more details |
 | `tradeMode`                          | integer  | Built-in marketplace system:<br>`0` - None<br>`1` - Direct purchase (the purchaser can buy the item without requiring approval)<br>See the [NFT page](../explanations/nft.md#transfer-and-trade) for more details |
 | `creationRestrictionMode`            | integer  | Restriction of document creation:<br>`0` - No restrictions<br>`1` - Contract owner only<br>`2` - No creation (System Only)<br>See the [NFT page](../explanations/nft.md#creation-restrictions) for more details |
+| `keywords`                           | array of strings | Up to 20 strings (3–50 characters each) describing the document type for searchability |
 
 | Security option | Type | Description |
 |-----------------|------|-------------|
@@ -257,14 +262,37 @@ Documents support the following configuration options to provide flexibility in 
 | [`requiresIdentity`<br>`DecryptionBoundedKey`](./data-contract.md#key-management) | integer  | Key requirements for identity decryption:<br>`0` - Unique non-replaceable<br>`1` - Multiple<br>`2` - Multiple with reference to latest key |
 | `signatureSecurity`<br>`LevelRequirement`  | integer  | Public key security level:<br>`1` - Critical<br>`2` - High<br>`3` - Medium. Default is High if none specified. |
 
+### Token Costs
+
+The `tokenCost` option allows document types to require token payment for operations. When configured, users must pay a specified amount of tokens to perform each operation type. Each operation cost is defined as a [documentActionTokenCost](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L293-336) object with the following properties:
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `contractId` | array (32 bytes) | No | Identifier of the contract containing the payment token. Defaults to the current contract if omitted. |
+| `tokenPosition` | integer (0–65535) | Yes | Position of the token within the contract |
+| `amount` | integer (1–281474976710655) | Yes | Number of tokens required for the operation |
+| `effect` | integer | No | Token disposition after payment:<br>`0` - Transfer to contract owner (default)<br>`1` - Burn (tokens destroyed) |
+| `gasFeesPaidBy` | integer | No | Who pays gas fees for the operation:<br>`0` - Document owner (default)<br>`1` - Contract owner<br>`2` - Prefer contract owner (falls back to document owner if insufficient) |
+
+The following operation types can each have an independent cost configuration:
+
+| Operation | Description |
+|-----------|-------------|
+| `create` | Creating a new document |
+| `replace` | Replacing an existing document |
+| `delete` | Deleting a document |
+| `transfer` | Transferring document ownership |
+| `update_price` | Updating a document's purchase price |
+| `purchase` | Purchasing a document |
+
 :::{dropdown} List of all usable document properties
 
-  This list of properties is defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/mod.rs#L31) and the [document meta-schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json).
+  This list of properties is defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/mod.rs#L41) and the [document meta-schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json).
 
   | Property Name | Type | Description |
   |---------------|------|-------------|
   | `type`                               | string   | Specifies the type of the document, constrained to "object". |
-  | `$schema`                            | string   | The schema URL reference for the document. |
+  | `$schema`                            | string   | Platform-injected during enrichment; not accepted in user submissions. |
   | `$defs`                              | object   | References the `documentProperties` definition. |
   | [`indices`](#document-indices)       | array    | Defines indices for the document with properties like `name`, `unique`, `nullSearchable`, and `contested`. |
   | `signatureSecurity`<br>`LevelRequirement`  | integer  | Public key security level:<br>`1` - Critical<br>`2` - High<br>`3` - Medium. Default is High if none specified. |
@@ -278,6 +306,8 @@ Documents support the following configuration options to provide flexibility in 
   | [`requiresIdentity`<br>`DecryptionBoundedKey`](./data-contract.md#key-management) | integer  | Key requirements for identity decryption:<br>`0` - Unique non-replaceable<br>`1` - Multiple<br>`2` - Multiple with reference to latest key |
   | [`properties`](#document-properties) | object   | Defines the properties of the document. |
   | [`transient`](#transient-properties) | array    | An array of strings specifying transient properties that are validated by Platform but not stored. |
+  | `tokenCost`                          | object   | Defines token costs for document operations (create, replace, update_price, delete, transfer, purchase) |
+  | `keywords`                           | array    | Up to 20 strings (3–50 characters each) for searchability |
   | [`additionalProperties`](./data-contract.md#additional-properties) | boolean  | Specifies whether additional properties are allowed. Must be set to false, meaning no additional properties are allowed beyond those defined. |
 
 :::
@@ -303,7 +333,7 @@ The following example (from the [DPNS contract's `domain` document](https://gith
 There are a variety of keyword constraints currently defined for performance and security reasons. The
 following constraints apply to document definitions. Unless otherwise noted, these
 constraints are defined in the platform's JSON Schema rules (e.g., [rs-dpp document meta
-schema](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json)).
+schema](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json)).
 
 | Keyword | Constraint |
 | ------- | ---------- |
@@ -372,4 +402,4 @@ This example syntax shows the structure of a documents object that defines two d
 
 ## Document Schema
 
-See full document schema details in the [rs-dpp document meta schema](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json).
+See full document schema details in the [rs-dpp document meta schema](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json).

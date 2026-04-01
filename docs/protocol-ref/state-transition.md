@@ -13,22 +13,26 @@
 
 ### Fees
 
-State transition fees are paid via the credits established when an identity is created. Credits are created at a rate of [1000 credits/satoshi](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/balances/credits.rs#L37). Fees for actions vary based on parameters related to storage and computational effort that are defined in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/fee/default_costs/constants.rs).
+State transition fees are paid via the credits established when an identity is created. Credits are created at a rate of [1000 credits/satoshi](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/balances/credits.rs#L42). Fees for actions vary based on parameters related to storage and computational effort that are defined in [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/fee/default_costs/constants.rs).
 
 ### Size
 
-All serialized data (including state transitions) is limited to a maximum size of [16 KB](http://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/util/cbor_serializer.rs#L8).
+State transitions are limited to a maximum size of [20 KB](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/system_limits/v1.rs#L6).
 
 ### Common Fields
 
-The list of common fields used by multiple state transitions is defined in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/common_fields.rs). All state transitions include the following fields:
+The list of common fields used by multiple state transitions is defined in [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/common_fields.rs). All state transitions include the following fields:
 
 | Field           | Type           | Size | Description |
 | --------------- | -------------- | ---- | ----------- |
-| $version        | unsigned integer | 32 bits | The platform protocol version (currently `1`) |
-| type            | unsigned integer | 8 bits  | State transition type:<br>`0` - [data contract create](../protocol-ref/data-contract.md#data-contract-create)<br>`1` - [batch](#batch)<br>`2` - [identity create](../protocol-ref/identity.md#identity-create)<br>`3` - [identity topup](identity.md#identity-topup)<br>`4` - [data contract update](data-contract.md#data-contract-update)<br>`5` - [identity update](identity.md#identity-update)<br>`6` - [identity credit transfer](identity.md#identity-credit-transfer)<br>`7` - [identity credit withdrawal](identity.md#identity-credit-withdrawal)<br>`8` - [masternode vote](#masternode-vote)<br>`9` - [identity credit transfer to addresses](address-system.md#type-9-identitycredittransfertoaddresses)<br>`10` - [identity create from addresses](address-system.md#type-10-identitycreatefromaddresses)<br>`11` - [identity topup from addresses](address-system.md#type-11-identitytopupfromaddresses)<br>`12` - [address funds transfer](address-system.md#type-12-addressfundstransfer)<br>`13` - [address funding from asset lock](address-system.md#type-13-addressfundingfromassetlock)<br>`14` - [address credit withdrawal](address-system.md#type-14-addresscreditwithdrawal) |
+| $version        | unsigned integer | 32 bits | The state transition format version (FeatureVersion). Currently `0` for most transitions, `1` for Batch. This is not the global platform protocol version, which is negotiated separately. |
+| type            | unsigned integer | 8 bits  | State transition type (defined in [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transition_types.rs#L21)):<br>`0` - [data contract create](../protocol-ref/data-contract.md#data-contract-create)<br>`1` - [batch](#batch)<br>`2` - [identity create](../protocol-ref/identity.md#identity-create)<br>`3` - [identity topup](identity.md#identity-topup)<br>`4` - [data contract update](data-contract.md#data-contract-update)<br>`5` - [identity update](identity.md#identity-update)<br>`6` - [identity credit withdrawal](identity.md#identity-credit-withdrawal)<br>`7` - [identity credit transfer](identity.md#identity-credit-transfer)<br>`8` - [masternode vote](#masternode-vote)<br>`9` - [identity credit transfer to addresses](address-system.md#identity-credit-transfer-to-addresses)<br>`10` - [identity create from addresses](address-system.md#identity-create-from-addresses)<br>`11` - [identity topup from addresses](address-system.md#identity-topup-from-addresses)<br>`12` - [address funds transfer](address-system.md#address-funds-transfer)<br>`13` - [address funding from asset lock](address-system.md#address-funding-from-asset-lock)<br>`14` - [address credit withdrawal](address-system.md#address-credit-withdrawal)<br>`15` - shield<br>`16` - shielded transfer<br>`17` - unshield<br>`18` - shield from asset lock<br>`19` - shielded withdrawal |
 | userFeeIncrease | unsigned integer | 16 bits | Extra fee to prioritize processing if the mempool is full. Typically set to zero. |
 | signature       | array of bytes | 65 bytes |Signature of state transition data |
+
+:::{note}
+The [masternode vote](#masternode-vote) transition does not include the `userFeeIncrease` field.
+:::
 
 Additionally, all state transitions except the identity create and topup state transitions include:
 
@@ -38,45 +42,32 @@ Additionally, all state transitions except the identity create and topup state t
 
 ## State Transition Types
 
-Dash Platform Protocol defines the [state transition types](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transition_types.rs#L21-L32) that perform identity, contract, document, and token operations. See the subsections below for details on each state transition type.
+Dash Platform Protocol defines the [state transition types](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transition_types.rs#L21-L43) that perform identity, contract, document, and token operations. See the subsections below for details on each state transition type.
 
 ### Batch
 
 | Field       | Type           | Size | Description |
 | ----------- | -------------- | ---- | ----------- |
 | ownerId     | array of bytes | 32 bytes | [Identity](../protocol-ref/identity.md) submitting the document(s) |
-| transitions | array of transition objects | Varies | A  batch of [document](../protocol-ref/document.md#document-overview) or token actions (up to 10 objects) |
+| transitions | array of transition objects | Varies | A batch of [document](../protocol-ref/document.md#document-overview) or token actions (currently limited to 1 object per batch) |
 
-More detailed information about the `transitions` array can be found in the [document section](../protocol-ref/document.md). See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/v1/mod.rs#L29-L37).
+More detailed information about the `transitions` array can be found in the [document section](../protocol-ref/document.md). See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/v1/mod.rs#L31-L39).
 
 ### Data Contract Create
 
 | Field           | Type           | Size | Description |
 | --------------- | -------------- | ---- | ----------- |
 | dataContract | [data contract object](../protocol-ref/data-contract.md#data-contract-object) | Varies | Object containing valid [data contract](../protocol-ref/data-contract.md) details |
-| entropy      | array of bytes    | 32 bytes | Entropy used to generate the data contract ID |
+| identityNonce | unsigned integer | 64 bits | Identity nonce for this transition to prevent replay attacks |
 
 More detailed information about the `dataContract` object can be found in the [data contract section](../protocol-ref/data-contract.md).
-
-#### Entropy Generation
-
-Entropy is included in [Data Contracts](../protocol-ref/data-contract.md#data-contract-create) and [Documents](../protocol-ref/document.md#document-create-transition). Dash Platform using the following entropy generator found in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/util/entropy_generator.rs#L12-L16):
-
-```rust
-// From the Rust reference implementation (rs-dpp)
-// entropyGenerator.js
-fn generate(&self) -> anyhow::Result<[u8; 32]> {
-  let mut buffer = [0u8; 32];
-  getrandom(&mut buffer).context("generating entropy failed")?;
-  Ok(buffer)
-}
-```
 
 ### Data Contract Update
 
 | Field           | Type           | Description |
 | --------------- | -------------- | ----------- |
 | dataContract | [data contract object](../protocol-ref/data-contract.md#data-contract-object) | Object containing valid [data contract](../protocol-ref/data-contract.md) details |
+| identityContractNonce | unsigned integer (64 bits) | Identity contract nonce for replay protection |
 
 More detailed information about the `dataContract` object can be found in the [data contract section](../protocol-ref/data-contract.md).
 
@@ -85,7 +76,7 @@ More detailed information about the `dataContract` object can be found in the [d
 | Field           | Type           | Size | Description |
 | --------------- | -------------- | ---- | ----------- |
 | assetLockProof | array of bytes | 36 bytes | Lock [outpoint](https://docs.dash.org/en/stable/docs/core/resources/glossary.html#outpoint) from the layer 1 locking transaction (36 bytes) |
-| publicKeys     | array of keys  | Varies | [Public key(s)](../protocol-ref/identity.md#identity-publickeys) associated with the identity (maximum number of keys: `10`) |
+| publicKeys     | array of keys  | Varies | [Public key(s)](../protocol-ref/identity.md#identity-publickeys) associated with the identity (maximum number of keys: `6`) |
 
 More detailed information about the `publicKeys` object can be found in the [identity section](../protocol-ref/identity.md).
 
@@ -103,7 +94,7 @@ More detailed information about the `publicKeys` object can be found in the [ide
 | identityId      | array of bytes       | 32 bytes | The [Identity ID](../protocol-ref/identity.md#identity-id) for the identity being updated |
 | revision        | unsigned integer     | 64 bits | Identity update revision. Used for optimistic concurrency control. Incremented by one with each new update so that the update will fail if the underlying data is modified between reading and writing. |
 | nonce           | unsigned integer     | 64 bits | Identity nonce for this transition to prevent replay attacks |
-| addPublicKeys   | array of public keys | Varies | (Optional) Array of up to 10 new public keys to add to the identity. Required if adding keys. |
+| addPublicKeys   | array of public keys | Varies | (Optional) Array of up to 6 new public keys to add to the identity. Required if adding keys. |
 | disablePublicKeys | array of integers  | Varies | (Optional) Array of up to 10 existing identity public key ID(s) to disable for the identity. Required if disabling keys. |
 
 ### Identity Credit Transfer
@@ -115,7 +106,7 @@ More detailed information about the `publicKeys` object can be found in the [ide
 | amount          | unsigned integer | 64 bits | Number of credits being transferred |
 | nonce           | unsigned integer | 64 bits | Identity nonce for this transition to prevent replay attacks |
 
-See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_transition/v0/mod.rs#L39-L50).
+See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_transition/v0/mod.rs#L42-L53).
 
 ### Identity Credit Withdrawal
 
@@ -123,12 +114,12 @@ See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0
 | --------------- | -------------- | ---- | ----------- |
 | identityId      | array of bytes | 32 bytes | An [Identity ID](../protocol-ref/identity.md#identity-id) for the identity sending the credits |
 | amount          | unsigned integer | 64 bits | Number of credits being transferred |
-| coreFeePerByte  | unsigned integer | 32 bytes |  |
-| pooling         | unsigned integer | 8 bytes | 0 = Never, 1 = If Available, 2 = Standard |
+| coreFeePerByte  | unsigned integer | 32 bits |  |
+| pooling         | unsigned integer | 8 bits | 0 = Never, 1 = If Available, 2 = Standard |
 | outputScript    | script | Varies | If None, the withdrawal is sent to the address set by Core |
 | nonce           | unsigned integer | 64 bits | Identity nonce for this transition to prevent replay attacks |
 
-See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_withdrawal_transition/v1/mod.rs#L32-L45).
+See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_withdrawal_transition/v1/mod.rs#L35-L48).
 
 ### Masternode Vote
 
@@ -136,10 +127,10 @@ See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0
 | --------------- | -------------- | ---- | ----------- |
 | proTxHash       | array of bytes | 32 bytes | An identifier based on a masternode or evonode's [provider registration transaction](inv:user:std#ref-txs-proregtx) hash |
 | voterIdentityId | array of bytes | 32 bytes | The voter's [Identity ID](../protocol-ref/identity.md#identity-id). This will be a masternode identity based on the protx hash. |
-| vote | [Vote](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/voting/votes/mod.rs#L20-L22) | Varies | Vote information |
+| vote | [Vote](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/voting/votes/mod.rs#L25-L27) | Varies | Vote information |
 | nonce           | unsigned integer | 64 bits | Identity nonce for this transition to prevent replay attacks |
 
-See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/masternode_vote_transition/v0/mod.rs#L40-L50).
+See the implementation in [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/masternode_vote_transition/v0/mod.rs#L43-L53).
 
 ## State Transition Signing
 
@@ -151,8 +142,14 @@ transition type:
 | Signing Method | State Transitions |
 | -------------- | ----------------- |
 | [Identity](#signing-with-identity)     | Batch, Contract create, Contract update, Identity update, Identity credit transfer, Identity credit transfer to addresses, Identity credit withdrawal, Masternode vote |
-| [Asset lock](#signing-with-asset-lock) | Identity create, Identity topup, Address funding from asset lock |
-| [Address witness](#signing-with-address-witness) | Identity create from addresses, Identity topup from addresses, Address funds transfer, Address credit withdrawal |
+| [Asset lock](#signing-with-asset-lock) | Identity create, Identity topup, Address funding from asset lock* |
+| [Address witness](#signing-with-address-witness) | Identity create from addresses, Identity topup from addresses, Address funds transfer, Address credit withdrawal, Address funding from asset lock* |
+
+\* Address funding from asset lock requires both an asset lock signature and address witnesses (`input_witnesses`).
+
+:::{note}
+Shield-related state transitions (types 15-19: Shield, ShieldedTransfer, Unshield, ShieldFromAssetLock, ShieldedWithdrawal) are defined in the protocol but their signing methods are not yet documented here.
+:::
 
 :::{note}
 Address-based state transitions (types 9-14) were introduced in Protocol Version 11. For detailed information on these transitions, see [Address-Based State Transitions](address-system.md).
@@ -195,6 +192,10 @@ The process to sign state transitions using an identity consists of the followin
 
 Address-based state transitions (types 10-12, 14) use address witnesses to prove ownership of Platform addresses. Unlike identity-signed transitions, these do not require an existing identity. Instead, each input address requires a corresponding witness containing cryptographic proof of address ownership.
 
+:::{note}
+Identity credit transfer to addresses (type 9) is **not** signed with address witnesses — it uses identity signing because it requires an existing identity.
+:::
+
 The process to sign state transitions using address witnesses consists of the following steps:
 
 1. **Create a canonical, signable state transition** encoded using [Bincode](https://github.com/bincode-org/bincode).
@@ -223,12 +224,12 @@ This table shows the fields that must be excluded when creating state transition
 
 | State transition | Signature | Signature public key ID | Identity ID | Identity public key signature(s) |
 | - | :-: | :-: | :-: | :-: |
-| [Batch](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/v1/mod.rs#L34-L37) | Exclude | Exclude | N/A | N/A |
-| [Contract create](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_create_transition/v0/mod.rs#L41-L44) | Exclude | Exclude | N/A | N/A |
-| [Contract update](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_update_transition/v0/mod.rs#L41-L44) | Exclude | Exclude | N/A | N/A |
-| [Identity create](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_transition/v0/mod.rs#L50-L54) | Exclude | N/A | Exclude | [Exclude](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/v0/mod.rs#L47-L48) |
-| [Identity topup](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_transition/v0/mod.rs#L45-L46)  | Exclude | N/A | N/A | N/A |
-| [Identity update](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_update_transition/v0/mod.rs#L63-L68) | Exclude | Exclude | N/A | [Exclude for any keys being added by the state transition](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/v0/mod.rs#L47-L48) |
-| [Identity credit transfer](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_transition/v0/mod.rs#L46-L49) | Exclude | Exclude | N/A | N/A |
-| [Identity credit withdrawal](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_withdrawal_transition/v1/mod.rs#L41-L44) | Exclude | Exclude | N/A | N/A |
-| [Masternode vote](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/masternode_vote_transition/v0/mod.rs#L46-L49) | Exclude | Exclude | N/A | N/A |
+| [Batch](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/document/batch_transition/v1/mod.rs#L35-L38) | Exclude | Exclude | N/A | N/A |
+| [Contract create](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_create_transition/v0/mod.rs#L44-L47) | Exclude | Exclude | N/A | N/A |
+| [Contract update](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_update_transition/v0/mod.rs#L43-L46) | Exclude | Exclude | N/A | N/A |
+| [Identity create](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_transition/v0/mod.rs#L53-L57) | Exclude | N/A | Exclude | [Exclude](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/v0/mod.rs#L50-L51) |
+| [Identity topup](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_transition/v0/mod.rs#L48-L49)  | Exclude | N/A | N/A | N/A |
+| [Identity update](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_update_transition/v0/mod.rs#L67-L71) | Exclude | Exclude | N/A | [Exclude for any keys being added by the state transition](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/v0/mod.rs#L50-L51) |
+| [Identity credit transfer](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_transition/v0/mod.rs#L49-L52) | Exclude | Exclude | N/A | N/A |
+| [Identity credit withdrawal](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_withdrawal_transition/v1/mod.rs#L44-L47) | Exclude | Exclude | N/A | N/A |
+| [Masternode vote](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/masternode_vote_transition/v0/mod.rs#L49-L52) | Exclude | Exclude | N/A | N/A |

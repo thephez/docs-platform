@@ -2,7 +2,11 @@
 
 ## Contract Token Overview
 
-The `tokens` object defines each type of token in the data contract. At a minimum, a token must consist of [conventions](#token-conventions) and [change control rules](#token-change-control-rules). Each token must be assigned a unique [position](#assigning-position) within the contract and follow the [token constraints](#token-constraints).
+The `tokens` object defines each type of token in the data contract. At a minimum, a token must define [conventions](#token-conventions). All other fields have sensible defaults. Each token must be assigned a unique [position](#assigning-position) within the contract and follow the [token constraints](#token-constraints).
+
+:::{note}
+The protocol only requires `conventions`. However, some SDKs (e.g., the JavaScript SDK) may require [change control rules](#token-change-control-rules) to be provided explicitly.
+:::
 
 The following example shows a minimal `tokens` object defining a single token with basic conventions:
 
@@ -44,10 +48,10 @@ Token creation incurs specific fees based on which token features are used:
 
 | Operation | Fee (DASH)| Description |
 |-----------|-----------|-------------|
-| Token registration | [0.1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L11)| Base fee for adding a token to a contract |
-| Perpetual distribution | [0.1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L12) | Fee for enabling perpetual distribution |
-| Pre-programmed distribution | [0.1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L13) | Fee for enabling pre-programmed distribution |
-| Search keyword fee | [0.1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L14) | Per keyword fee for including search keywords |
+| Token registration | [0.1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L11)| Base fee for adding a token to a contract |
+| Perpetual distribution | [0.1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L12) | Fee for enabling perpetual distribution |
+| Pre-programmed distribution | [0.1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L13) | Fee for enabling pre-programmed distribution |
+| Search keyword fee | [0.1](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/fee/data_contract_registration/v2.rs#L14) | Per keyword fee for including search keywords |
 
 ## Assigning Position
 
@@ -95,6 +99,10 @@ The `localizations` object contains language-specific display properties using [
 }
 ```
 
+::::{note}
+An English (`en`) localization entry is required. Tokens without an `en` key in the `localizations` map will fail protocol validation with a `MissingDefaultLocalizationError`.
+::::
+
 ### Decimal Precision
 
 The `decimals` property specifies the number of decimal places for token amounts. This affects how token balances are displayed and calculated. If `decimals` is set to zero, token operations (e.g., mint, transfer) will only allow integer amounts.
@@ -110,6 +118,12 @@ The `decimals` property specifies the number of decimal places for token amounts
 ## Token Configuration
 
 Token configuration controls behavioral aspects of token operations, including supply management, operational controls, and security features.
+
+### General
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `description` | string | Optional text describing the token's purpose or behavior (3–100 characters) |
 
 ### Supply Management
 
@@ -151,7 +165,7 @@ Change control rules define authorization requirements for modifying various asp
 
 ### Authorized Parties
 
-Rules can authorize no one, specific identities, or multiparty groups. The complete set of options [defined by DPP](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/change_control_rules/authorized_action_takers.rs#L14-L21) is:
+Rules can authorize no one, specific identities, or multiparty groups. The complete set of options [defined by DPP](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/change_control_rules/authorized_action_takers.rs#L15-L22) is:
 
 | Authorized Party     | Description |
 |----------------------|-------------|
@@ -163,7 +177,7 @@ Rules can authorize no one, specific identities, or multiparty groups. The compl
 
 ### Change Rule Structure
 
-Each rule consists of the following parameters [defined in DPP](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/change_control_rules/v0/mod.rs) that control its behavior:
+Each rule consists of the following parameters [defined in DPP](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/change_control_rules/v0/mod.rs) that control its behavior:
 
 | Field | Description |
 | - | - |
@@ -196,7 +210,6 @@ Tokens support the following change control rules:
 | `conventionsChangeRules` | Controls who can modify token conventions (localization) |
 | `maxSupplyChangeRules` | Controls who can modify the maximum supply limit |
 | `perpetualDistributionRules` | Controls who can modify perpetual distribution settings (subset of `distributionRules`) |
-| `preProgrammedDistribution` | Controls who can modify pre-programmed distribution settings (subset of `distributionRules`) |
 | `newTokensDestinationIdentityRules` | Controls who can change where new tokens are sent  (subset of `distributionRules`)|
 | `mintingAllowChoosingDestinationRules` | Controls who can modify minting destination rules  (subset of `distributionRules`)|
 | `changeDirectPurchasePricingRules` | Controls who can set direct purchase pricing  (subset of `distributionRules`)|
@@ -232,7 +245,6 @@ Distribution rules govern how tokens are created, allocated, and priced within t
 |----------|------|-------------|
 | `perpetualDistribution` | object | Ongoing distribution mechanism for continuous token allocation |
 | `perpetualDistributionRules` | object | Change control rules for perpetual distribution |
-| `preProgrammedDistribution` | object | Scheduled distribution events with specific timing and recipients |
 | `newTokensDestinationIdentity` | string | Default identity to receive newly minted tokens |
 | `newTokensDestinationIdentityRules` | object | Change control rules for destination identity |
 | `mintingAllowChoosingDestination` | boolean | Whether minting operations can specify custom destinations |
@@ -259,6 +271,18 @@ Perpetual distribution enables ongoing token allocation. The following configura
   "distributionRecipient": "ContractOwner"
 }
 ```
+
+#### Distribution Types
+
+The `distributionType` field accepts one of three schedule types:
+
+| Type | Interval Unit | Description |
+|------|---------------|-------------|
+| `BlockBasedDistribution` | Block height | Emits tokens every N blocks. If `start` is not set, begins at the block when the data contract is registered. |
+| `TimeBasedDistribution` | Milliseconds | Emits tokens every N milliseconds. If `start` is not set, begins at the time of the block when the data contract is registered. |
+| `EpochBasedDistribution` | Epochs | Emits tokens every N epochs. If `start` is not set, begins at the epoch of the block when the data contract is registered. Distribution happens at the start of the following epoch. Required when using `EvonodesByParticipation` as the distribution recipient. |
+
+Each type wraps an `interval` (the period length) and a `function` (the emission pattern from the options below).
 
 #### Perpetual Distribution Options
 
@@ -323,13 +347,16 @@ Emits a random number of tokens within a specified range.
 
 Emits tokens that decrease in discrete steps at fixed intervals.
 
-- **Formula:** `f(x) = n * (1 - (numerator / denominator))^((x - s) / step_count)`
-- **Description:** Reduces token emissions by a fixed percentage at regular intervals. Includes optional start offset and minimum emission floor.
-  - `step_count`: number of periods between each step
-  - `numerator` and `denominator`: the reduction factor per step
-  - `s`: optional start period offset (e.g., start block or time). If not provided, the contract creation start is used.
-  - `n`: initial token emission amount
-  - `min_value`: optional minimum emission value
+- **Formula:** `f(x) = distribution_start_amount * (1 - (decrease_per_interval_numerator / decrease_per_interval_denominator))^((x - start_decreasing_offset) / step_count)`
+- **Description:** Reduces token emissions by a fixed percentage at regular intervals.
+  - `step_count` (u32): number of periods between each step
+  - `decrease_per_interval_numerator` (u16): reduction factor numerator
+  - `decrease_per_interval_denominator` (u16): reduction factor denominator
+  - `start_decreasing_offset` (optional u64): start period offset. If not provided, the contract creation start is used. Before this offset, `distribution_start_amount` is emitted every interval.
+  - `distribution_start_amount` (TokenAmount): initial token emission amount
+  - `max_interval_count` (optional u16): maximum number of decreasing intervals. **Defaults to 128 if not set.** After this many cycles, `trailing_distribution_interval_amount` is emitted per interval. Maximum value: 1024.
+  - `trailing_distribution_interval_amount` (TokenAmount): token emission after all decreasing intervals are exhausted
+  - `min_value` (optional u64): minimum emission floor
 - **Use Case:** Reward systems with predictable decay—ideal for Bitcoin-style halvings or Dash-style gradual reductions
 - **Example:**
   - Bitcoin: 50% reduction every 210,000 blocks  
@@ -395,21 +422,17 @@ A polynomial function using fixed-point arithmetic for fractional or integer exp
 
 Emits tokens following an exponential function.
 
-- **Formula:** `f(x) = a * e^(b * x) + c`
-- **Description:**
-  - `b` > 0 -> rapid growth
-  - `b` < 0 -> rapid decay
+- **Formula:** `f(x) = (a * e^(m * (x - s + o) / n)) / d + b`
+- **Description:** Exponential growth or decay depending on parameter signs
 - **Use Case:** Early contributor boosts or quick emission tapering
-- **Example:** f(x) = 100 * e^(-0.693 * x) + 5
 
 ##### Logarithmic
 
 Logarithmic growth of token emissions.
 
-- **Formula:** `f(x) = a * log_b(x) + c`
-- **Description:** Growth slows as `x` increases
+- **Formula:** `f(x) = (a * ln(m * (x - s + o) / n)) / d + b`
+- **Description:** Growth slows as `x` increases (uses natural log)
 - **Use Case:** Sustainable long-term emission tapering
-- **Example:** f(x) = 20 * log_2(x) + 5
 
 ##### Inverted Logarithmic
 
@@ -551,6 +574,39 @@ Marketplace rules define how tokens can be traded within Platform's built-in mar
 }
 ```
 
+## Token Distribution Function Parameters
+
+The distribution functions use the following parameters defined across various implementations:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `a` | integer | - | Coefficient/scaling factor |
+| `b` | integer | - | Base offset or constant term |
+| `c` | integer | - | Additional offset |
+| `d` | integer | 1 | Divisor for precision control |
+| `m` | integer | - | Exponent numerator |
+| `n` | integer | 1 | Exponent denominator |
+| `o` | integer | 0 | Offset inside function input |
+| `s` | integer | 0 | Start period offset |
+| `min_value` | integer | - | Minimum emission bound |
+| `max_value` | integer | - | Maximum emission bound |
+| `step_count` | integer | - | Periods between steps |
+| `numerator` | integer | - | Reduction factor numerator |
+| `denominator` | integer | - | Reduction factor denominator |
+| `interval` | integer | - | Time interval in milliseconds |
+
+### Distribution Recipients
+
+| Recipient | Description |
+|-----------|-------------|
+| `ContractOwner` | Tokens sent to the contract owner |
+| `Identity(Identifier)` | Tokens sent to a specific identity |
+| `EvonodesByParticipation` | Tokens distributed to evonodes proportional to their participation (only valid with `EpochBasedDistribution`) |
+
+:::{seealso}
+For all protocol constants, see [Protocol Constants](protocol-constants.md).
+:::
+
 ## Token Constraints
 
 For performance and security reasons, tokens have the following constraints:
@@ -559,27 +615,27 @@ For performance and security reasons, tokens have the following constraints:
 
 | Parameter | Value |
 |-----------|-------|
-| Maximum number of keywords | [50](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/methods/validate_update/v0/mod.rs#L272-L277) |
-| Keyword length | [3 to 50 characters](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/methods/validate_update/v0/mod.rs#L279-L287) |
-| Description length | [3 to 100 characters](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/methods/validate_update/v0/mod.rs#L312-L323) |
-| Maximum note length | [2048 characters](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/tokens/mod.rs#L19) |
+| Maximum number of keywords | [20 at creation; 50 on update](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/methods/validate_update/v0/mod.rs#L272-L277) |
+| Keyword length | [3 to 50 characters](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/methods/validate_update/v0/mod.rs#L279-L287) |
+| Description length | [3 to 100 characters](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/methods/validate_update/v0/mod.rs#L312-L323) |
+| Maximum note length | [2048 bytes](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/tokens/mod.rs#L19) |
 | Maximum number of tokens per contract | Only limited by [maximum contract size](./data-contract.md#data-size) |
 
 ### Convention Constraints
 
 | Parameter | Value |
 |-----------|-------|
-| Language code length | [2 to 12 characters](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L97-L101) |
-| Token name length (singular) | [3 to 25 characters](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L84-L89) |
-|  Token name length (plural)  | [3 to 25 characters](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L90-L95) |
-| Decimal places | [0 to 16](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L31-L36) |
+| Language code length | [2 to 12 characters](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L97-L101) |
+| Token name length (singular) | [3 to 25 characters](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L84-L89) |
+|  Token name length (plural)  | [3 to 25 characters](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L90-L95) |
+| Decimal places | [0 to 16](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/methods/validate_localizations/v0/mod.rs#L31-L36) |
 | Maximum localization entries | Only limited by [maximum contract size](./data-contract.md#data-size) |
 
 ### Supply Constraints
 
 | Parameter | Value |
 |-----------|-------|
-| Maximum token amount | [2^64 - 1](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/errors/consensus/basic/data_contract/invalid_token_base_supply_error.rs#L12-L16) |
+| Maximum token amount | [i64::MAX (2^63 - 1 = 9,223,372,036,854,775,807)](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/errors/consensus/basic/data_contract/invalid_token_base_supply_error.rs#L12-L16) |
 
 ## Example Syntax
 

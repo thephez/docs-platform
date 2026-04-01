@@ -6,7 +6,7 @@
 
 ## Platform Error Codes
 
-Dash Platform Protocol implements a comprehensive set of consensus error codes. Refer to the tables below for a list of the codes as specified in [code.rs](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/errors/consensus/codes.rs) of the consensus source code.
+Dash Platform Protocol implements a comprehensive set of consensus error codes. Refer to the tables below for a list of the codes as specified in [codes.rs](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/errors/consensus/codes.rs) of the consensus source code.
 
 Platform error codes are organized into four categories. Each category may be further divided into sub-categories. The four categories and their error code ranges are:
 
@@ -105,7 +105,29 @@ Code range:  10200-10349
 | 10250 | DataContractTokenConfigurationUpdateError       |         |
 | 10251 | InvalidTokenBaseSupplyError                     |         |
 | 10252 | NonContiguousContractGroupPositionsError        |         |
-| 10253 | NonContiguousContractTokenPositionsError        |         |
+| 10253 | NonContiguousContractTokenPositionsError                  |         |
+| 10254 | InvalidTokenDistributionFunctionDivideByZeroError        |         |
+| 10255 | InvalidTokenDistributionFunctionInvalidParameterError    |         |
+| 10256 | InvalidTokenDistributionFunctionInvalidParameterTupleError |       |
+| 10257 | InvalidTokenDistributionFunctionIncoherenceError         |         |
+| 10258 | MissingDefaultLocalizationError                          |         |
+| 10259 | UnknownGasFeesPaidByError                                |         |
+| 10260 | UnknownDocumentActionTokenEffectError                    |         |
+| 10261 | TokenPaymentByBurningOnlyAllowedOnInternalTokenError     |         |
+| 10262 | TooManyKeywordsError                                     |         |
+| 10263 | DuplicateKeywordsError                                   |         |
+| 10264 | InvalidDescriptionLengthError                            |         |
+| 10265 | NewTokensDestinationIdentityOptionRequiredError          |         |
+| 10266 | InvalidTokenNameCharacterError                           |         |
+| 10267 | InvalidTokenNameLengthError                              |         |
+| 10268 | InvalidTokenLanguageCodeError                            |         |
+| 10269 | InvalidKeywordCharacterError                             |         |
+| 10270 | InvalidKeywordLengthError                                |         |
+| 10271 | DecimalsOverLimitError                                   |         |
+| 10272 | InvalidTokenDistributionBlockIntervalTooShortError       |         |
+| 10273 | InvalidTokenDistributionTimeIntervalTooShortError        |         |
+| 10274 | InvalidTokenDistributionTimeIntervalNotMinuteAlignedError |        |
+| 10275 | RedundantDocumentPaidForByTokenWithContractId            |         |
 
 ### Group
 
@@ -120,6 +142,9 @@ Code range:  10350-10399
 | 10354 |GroupExceedsMaxMembersError                                |         |
 | 10355 |GroupMemberHasPowerOfZeroError                             |         |
 | 10356 |GroupMemberHasPowerOverLimitError                          |         |
+| 10357 |MainGroupIsNotDefinedError                                |         |
+| 10358 |GroupRequiredPowerIsInvalidError                           |         |
+| 10359 |GroupHasTooFewMembersError                                 |         |
 
 ### Document
 
@@ -160,6 +185,10 @@ Code range: 10450-10499
 | 10454 | DestinationIdentityForTokenMintingNotSetError          |         |
 | 10455 | ChoosingTokenMintRecipientNotAllowedError              |         |
 | 10456 | TokenTransferToOurselfError                            |         |
+| 10457 | InvalidTokenConfigUpdateNoChangeError                  |         |
+| 10458 | InvalidTokenAmountError                                |         |
+| 10459 | InvalidTokenNoteTooBigError                            |         |
+| 10460 | TokenNoteOnlyAllowedWhenProposerError                  |         |
 
 ### Identity
 
@@ -188,9 +217,9 @@ Code range:  10500-10599
 | 10518 | TooManyMasterPublicKeyError                                   |         |
 | 10519 | InvalidIdentityPublicKeySecurityLevelError                    |         |
 | 10520 | InvalidIdentityKeySignatureError                              |         |
-| 10521 | InvalidIdentityCreditWithdrawalTransitionOutputScriptError    |         |
-| 10522 | InvalidIdentityCreditWithdrawalTransitionCoreFeeError         |         |
-| 10523 | NotImplementedIdentityCreditWithdrawalTransitionPoolingError  |         |
+| 10521 | InvalidCreditWithdrawalTransitionOutputScriptError            |         |
+| 10522 | InvalidCreditWithdrawalTransitionCoreFeeError                 |         |
+| 10523 | NotImplementedCreditWithdrawalTransitionPoolingError          |         |
 | 10524 | InvalidIdentityCreditTransferAmountError                      |         |
 | 10525 | InvalidIdentityCreditWithdrawalTransitionAmountError          |         |
 | 10526 | InvalidIdentityUpdateTransitionEmptyError                     |         |
@@ -200,6 +229,7 @@ Code range:  10500-10599
 | 10530 | IdentityAssetLockTransactionOutPointNotEnoughBalanceError     |         |
 | 10531 | IdentityAssetLockStateTransitionReplayError                   |         |
 | 10532 | WithdrawalOutputScriptNotAllowedWhenSigningWithOwnerKeyError  |         |
+| 10533 | InvalidKeyPurposeForContractBoundsError                       |         |
 
 ### State Transition
 
@@ -210,6 +240,7 @@ Code range:  10600-10699
 | 10600 | InvalidStateTransitionTypeError     |         |
 | 10601 | MissingStateTransitionTypeError     |         |
 | 10602 | StateTransitionMaxSizeExceededError |         |
+| 10603 | StateTransitionNotActiveError      |         |
 
 ### General
 
@@ -218,6 +249,39 @@ Code range:  10700-10799
 | Code  | Error Description   | Comment |
 | ----- | ------------------- | ------- |
 | 10700 | OverflowError       |         |
+
+### Address
+
+Code range: 10800-10899
+
+| Code  | Error Description                              | Comment |
+| :---: | ---------------------------------------------- | ------- |
+| 10800 | TransitionOverMaxInputsError                   |         |
+| 10801 | TransitionOverMaxOutputsError                  |         |
+| 10802 | InputWitnessCountMismatchError                 |         |
+| 10803 | TransitionNoInputsError                        |         |
+| 10804 | TransitionNoOutputsError                       |         |
+| 10805 | FeeStrategyEmptyError                          |         |
+| 10806 | FeeStrategyDuplicateError                      |         |
+| 10807 | FeeStrategyIndexOutOfBoundsError               |         |
+| 10808 | FeeStrategyTooManyStepsError                   |         |
+| 10809 | InputBelowMinimumError                         |         |
+| 10810 | OutputBelowMinimumError                        |         |
+| 10811 | InputOutputBalanceMismatchError                |         |
+| 10812 | OutputsNotGreaterThanInputsError               |         |
+| 10813 | WithdrawalBalanceMismatchError                 |         |
+| 10814 | InsufficientFundingAmountError                 |         |
+| 10815 | InputsNotLessThanOutputsError                  |         |
+| 10816 | OutputAddressAlsoInputError                    |         |
+| 10817 | InvalidRemainderOutputCountError               |         |
+| 10818 | WithdrawalBelowMinAmountError                  |         |
+| 10819 | ShieldedNoActionsError                         |         |
+| 10820 | ShieldedEmptyProofError                        |         |
+| 10821 | ShieldedZeroAnchorError                        |         |
+| 10822 | ShieldedInvalidValueBalanceError               |         |
+| 10823 | *(reserved/unassigned)*                        |         |
+| 10824 | *(reserved/unassigned)*                        |         |
+| 10825 | ShieldedTooManyActionsError                    |         |
 
 ## Signature Errors
 
@@ -235,6 +299,7 @@ Code range:  10700-10799
 | 20009 | BasicECDSAError                             |                |
 | 20010 | BasicBLSError                               |                |
 | 20011 | InvalidSignaturePublicKeyPurposeError       |                |
+| 20012 | UncompressedPublicKeyNotAllowedError        |                |
 
 ## Fee Errors
 
@@ -255,6 +320,11 @@ Code range:  40000-40099
 | 40002 | DataContractConfigUpdateError           |         |
 | 40003 | DataContractUpdatePermissionError       |         |
 | 40004 | DataContractUpdateActionNotAllowedError |         |
+| 40005 | PreProgrammedDistributionTimestampInPastError    |         |
+| 40006 | IdentityInTokenConfigurationNotFoundError        |         |
+| 40007 | IdentityMemberOfGroupNotFoundError               |         |
+| 40008 | DataContractNotFoundError                        |         |
+| 40009 | InvalidTokenPositionStateError                   |         |
 
 ### Document State
 
@@ -277,25 +347,38 @@ Code range:  40100-40149
 | 40112 | DocumentContestIdentityAlreadyContestantError          |         |
 | 40113 | DocumentContestDocumentWithSameIdAlreadyPresentError   |         |
 | 40114 | DocumentContestNotPaidForError                         |         |
+| 40115 | RequiredTokenPaymentInfoNotSetError                    |         |
+| 40116 | IdentityHasNotAgreedToPayRequiredTokenAmountError      |         |
+| 40117 | IdentityTryingToPayWithWrongTokenError                 |         |
 
 ### Token State
 
-Code range: 40150-40199
+Code range: 40700-40799
 
-| Code  | Error Description                                 | Comment |
-| :---: | ------------------------------------------------- | ------- |
-| 40150 | IdentityDoesNotHaveEnoughTokenBalanceError        |         |
-| 40151 | UnauthorizedTokenActionError                      |         |
-| 40152 | IdentityTokenAccountFrozenError                   |         |
-| 40153 | IdentityTokenAccountNotFrozenError                |         |
-| 40154 | TokenSettingMaxSupplyToLessThanCurrentSupplyError |         |
-| 40155 | TokenMintPastMaxSupplyError                       |         |
-| 40156 | NewTokensDestinationIdentityDoesNotExistError     |         |
-| 40157 | NewAuthorizedActionTakerIdentityDoesNotExistError |         |
-| 40158 | NewAuthorizedActionTakerGroupDoesNotExistError    |         |
-| 40159 | NewAuthorizedActionTakerMainGroupNotSetError      |         |
-| 40160 | InvalidGroupPositionError                         |         |
-| 40161 | TokenIsPausedError                                |         |
+| Code  | Error Description                                      | Comment |
+| :---: | ------------------------------------------------------ | ------- |
+| 40700 | IdentityDoesNotHaveEnoughTokenBalanceError             |         |
+| 40701 | UnauthorizedTokenActionError                           |         |
+| 40702 | IdentityTokenAccountFrozenError                        |         |
+| 40703 | IdentityTokenAccountNotFrozenError                     |         |
+| 40704 | TokenSettingMaxSupplyToLessThanCurrentSupplyError      |         |
+| 40705 | TokenMintPastMaxSupplyError                            |         |
+| 40706 | NewTokensDestinationIdentityDoesNotExistError          |         |
+| 40707 | NewAuthorizedActionTakerIdentityDoesNotExistError      |         |
+| 40708 | NewAuthorizedActionTakerGroupDoesNotExistError         |         |
+| 40709 | NewAuthorizedActionTakerMainGroupNotSetError           |         |
+| 40710 | InvalidGroupPositionError                              |         |
+| 40711 | TokenIsPausedError                                     |         |
+| 40712 | IdentityTokenAccountAlreadyFrozenError                 |         |
+| 40713 | TokenAlreadyPausedError                                |         |
+| 40714 | TokenNotPausedError                                    |         |
+| 40715 | InvalidTokenClaimPropertyMismatch                      |         |
+| 40716 | InvalidTokenClaimNoCurrentRewards                      |         |
+| 40717 | InvalidTokenClaimWrongClaimant                         |         |
+| 40718 | TokenTransferRecipientIdentityNotExistError            |         |
+| 40719 | TokenDirectPurchaseUserPriceTooLow                     |         |
+| 40720 | TokenAmountUnderMinimumSaleAmount                      |         |
+| 40721 | TokenNotForDirectSale                                  |         |
 
 ### Identity State
 
@@ -319,6 +402,7 @@ Code range:  40200-40299
 | 40214 | MissingTransferKeyError                                    |         |
 | 40215 | NoTransferKeyForCoreWithdrawalAvailableError               |         |
 | 40216 | RecipientIdentityDoesNotExistError                         |         |
+| 40217 | IdentityToFreezeDoesNotExistError                          |         |
 
 ### Voting State
 
@@ -345,13 +429,24 @@ Code range: 40400-40499
 
 ### Data Trigger State
 
-Code range: 40500-40799
+Code range: 40500-40599
 
 | Code  | Error Description             | Comment |
 | :---: | ----------------------------- | ------- |
 | 40500 | DataTriggerConditionError     |         |
 | 40501 | DataTriggerExecutionError     |         |
 | 40502 | DataTriggerInvalidResultError |         |
+
+### Address State
+
+Code range: 40600-40699
+
+| Code  | Error Description               | Comment |
+| :---: | ------------------------------- | ------- |
+| 40600 | AddressDoesNotExistError        |         |
+| 40601 | AddressNotEnoughFundsError      |         |
+| 40602 | AddressesNotEnoughFundsError    |         |
+| 40603 | AddressInvalidNonceError        |         |
 
 ### Group State
 
@@ -363,3 +458,16 @@ Code range: 40800-40899
 | 40801 | GroupActionDoesNotExistError            |         |
 | 40802 | GroupActionAlreadyCompletedError        |         |
 | 40803 | GroupActionAlreadySignedByIdentityError |         |
+| 40804 | ModificationOfGroupActionMainParametersNotPermittedError |         |
+
+### Shielded State
+
+Code range: 40900-40999
+
+| Code  | Error Description               | Comment |
+| :---: | ------------------------------- | ------- |
+| 40900 | InvalidAnchorError              |         |
+| 40901 | NullifierAlreadySpentError      |         |
+| 40902 | InvalidShieldedProofError       |         |
+| 40903 | InsufficientPoolNotesError      |         |
+| 40904 | InsufficientShieldedFeeError    |         |

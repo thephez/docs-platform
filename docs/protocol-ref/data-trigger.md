@@ -18,14 +18,17 @@ When document state transitions are received, DPP checks if there is a trigger a
 
 ### Example
 
-As an example, DPP contains several data triggers for DPNS as defined in the [data triggers factory](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/data_trigger/get_data_triggers_factory.rs). The `domain` document has added constraints for creation. All DPNS document types have constraints on replacing or deleting:
+As an example, DPP contains several data triggers for DPNS as defined in the [data trigger bindings](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/bindings/list/v0/mod.rs). The `domain` document has added constraints for creation, replacement or deletion:
 
 | Data Contract | Document           | Action(s)                                                                                                                            | Trigger Description                                                                                      |
 | ------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| DPNS          | `domain`           | [`CREATE`](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/lib/dataTrigger/dpnsTriggers/createDomainDataTrigger.js) | Enforces DNS compatibility, validates provided hashes, and restricts top-level domain (TLD) registration |
+| DPNS          | `domain`           | [`CREATE`](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dpns/v0/mod.rs#L48) | Enforces DNS compatibility, validates provided hashes, and restricts top-level domain (TLD) registration |
 | ----          | ----               | ----                                                                                                                                 | ----                                                                                                     |
-| DPNS          | All Document Types | [`REPLACE`](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/data_trigger/reject_data_trigger.rs)                | Prevents updates to existing documents                                                                   |
-| DPNS          | All Document Types | [`DELETE`](https://github.com/dashpay/platform/blob/v0.24.5/packages/rs-dpp/src/data_trigger/reject_data_trigger.rs)                 | Prevents deletion of existing documents                                                                  |
+| DPNS          | `domain`           | [`REPLACE`](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25)                | Prevents updates to existing documents                                                                   |
+| DPNS          | `domain`           | [`DELETE`](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25)                 | Prevents deletion of existing documents                                                                  |
+| DPNS          | `domain`           | [`TRANSFER`](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents transfer of existing documents |
+| DPNS          | `domain`           | [`PURCHASE`](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents purchase of existing documents |
+| DPNS          | `domain`           | [`UPDATE_PRICE`](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents updating price of existing documents |
 
 **DPNS Trigger Constraints**
 
@@ -34,14 +37,41 @@ The following table details the DPNS constraints applied via data triggers. Thes
 | Document   | Action    | Constraint                                                                                                  |
 | ---------- | --------- | ----------------------------------------------------------------------------------------------------------- |
 | `domain`   | `CREATE`  | Full domain length \<= 253 characters                                                                       |
-| `domain`   | `CREATE`  | `normalizedLabel` matches lowercase `label`                                                                 |
+| `domain`   | `CREATE`  | `normalizedLabel` matches homograph-safe conversion of `label` (lowercase with character substitutions: o→0, l/i→1) |
+| `domain`   | `CREATE`  | `normalizedParentDomainName` matches homograph-safe conversion of `parentDomainName` |
 | `domain`   | `CREATE`  | `ownerId` matches `records.dashUniqueIdentityId` or `dashAliasIdentityId` (whichever one is present)        |
 | `domain`   | `CREATE`  | Only creating a top-level domain with an authorized identity                                                |
 | `domain`   | `CREATE`  | Referenced `normalizedParentDomainName` must be an existing parent domain                                   |
-| `domain`   | `CREATE`  | Subdomain registration for non top level domains prevented if `subdomainRules.allowSubdomains` is true      |
-| `domain`   | `CREATE`  | Subdomain registration only allowed by the parent domain owner if `subdomainRules.allowSubdomains` is false |
+| `domain`   | `CREATE`  | Subdomain registration for non-top-level domains prevented if the new domain's `subdomainRules.allowSubdomains` is true |
+| `domain`   | `CREATE`  | Subdomain registration only allowed by the parent domain owner if the parent domain's `subdomainRules.allowSubdomains` is false |
 | `domain`   | `CREATE`  | Referenced `preorder` document must exist                                                                   |
 | `domain`   | `REPLACE` | Action not allowed                                                                                          |
-| `domain`   | `DELETE`  | Action not allowed                                                                                          |
-| `preorder` | `REPLACE` | Action not allowed                                                                                          |
-| `preorder` | `DELETE`  | Action not allowed                                                                                          |
+| `domain`   | `DELETE`       | Action not allowed                                                                                          |
+| `domain`   | `TRANSFER`     | Action not allowed                                                                                          |
+| `domain`   | `PURCHASE`     | Action not allowed                                                                                          |
+| `domain`   | `UPDATE_PRICE` | Action not allowed                                                                                          |
+
+### Other System Contract Triggers
+
+In addition to DPNS, the following system contracts have registered data triggers:
+
+**Dashpay**
+
+| Document         | Action   | Trigger Description                              |
+| ---------------- | -------- | ------------------------------------------------ |
+| `contactRequest` | `CREATE` | Validates contact request fields and permissions |
+
+**Masternode Rewards**
+
+| Document      | Action    | Trigger Description                                         |
+| ------------- | --------- | ----------------------------------------------------------- |
+| `rewardShare` | `CREATE`  | Rejected unconditionally (masternodes manage reward shares via internal platform operations) |
+| `rewardShare` | `REPLACE` | Rejected unconditionally (masternodes manage reward shares via internal platform operations) |
+| `rewardShare` | `DELETE`  | Rejected unconditionally (masternodes manage reward shares via internal platform operations) |
+
+**Withdrawals**
+
+| Document     | Action    | Trigger Description |
+| ------------ | --------- | ------------------- |
+| `withdrawal` | `REPLACE` | Rejected by data trigger (withdrawal documents cannot be updated) |
+| `withdrawal` | `DELETE`  | Rejected unless status is `COMPLETE` |
