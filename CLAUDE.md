@@ -65,6 +65,10 @@ The site uses a hierarchical structure with:
 - Google Analytics tracking configured
 - Uses pydata-sphinx-theme with custom CSS overrides
 
+## Claude Code Skills
+
+- **doc-audit** (`.claude/skills/doc-audit/SKILL.md`): Audits documentation against the Platform codebase to find drift, stale content, and broken examples. Works best with a local clone of the [platform](https://github.com/dashpay/platform) repo.
+
 ## File Patterns
 
 - Documentation files: `docs/**/*.md`
