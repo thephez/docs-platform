@@ -15,9 +15,9 @@ issues for API consumers.
 
 ### Data Proofs and Metadata
 
-Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L17-L22) so the data returned for a request can be verified as being valid. When requesting proofs, the data requested will be encoded as part of the proof in the response. Full support is not yet available in the JavaScript client, but can be used via the low level [dapi-grpc library](https://github.com/dashpay/platform/tree/master/packages/dapi-grpc).
+Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L142-L149) so the data returned for a request can be verified as being valid. When requesting proofs, the data requested will be encoded as part of the proof in the response. Proofs are supported in the [js-evo-sdk](https://github.com/dashpay/platform/tree/master/packages/js-evo-sdk) and via the low-level [dapi-grpc library](https://github.com/dashpay/platform/tree/master/packages/dapi-grpc).
 
-Some [additional metadata](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L48-L55) is also provided with responses:
+Some [additional metadata](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L153-L160) is also provided with responses:
 
 | Metadata field          | Description                                           |
 | :---------------------- | :---------------------------------------------------- |
@@ -4050,6 +4050,483 @@ grpcurl -proto protos/platform/v0/platform.proto \
 ```
 :::
 ::::
+
+## Address System Endpoints
+
+:::{versionadded} 3.0.0
+:::
+
+### getAddressInfo
+
+Returns balance and nonce information for a specified address.
+
+**Returns**: An address info entry or a cryptographic proof.
+
+**Parameters**:
+
+| Name      | Type    | Required | Description |
+|-----------|---------|----------|-------------|
+| `address` | Bytes   | Yes      | The address to query |
+| `prove`   | Boolean | No       | Set to `true` to receive a proof that contains the requested address info |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "address": "AGMKU+A583xy+MWA8kFpOkxFrDlA",
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getAddressInfo
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "addressInfoEntry": {
+      "address": "AGMKU+A583xy+MWA8kFpOkxFrDlA",
+      "balanceAndNonce": {
+        "balance": "99388684960",
+        "nonce": 10
+      }
+    },
+    "metadata": {
+      "height": "307493",
+      "coreChainLockedHeight": 1453973,
+      "epoch": 15063,
+      "timeMs": "1775581907797",
+      "protocolVersion": 11,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getAddressesInfos
+
+Returns balance and nonce information for multiple addresses.
+
+**Returns**: A list of address info entries or a cryptographic proof.
+
+**Parameters**:
+
+| Name        | Type             | Required | Description |
+|-------------|------------------|----------|-------------|
+| `addresses` | Array of Bytes   | Yes      | The addresses to query |
+| `prove`     | Boolean          | No       | Set to `true` to receive a proof that contains the requested address info |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "addresses": [
+        "AGMKU+A583xy+MWA8kFpOkxFrDlA",
+        "AHEBwunnlfvW0zylnqC6rokXwANq"
+      ],
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getAddressesInfos
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "addressInfoEntries": {
+      "addressInfoEntries": [
+        {
+          "address": "AGMKU+A583xy+MWA8kFpOkxFrDlA",
+          "balanceAndNonce": {
+            "balance": "99388684960",
+            "nonce": 10
+          }
+        },
+        {
+          "address": "AHEBwunnlfvW0zylnqC6rokXwANq",
+          "balanceAndNonce": {
+            "balance": "500000000"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "height": "307493",
+      "coreChainLockedHeight": 1453973,
+      "epoch": 15063,
+      "timeMs": "1775581907797",
+      "protocolVersion": 11,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getAddressesTrunkState
+
+Returns a cryptographic proof of the trunk state of the address balance tree. Used with `getAddressesBranchState` to perform incremental sync of address balances.
+
+**Returns**: A cryptographic proof of the address tree trunk state.
+
+**Parameters**:
+
+None.
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{ "v0": {} }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getAddressesTrunkState
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "proof": {
+      "grovedbProof": "APsA/wGQtKE8gXoPHBaBJWO/39M63DsnEkx4Lah9...(truncated)",
+      "quorumHash": "AAAAN0ggLzkGuHl7bJM48baKuEs/b3rhSMSF5kIw14g=",
+      "signature": "oc8EMH7WkoZhv06iPvP4HjTlleaRLOfDRvWg30hjXL3z83DpNigk1/8mZwC1jrEDFymkkftcoE+DcPhZu/R8wlP2yxWcWo+605lLqU/FIb29nOt0q6hUbuX+eZL39mdb",
+      "blockIdHash": "Eq24v2aaWwDXN41oCmduKOYnDRsvoAJwDk8BEHZRDaU=",
+      "quorumType": 6
+    },
+    "metadata": {
+      "height": "307493",
+      "coreChainLockedHeight": 1453973,
+      "epoch": 15063,
+      "timeMs": "1775581907797",
+      "protocolVersion": 11,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getAddressesBranchState
+
+Returns a Merkle proof for a branch of the address balance tree. The `key` must be a valid node key from the address tree, obtained by parsing a `getAddressesTrunkState` proof. Use the `height` from that response's metadata as `checkpoint_height` to ensure consistency.
+
+**Returns**: A Merkle proof for the specified branch.
+
+**Parameters**:
+
+| Name                | Type    | Required | Description |
+|---------------------|---------|----------|-------------|
+| `key`               | Bytes   | Yes      | A valid node key from the address tree (obtained by parsing a trunk proof) |
+| `depth`             | Integer | Yes      | The depth of the branch (valid range: 6–9) |
+| `checkpoint_height` | Integer | Yes      | Block height from a `getAddressesTrunkState` response `metadata.height`, for consistency |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "key": "<node key from trunk proof>",
+      "depth": 6,
+      "checkpointHeight": "<height from getAddressesTrunkState metadata>"
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getAddressesBranchState
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "merkProof": "AAEC..."
+  }
+}
+```
+:::
+::::
+
+### getRecentAddressBalanceChanges
+
+Returns address balance changes starting from a specified block height. Supports both inclusive and exclusive start heights for incremental sync.
+
+**Returns**: A list of address balance changes grouped by block, or a cryptographic proof.
+
+**Parameters**:
+
+| Name                     | Type    | Required | Description |
+|--------------------------|---------|----------|-------------|
+| `start_height`           | String (uint64) | Yes      | Block height to start from (as a string due to uint64 size) |
+| `prove`                  | Boolean | No       | Set to `true` to receive a proof that contains the requested changes |
+| `start_height_exclusive` | Boolean | No       | When `true`, use exclusive start (excludes the start height block); when `false` or omitted, the start height block is included |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "startHeight": "305000",
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getRecentAddressBalanceChanges
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "addressBalanceUpdateEntries": {
+      "blockChanges": [
+        {
+          "blockHeight": "305590",
+          "changes": [
+            {
+              "address": "AGMKU+A583xy+MWA8kFpOkxFrDlA",
+              "addToBalance": "800000000000"
+            }
+          ]
+        },
+        {
+          "blockHeight": "305591",
+          "changes": [
+            {
+              "address": "AGMKU+A583xy+MWA8kFpOkxFrDlA",
+              "setBalance": "99388684960"
+            }
+          ]
+        }
+      ]
+    },
+    "metadata": {
+      "height": "307487",
+      "coreChainLockedHeight": 1453964,
+      "epoch": 15063,
+      "timeMs": "1775580820548",
+      "protocolVersion": 11,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+### getRecentCompactedAddressBalanceChanges
+
+Returns compacted address balance changes from a specified block height. Compacted changes merge multiple operations per address into a single entry per block range, reducing response size for bulk sync.
+
+**Returns**: A list of compacted address balance changes grouped by block range, or a cryptographic proof.
+
+**Parameters**:
+
+| Name                 | Type    | Required | Description |
+|----------------------|---------|----------|-------------|
+| `start_block_height` | String (uint64) | Yes      | Block height to start from (as a string due to uint64 size) |
+| `prove`              | Boolean | No       | Set to `true` to receive a proof that contains the requested changes |
+
+**Example Request and Response**
+
+::::{tab-set}
+:::{tab-item} gRPCurl
+```shell
+grpcurl -proto protos/platform/v0/platform.proto \
+  -d '{
+    "v0": {
+      "startBlockHeight": "307400",
+      "prove": false
+    }
+  }' \
+  seed-1.testnet.networks.dash.org:1443 \
+  org.dash.platform.dapi.v0.Platform/getRecentCompactedAddressBalanceChanges
+```
+:::
+::::
+
+::::{tab-set}
+:::{tab-item} Response (gRPCurl)
+```json
+{
+  "v0": {
+    "compactedAddressBalanceUpdateEntries": {},
+    "metadata": {
+      "height": "307489",
+      "coreChainLockedHeight": 1453968,
+      "epoch": 15063,
+      "timeMs": "1775581182645",
+      "protocolVersion": 11,
+      "chainId": "dash-testnet-51"
+    }
+  }
+}
+```
+:::
+::::
+
+## Shielded Transaction Endpoints
+
+:::{versionadded} 3.1.0
+:::
+
+:::{attention}
+These endpoints are defined in the protocol but are not yet available on public nodes.
+:::
+
+### getShieldedEncryptedNotes
+
+Returns encrypted notes from the shielded pool for a specified range. Clients use these notes for trial decryption to identify notes belonging to their viewing key.
+
+**Returns**: A list of encrypted notes or a cryptographic proof.
+
+**Parameters**:
+
+| Name          | Type    | Required | Description |
+|---------------|---------|----------|-------------|
+| `start_index` | Integer | Yes      | The index of the first note to retrieve |
+| `count`       | Integer | Yes      | The number of notes to retrieve |
+| `prove`       | Boolean | No       | Set to `true` to receive a proof that contains the requested notes |
+
+### getShieldedAnchors
+
+Returns all commitment tree anchors for the shielded pool. Anchors are used by shielded transaction provers to reference a valid state of the commitment tree.
+
+**Returns**: A list of commitment tree anchors or a cryptographic proof.
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+|---------|---------|----------|-------------|
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested anchors |
+
+### getMostRecentShieldedAnchor
+
+Returns the most recent commitment tree anchor for the shielded pool.
+
+**Returns**: The most recent anchor or a cryptographic proof.
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+|---------|---------|----------|-------------|
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested anchor |
+
+### getShieldedPoolState
+
+Returns the total balance held in the shielded pool.
+
+**Returns**: The total shielded pool balance (in credits) or a cryptographic proof.
+
+**Parameters**:
+
+| Name    | Type    | Required | Description |
+|---------|---------|----------|-------------|
+| `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested pool state |
+
+### getShieldedNullifiers
+
+Returns the spent status of specified nullifiers. Clients use this to determine whether notes have already been spent.
+
+**Returns**: A list of nullifier statuses or a cryptographic proof.
+
+**Parameters**:
+
+| Name         | Type           | Required | Description |
+|--------------|----------------|----------|-------------|
+| `nullifiers` | Array of Bytes | Yes      | The nullifiers to query (each 32 bytes) |
+| `prove`      | Boolean        | No       | Set to `true` to receive a proof that contains the requested nullifier statuses |
+
+### getNullifiersTrunkState
+
+Returns a cryptographic proof of the trunk state of a nullifier tree. Used with `getNullifiersBranchState` to perform incremental sync of nullifier sets.
+
+**Returns**: A cryptographic proof of the nullifier tree trunk state.
+
+**Parameters**:
+
+| Name              | Type    | Required | Description |
+|-------------------|---------|----------|-------------|
+| `pool_type`       | Integer | Yes      | The shielded pool type: `0` = credit pool, `1` = main token pool, `2` = individual token pool |
+| `pool_identifier` | Bytes   | No       | 32-byte token identifier; required when `pool_type` is `2` |
+
+### getNullifiersBranchState
+
+Returns a Merkle proof for a branch of the nullifier tree. Use `checkpoint_height` from the metadata of a `getNullifiersTrunkState` response to ensure consistency.
+
+**Returns**: A Merkle proof for the specified branch.
+
+**Parameters**:
+
+| Name                | Type    | Required | Description |
+|---------------------|---------|----------|-------------|
+| `pool_type`         | Integer | Yes      | The shielded pool type: `0` = credit pool, `1` = main token pool, `2` = individual token pool |
+| `pool_identifier`   | Bytes   | No       | 32-byte token identifier; required when `pool_type` is `2` |
+| `key`               | Bytes   | Yes      | The branch key to query |
+| `depth`             | Integer | Yes      | The depth of the branch |
+| `checkpoint_height` | Integer | Yes      | Block height from a `getNullifiersTrunkState` response metadata, for consistency |
+
+### getRecentNullifierChanges
+
+Returns nullifier additions starting from a specified block height, indicating which notes were spent per block.
+
+**Returns**: A list of nullifier additions grouped by block, or a cryptographic proof.
+
+**Parameters**:
+
+| Name           | Type    | Required | Description |
+|----------------|---------|----------|-------------|
+| `start_height` | String (uint64) | Yes | Block height to start from (as a string due to uint64 size) |
+| `prove`        | Boolean         | No  | Set to `true` to receive a proof that contains the requested changes |
+
+### getRecentCompactedNullifierChanges
+
+Returns compacted nullifier additions from a specified block height. Compacted changes merge multiple blocks into ranges, reducing response size for bulk sync.
+
+**Returns**: A list of compacted nullifier additions grouped by block range, or a cryptographic proof.
+
+**Parameters**:
+
+| Name                 | Type    | Required | Description |
+|----------------------|---------|----------|-------------|
+| `start_block_height` | String (uint64) | Yes | Block height to start from (as a string due to uint64 size) |
+| `prove`              | Boolean         | No  | Set to `true` to receive a proof that contains the requested changes |
 
 ## Deprecated Endpoints
 
