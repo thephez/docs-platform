@@ -4,7 +4,21 @@
 
 # What is Dash Platform
 
-Dash Platform is a [Web3](https://en.wikipedia.org/wiki/Web3) technology stack for building decentralized applications on the Dash network. The two main architectural components, [Drive](../explanations/drive.md) and [DAPI](../explanations/dapi.md), turn the Dash P2P network into a cloud that developers can integrate with their applications.
+Dash Platform is a [Web3](https://en.wikipedia.org/wiki/Web3) technology stack for building
+decentralized applications on the Dash network. It is best understood as a decentralized data
+storage and application layer on top of Dash: developers define schemas and submit structured state
+transitions instead of deploying arbitrary user-written code on-chain.
+
+Its core components, [Drive](../explanations/drive.md) and [DAPI](../explanations/dapi.md),
+provide structured data storage, identity primitives, rich queries, and verifiable data access on
+top of the Dash network.
+
+:::{tip}
+Dash Platform is developed in the open. For the current implementation details, package layout, and
+build instructions, see the [Dash Platform monorepo](https://github.com/dashpay/platform). For a
+broader architectural walkthrough of the Rust codebase, see the
+[Dash Platform Book](https://dashpay.github.io/platform/).
+:::
 
 ```{eval-rst}
 .. raw:: html
@@ -18,11 +32,13 @@ Dash Platform is a [Web3](https://en.wikipedia.org/wiki/Web3) technology stack f
 
 ### Decentralized Cloud Storage
 
-Store your application data in the safest place on the Internet. All data stored on the Dash network is protected by Dash's consensus algorithm, ensuring data integrity and availability.
+Store structured application data on the Dash network with consensus-backed integrity and
+availability.
 
 ### Reduced Data Silos
 
-Because your application data is stored across many nodes on the Dash network, it is safe and always available for customers, business partners, and investors.
+Because application data is stored across the Dash masternode network, it can be shared and queried
+without relying on a single hosted backend.
 
 ### Client Libraries
 
@@ -30,7 +46,8 @@ Write code and integrate with Dash Platform using the languages that matter to y
 
 ### Instant Data Confirmation
 
-Unlike many blockchain-based networks, data stored on the platform is instantly confirmed by the Dash consensus algorithm to ensure the best user experience for users. With Dash Platform, you can gain the advantages of a blockchain-based storage network without the usual UX compromises.
+Unlike many blockchain-based networks, Platform is designed for fast finality and proof-based data
+verification, making it practical for light clients and user-facing applications.
 
 ```{eval-rst}
 .. figure:: ../../img/join-community.svg
@@ -48,12 +65,14 @@ DAPI is a _decentralized_ HTTP API exposing [JSON-RPC](https://www.jsonrpc.org/)
 
 DAPI provides developers the same access and security as running their own Dash node without the cost and maintenance overhead. Unlike traditional APIs which have a single point of failure, DAPI allows clients to connect to different instances depending on resource availability in the Dash network.
 
-Developers can connect to DAPI directly or use a client library. This initial client library, dapi-client, is a relatively simple API wrapper developed by Dash Core Group to provide function calls to the DAPI endpoints.
+Developers can connect to DAPI directly or use higher-level SDKs and client libraries maintained in
+the Dash Platform monorepo. These libraries handle connection management, data serialization, and
+common application workflows. A major design goal of Platform is that clients can verify responses
+with proofs rather than trusting the node that served them.
 
-The source for both DAPI and dapi-client are available on GitHub:
+The source for these components is available on GitHub:
 
-- DAPI: <https://github.com/dashpay/platform/tree/master/packages/dapi>
-- DAPI-Client: <https://github.com/dashpay/platform/tree/master/packages/js-dapi-client>
+- Platform monorepo: <https://github.com/dashpay/platform>
 
 ### Drive - Decentralized Storage
 

@@ -5,19 +5,23 @@
 # Repository Overview
 
 Dash Platform uses a [monorepo](https://en.wikipedia.org/wiki/Monorepo) structure containing most
-packages that comprise Dash Platform. Packages are located in the
-[packages](https://github.com/dashpay/platform/tree/master/packages) directory.
+of the source code that powers the network, SDKs, and development tooling. The public source tree
+is available in the [dashpay/platform](https://github.com/dashpay/platform) repository.
+
+If you want a higher-level architectural walkthrough of the current Rust codebase, see the
+[Dash Platform Book](https://dashpay.github.io/platform/).
 
 ## SDKs
 
-These are the primary tools for developers building on Dash Platform.
+These are the primary tools for developers building on Dash Platform. Package names and exact module
+layout can change over time, so treat the monorepo as the source of truth.
 
 | Component | Description |
 | - | - |
-| [js-evo-sdk](https://github.com/dashpay/platform/tree/master/packages/js-evo-sdk) | JavaScript SDK (`npm install @dashevo/evo-sdk`) |
-| [rs-sdk](https://github.com/dashpay/platform/tree/master/packages/rs-sdk) | Rust SDK for building applications on Dash Platform |
-| [rs-sdk-ffi](https://github.com/dashpay/platform/tree/master/packages/rs-sdk-ffi) / [swift-sdk](https://github.com/dashpay/platform/tree/master/packages/swift-sdk) | FFI layer and iOS/Swift SDK |
-| [wasm-sdk](https://github.com/dashpay/platform/tree/master/packages/wasm-sdk) | WebAssembly bindings for browser-based applications |
+| [js-evo-sdk](https://github.com/dashpay/platform/tree/master/packages/js-evo-sdk) | JavaScript tooling for connecting to Platform, creating identities, and submitting state transitions |
+| [rs-sdk](https://github.com/dashpay/platform/tree/master/packages/rs-sdk) | Rust-first SDK for building applications and verifying Platform data |
+| [rs-sdk-ffi](https://github.com/dashpay/platform/tree/master/packages/rs-sdk-ffi) / [swift-sdk](https://github.com/dashpay/platform/tree/master/packages/swift-sdk) | Shared components used for Swift and other native integrations |
+| [wasm-sdk](https://github.com/dashpay/platform/tree/master/packages/wasm-sdk) | WebAssembly-oriented bindings for browser and hybrid environments |
 
 ## Platform and Supporting Repositories
 

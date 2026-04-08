@@ -84,6 +84,7 @@ docker --version
 docker compose version
 protoc --version
 rustc --version
+wasm-bindgen --version
 ```
 
 ## Configure firewall
