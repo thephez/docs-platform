@@ -127,14 +127,6 @@ Before auditing a page, classify its primary purpose. Judge it against that purp
 
 ---
 
-## Confidence
-
-- high
-- medium
-- low
-
----
-
 ## Source-of-truth precedence
 
 When sources disagree, prefer evidence in this order unless project-specific instructions say otherwise:
@@ -304,7 +296,7 @@ Create the directory under the project root. If a different output location is s
 
 - `audit_id` — generate a short unique ID, e.g. `audit-2024-001`
 - `agent_version` — use `unknown` if not determinable
-- `skill_version` — `2025-03`
+- `skill_version` — `2026-04-06`
 - `generated_at` — ISO 8601 timestamp
 
 ---
@@ -384,8 +376,12 @@ audit_run:
   audit_id: string
   doc_site: string
   docs_repo: string
+  docs_branch: string           # branch audited
+  docs_commit: string           # HEAD commit hash at audit time
   code_repos:
-    - string
+    - repo: string
+      branch: string            # branch audited
+      commit: string            # HEAD commit hash at audit time
   audit_type: baseline | incremental | verification
   generated_at: string
   agent_version: string
@@ -443,53 +439,23 @@ findings:
 2. Audit remaining API reference pages for similar endpoint drift
 ```
 
-### Findings (YAML)
+### Example finding (YAML)
 
 ```yaml
-audit_run:
-  audit_id: audit-2024-001
-  doc_site: https://docs.example.com
-  docs_repo: my-org/my-repo
-  code_repos:
-    - my-org/my-repo
-  audit_type: baseline
-  generated_at: "2024-11-01T14:00:00Z"
-  agent_version: unknown
-  skill_version: "2025-03"
-
-scope:
-  doc_paths:
-    - docs/api/authentication.md
-  code_paths:
-    - src/auth/
-  exclusions:
-    - docs/changelog.md
-  notes: null
-
-summary:
-  pages_reviewed: 1
-  findings_total: 1
-  by_severity:
-    critical: 1
-    high: 0
-    medium: 0
-    low: 0
-    info: 0
-  by_issue_type:
-    outdated_api: 1
+# audit_run, scope, and summary follow the envelope schema above
 
 findings:
   - finding_id: F-001
-    title: Authentication endpoint documented as /v1/auth but code uses /v2/auth
+    title: Auth endpoint /v1/auth should be /v2/auth
     severity: critical
     confidence: high
     issue_type: outdated_api
     doc_file: docs/api/authentication.md
     content_type: reference
-    summary: The docs show the old /v1/auth endpoint which no longer exists.
-    current_doc_behavior: Documents POST /v1/auth for token exchange.
-    expected_behavior: Endpoint is POST /v2/auth as of v2.0.0.
-    discrepancy: /v1/auth returns 404 in current code; /v2/auth is the correct path.
+    summary: Docs reference removed /v1/auth endpoint
+    current_doc_behavior: POST /v1/auth for token exchange
+    expected_behavior: POST /v2/auth (since v2.0.0)
+    discrepancy:  Endpoint path differs (/v1/auth vs /v2/auth)
     evidence:
       doc_refs:
         - file: docs/api/authentication.md
@@ -498,8 +464,8 @@ findings:
         - repo: my-org/my-repo
           file: src/auth/routes.py
           lines: "12-18"
-    impact: Developers following the docs will get 404s and cannot authenticate.
-    recommended_update: Update endpoint to /v2/auth and note the v2.0.0 migration.
+    impact: Readers get 404s on auth
+    recommended_update: Update endpoint path to /v2/auth
     doc_locator:
       type: anchor
       value: "#endpoint"
@@ -507,14 +473,7 @@ findings:
     edit_type: replace
     edit_instructions:
       - target: "POST /v1/auth"
-        action: Replace the endpoint path and update any surrounding prose that references v1.
+        action: Replace endpoint path and update any references to v1
         new_text: "POST /v2/auth"
-    # optional fields included for this example:
-    tags: [auth, endpoint]
-    update_group: auth-endpoint-migration
-    fix_priority: immediate
-    user_risk: breakage
-    affected_code_paths:
-      - src/auth/routes.py
-    status: open
+    # optional fields (tags, update_group, fix_priority, etc.) as needed
 ```
