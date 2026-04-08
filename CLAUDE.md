@@ -68,6 +68,7 @@ The site uses a hierarchical structure with:
 ## Claude Code Skills
 
 - **doc-audit** (`.claude/skills/doc-audit/SKILL.md`): Audits documentation against the Platform codebase to find drift, stale content, and broken examples. Works best with a local clone of the [platform](https://github.com/dashpay/platform) repo.
+- **doc-audit-update** (`.claude/skills/doc-audit-update/SKILL.md`): Applies structured audit findings to documentation with minimal diffs, preserving tone, markup, and style.
 
 ## File Patterns
 
