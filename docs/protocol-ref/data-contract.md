@@ -71,7 +71,6 @@ The data contract object consists of the following fields as defined in the Rust
 
 | Property        | Type           | Size | Description |
 | --------------- | -------------- | ---- | ----------- |
-| [$schema](#data-contract-schema) | string         | Varies      | Schema URL; injected per-document-type during enrichment (not stored on the contract directly) |
 | [id](#data-contract-id)         | array of bytes | 32 bytes      | Contract ID generated from `ownerId` and identity nonce (content media type: `application/x.dash.dpp.identifier`) |
 | [version](#data-contract-version) | unsigned integer        | 32 bits      | The data contract version |
 | ownerId         | array of bytes | 32 bytes      | [Identity](../protocol-ref/identity.md) that registered the data contract defining the document (content media type: `application/x.dash.dpp.identifier`) |
@@ -91,9 +90,9 @@ The data contract object consists of the following fields as defined in the Rust
 
 \* The data contract object must define documents or tokens. It may include both documents and tokens.
 
-### Data Contract schema
+### Document type meta-schema
 
-The full schema is [defined in rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/document_type/schema/enrich_with_base_schema/v0/mod.rs#L6-L7), hosted on [GitHub](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json), and can be viewed by expanding this dropdown:
+Each document type defined within a data contract is validated against the document meta-schema. The full schema is [defined in rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/document_type/schema/enrich_with_base_schema/v0/mod.rs#L6-L7), hosted on [GitHub](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json), and can be viewed by expanding this dropdown:
 
 ::: {dropdown} Full schema
 
@@ -709,6 +708,10 @@ The full schema is [defined in rs-dpp](https://github.com/dashpay/platform/blob/
 }
 ```
 
+:::
+
+:::{note}
+The `keywords` field appears at two levels with different limits. The document meta-schema above defines per-document-type keywords with a maximum of 20. The contract-level `keywords` field (shown in the [data contract object table](#data-contract-object)) has a separate maximum of 50 enforced by Rust validation.
 :::
 
 ### Data Contract id
