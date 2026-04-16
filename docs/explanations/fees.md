@@ -26,14 +26,13 @@ The current cost schedule is outlined in the table below:
 
 | Operation | Cost (credits) |
 | - | - |
-| Permanent storage | 40000 / byte |
-| Base processing fee | 100000 |
-| Write to storage | 750 / byte |
-| Load from storage | 3500 / byte |
+| Permanent storage | 27000 / byte |
+| Base processing fee | 10000 |
+| Write to storage | 400 / byte |
+| Load from storage | 20 / byte |
 | Seek storage | 2000 |
-| Query | 75 / byte |
-| Load from memory | 20 / byte |
-| Blake3 hash function | 400 + 64 / 64-byte block |
+| Load from memory | 10 / byte |
+| Blake3 hash function | 100 base + 300 / 64-byte block |
 
 :::{note}
 Refer to the [Identity explanation](../explanations/identity.md) section for information regarding how credits are created.
@@ -57,17 +56,18 @@ An in-depth look at the Fee Multiplier can be found at **link**
 
 In an attempt to minimize Dash Platform's storage requirements, users are incentivized to remove data that they no longer want to be stored in the Dash Platform state for a refund. Data storage fees are distributed to masternodes over the data's lifetime which is 50 years for permanent storage. Therefore, at any time before the data's fees are entirely distributed, there will be fees remaining which can be refunded to the user if they decide to delete the data.
 
-## User Tip
+## User Fee Increase
 
-Platform supports a user tip component that can be used to incentivize inclusion of a state
-transition in the next block, especially during periods of high traffic.
+Platform supports a user fee increase that can be used to incentivize inclusion of a state
+transition in the next block, especially during periods of high traffic. This is expressed as an
+integer percentage increase applied to the processing fee.
 
 ## Formula
 
 The high level formula for a state transition's fee is:
 
 ```text
-    fee = storageFee + processingFee - storageRefund + userTip
+    fee = storageFee + processingFee + (processingFee * userFeeIncrease / 100) - storageRefund
 ```
 
 <!-- Uncomment once DIP available

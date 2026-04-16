@@ -103,15 +103,17 @@ When creating a token, you define its configuration using the following paramete
 
 | Configuration Parameter | Mutable           | Default |
 |:------------------------|:------------------|:--------|
+| Description                              | Yes | None |
 | [Conventions](#display-conventions)      | Yes | N/A. Depends on implementation |
-| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#493) |
-| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v2.0.1/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L495) |
+| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L46) |
+| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L498) |
 | [Maximum supply](#token-supply)          | Yes | None |
-| [Keep history](#history)                 | Yes | True |
+| [Keep history](#history)                 | Yes | True (all history types) |
 | [Start paused](#initial-state)           | Yes | False |
 | [Allow transfer to frozen balance](#allow-transfer-to-frozen-balance) | Yes | True |
 | [Main control group](#main-control-group)| Yes | None |
 | Main control group can be modified       | Yes | NoOne |
+| Marketplace rules                        | Yes | None |
 
 #### Display Conventions
 
@@ -231,7 +233,7 @@ Groups can be used to distribute token configuration and update authorization ac
 
 - Each group member is assigned an integer power.
 - The group itself has a required power threshold to authorize an action.
-- Groups can have up to 256 members, each with a maximum power of 2^16 - 1 (65536).
+- Groups can have up to 256 members, each with a maximum power of 2^16 - 1 (65535).
 - Changes to a token (e.g., mint, burn, freeze) can be configured so they require group authorization. This is done by assigning the group under the [token rule configuration](#rules).
 
 **Example**
