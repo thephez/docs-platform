@@ -15,4 +15,5 @@ If you are looking for a focused snippet for one SDK call, the per-operation tut
 :titlesonly:
 
 example-apps/dashmint-lab
+example-apps/dashproof-lite
 ```
