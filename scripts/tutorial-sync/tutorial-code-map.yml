@@ -1,12 +1,21 @@
 # Maps platform-tutorials source files to inline code blocks in docs.
 #
-# source:   path relative to platform-tutorials root
-# doc:      path relative to docs/tutorials/
-# block_id: how to locate the code block in the markdown:
-#   caption: match :caption: value in {code-block} directives
-#   sync:    match :sync: value in tab-items (use with language filter)
-#   tab:     match tab-item title text (use with language filter)
-# language:  fenced block language (default: javascript)
+# kind:     "inline" (default) splices source into a code block in a doc page.
+#           "copy" mirrors the whole source file to `dest` (relative to repo root) —
+#           used for standalone embed apps in _static/.
+#
+# Inline mappings (default):
+#   source:   path relative to platform-tutorials root
+#   doc:      path relative to docs/tutorials/
+#   block_id: how to locate the code block in the markdown:
+#     caption: match :caption: value in {code-block} directives
+#     sync:    match :sync: value in tab-items (use with language filter)
+#     tab:     match tab-item title text (use with language filter)
+#   language:  fenced block language (default: javascript)
+#
+# Copy mappings (kind: copy):
+#   source:   path relative to platform-tutorials root
+#   dest:     path relative to this repo's root
 
 docs_root: docs/tutorials
 
@@ -231,3 +240,13 @@ mappings:
     block_id:
       caption: queries.ts
     language: typescript
+
+  # -- Standalone embed apps (whole-file copy, no inline block surgery) --
+
+  - kind: copy
+    source: example-apps/dashmint-lab/public/dashmint-lite.html
+    dest: _static/dashmint-lite.html
+
+  - kind: copy
+    source: example-apps/dashproof-lab/public/dashproof-lite.html
+    dest: _static/dashproof-lite.html
