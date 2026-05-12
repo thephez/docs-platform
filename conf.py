@@ -97,6 +97,9 @@ html_css_files = [
 #
 html_sidebars = {
     "index": ["sidebar-main.html"],
+    "docs/tutorials/example-apps/dashmint-lite": [],
+    "docs/tutorials/example-apps/dashnote-lite": [],
+    "docs/tutorials/example-apps/dashproof-lite": [],
     "**": ["sidebar-nav-bs"]
 }
 

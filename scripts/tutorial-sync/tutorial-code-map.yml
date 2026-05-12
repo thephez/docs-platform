@@ -1,12 +1,21 @@
 # Maps platform-tutorials source files to inline code blocks in docs.
 #
-# source:   path relative to platform-tutorials root
-# doc:      path relative to docs/tutorials/
-# block_id: how to locate the code block in the markdown:
-#   caption: match :caption: value in {code-block} directives
-#   sync:    match :sync: value in tab-items (use with language filter)
-#   tab:     match tab-item title text (use with language filter)
-# language:  fenced block language (default: javascript)
+# kind:     "inline" (default) splices source into a code block in a doc page.
+#           "copy" mirrors the whole source file to `dest` (relative to repo root) —
+#           used for standalone embed apps in _static/.
+#
+# Inline mappings (default):
+#   source:   path relative to platform-tutorials root
+#   doc:      path relative to docs/tutorials/
+#   block_id: how to locate the code block in the markdown:
+#     caption: match :caption: value in {code-block} directives
+#     sync:    match :sync: value in tab-items (use with language filter)
+#     tab:     match tab-item title text (use with language filter)
+#   language:  fenced block language (default: javascript)
+#
+# Copy mappings (kind: copy):
+#   source:   path relative to platform-tutorials root
+#   dest:     path relative to this repo's root
 
 docs_root: docs/tutorials
 
@@ -231,3 +240,50 @@ mappings:
     block_id:
       caption: queries.ts
     language: typescript
+
+  # Dashnote — React + TypeScript notes app. Same per-operation file
+  # convention as DashMint Lab; each src/dash/*.ts file has a matching
+  # code block in the walkthrough with a :caption: equal to the bare filename.
+  - source: example-apps/dashnote/src/dash/contract.ts
+    doc: example-apps/dashnote.md
+    block_id:
+      caption: contract.ts
+    language: typescript
+
+  - source: example-apps/dashnote/src/dash/queries.ts
+    doc: example-apps/dashnote.md
+    block_id:
+      caption: queries.ts
+    language: typescript
+
+  - source: example-apps/dashnote/src/dash/createNote.ts
+    doc: example-apps/dashnote.md
+    block_id:
+      caption: createNote.ts
+    language: typescript
+
+  - source: example-apps/dashnote/src/dash/updateNote.ts
+    doc: example-apps/dashnote.md
+    block_id:
+      caption: updateNote.ts
+    language: typescript
+
+  - source: example-apps/dashnote/src/dash/deleteNote.ts
+    doc: example-apps/dashnote.md
+    block_id:
+      caption: deleteNote.ts
+    language: typescript
+
+  # -- Standalone embed apps (whole-file copy, no inline block surgery) --
+
+  - kind: copy
+    source: example-apps/dashmint-lab/public/dashmint-lite.html
+    dest: _static/dashmint-lite.html
+
+  - kind: copy
+    source: example-apps/dashproof-lab/public/dashproof-lite.html
+    dest: _static/dashproof-lite.html
+
+  - kind: copy
+    source: example-apps/dashnote/public/dashnote-lite.html
+    dest: _static/dashnote-lite.html

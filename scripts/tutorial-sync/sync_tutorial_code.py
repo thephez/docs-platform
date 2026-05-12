@@ -192,6 +192,51 @@ def find_block(content: str, block_id: dict, language: str):
 # Main logic
 # ---------------------------------------------------------------------------
 
+def process_copy_mapping(entry: dict, source_root: Path, mode: str):
+    """Whole-file copy from platform-tutorials into an arbitrary repo path.
+
+    Used for standalone embed apps (e.g. _static/dashmint-lite.html) where
+    there's no inline code block to splice — we just mirror the file.
+    Returns one of "match", "mismatch", "error".
+    """
+    if "dest" not in entry:
+        print(f"  ERROR  {entry.get('source', '?')}: copy mapping missing 'dest'")
+        return "error"
+
+    src = source_root / entry["source"]
+    dst = PROJECT_ROOT / entry["dest"]
+    label = f"{entry['source']} -> {entry['dest']}"
+
+    if not src.is_file():
+        print(f"  ERROR  {label}: source file not found: {src}")
+        return "error"
+
+    src_text = src.read_text(encoding="utf-8")
+    dst_text = dst.read_text(encoding="utf-8") if dst.is_file() else ""
+
+    if src_text == dst_text:
+        print(f"  MATCH  {label}")
+        return "match"
+
+    if mode == "diff":
+        print(f"  DIFF   {label}")
+        diff = difflib.unified_diff(
+            dst_text.splitlines(keepends=True),
+            src_text.splitlines(keepends=True),
+            fromfile=f"docs: {entry['dest']}",
+            tofile=f"src: {entry['source']}",
+        )
+        sys.stdout.writelines("         " + line for line in diff)
+        print()
+    elif mode == "check":
+        print(f"  DRIFT  {label}")
+    else:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text(src_text, encoding="utf-8")
+        print(f"  SYNCED {label}")
+    return "mismatch"
+
+
 def process_mappings(config: dict, source_root: Path, mode: str):
     """Process all mappings. Returns (matched, mismatched, errors) counts."""
     docs_root = PROJECT_ROOT / config["docs_root"]
@@ -200,6 +245,26 @@ def process_mappings(config: dict, source_root: Path, mode: str):
     errors = 0
 
     for entry in config["mappings"]:
+        kind = entry.get("kind", "inline")
+        if kind == "copy":
+            result = process_copy_mapping(entry, source_root, mode)
+            if result == "match":
+                matched += 1
+            elif result == "mismatch":
+                mismatched += 1
+            else:
+                errors += 1
+            continue
+        if kind != "inline":
+            print(f"  ERROR  {entry.get('source', '?')}: unknown kind: {kind}")
+            errors += 1
+            continue
+
+        if "doc" not in entry or "block_id" not in entry:
+            print(f"  ERROR  {entry.get('source', '?')}: inline mapping requires 'doc' and 'block_id'")
+            errors += 1
+            continue
+
         source_path = source_root / entry["source"]
         doc_path = docs_root / entry["doc"]
         block_id = entry["block_id"]
