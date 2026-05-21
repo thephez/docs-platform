@@ -177,6 +177,7 @@ Fees related to contested document voting.
 | Min top-up balance | 50,000 duffs | 0.0005 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L21) |
 | Min address funding balance | 50,000 duffs | 0.0005 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L22) |
 | Min identity funding amount | 200,000 credits | Minimum for address-based creation | [rs-platform-version](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L41) |
+| Max asset-lock transaction inputs | 100 | Maximum Core inputs in an asset-lock transaction used to fund an identity or top-up (introduced in protocol v3 to prevent stuck funds; v1/v2 had no effective limit) | [rs-platform-version](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v3.rs#L25) |
 
 ## Document & Data Contract Model
 
@@ -253,10 +254,10 @@ These limits apply to token perpetual distribution function parameters.
 | Constant | Value | Description | Source |
 |----------|-------|-------------|--------|
 | Address hash size | 20 bytes | Size of address hash | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L22) |
-| Platform HRP (mainnet) | "dash" | Human-readable prefix | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L89) |
-| Platform HRP (testnet) | "tdash" | Testnet human-readable prefix | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L91) |
-| P2PKH address type | 0xb0 (176) | Pay-to-public-key-hash encoding type byte | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L95) |
-| P2SH address type | 0x80 (128) | Pay-to-script-hash encoding type byte | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L97) |
+| Platform HRP (mainnet) | "dash" | Human-readable prefix | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L184) |
+| Platform HRP (non-mainnet) | "tdash" | Human-readable prefix used for testnet, devnet, and regtest | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L186) |
+| P2PKH address type (bech32m) | 0xb0 (176) | Pay-to-public-key-hash bech32m encoding type byte | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L190) |
+| P2SH address type (bech32m) | 0x80 (128) | Pay-to-script-hash bech32m encoding type byte | [rs-dpp](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/address_funds/platform_address.rs#L192) |
 
 ### Transaction Limits
 
