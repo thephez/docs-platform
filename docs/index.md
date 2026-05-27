@@ -131,6 +131,7 @@ explanations/dpns
 explanations/drive
 explanations/platform-consensus
 explanations/dashpay
+explanations/shielded-pool
 explanations/fees
 explanations/tokens
 explanations/nft
@@ -164,6 +165,7 @@ protocol-ref/document
 protocol-ref/token
 protocol-ref/data-trigger
 protocol-ref/address-system
+protocol-ref/shielded-pool
 protocol-ref/protocol-constants
 protocol-ref/errors
 ```
