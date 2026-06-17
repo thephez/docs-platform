@@ -35,7 +35,7 @@ If you just want the mental model: read the architecture table, then `createNote
 - A configured client: [Setup SDK Client](../setup-sdk-client.md) — Dashnote re-uses `setupDashClient-core.mjs`
 - A registered identity: [Register an Identity](../identities-and-names/register-an-identity.md)
 - Familiarity with data contracts: [Register a Data Contract](../contracts-and-documents/register-a-data-contract.md)
-- Node >= 20 and a funded testnet identity (BIP-39 mnemonic + identity index) for write operations
+- Node >= 22 and a funded testnet identity (BIP-39 mnemonic + identity index) for write operations
 - Read-only browse works without any credentials against the bundled default contract
 
 ## Clone and run
@@ -255,6 +255,7 @@ Each operation file is intentionally small. The app-level pattern is: validate i
  * SDK method: sdk.documents.create({ document, identityKey, signer })
  */
 import type { Logger } from "../lib/logger";
+import { PLATFORM_VERSION_OVERRIDE } from "../../../../platformVersion.mjs";
 import { loadSdkModule } from "./sdkModule";
 import type { DashKeyManager, DashSdk } from "./types";
 
@@ -297,7 +298,7 @@ export async function createNote({
 
   const json =
     typeof document.toJSON === "function"
-      ? (document.toJSON() as Record<string, unknown>)
+      ? (document.toJSON(PLATFORM_VERSION_OVERRIDE) as Record<string, unknown>)
       : {};
   const noteId = String(json.$id ?? json.id ?? "");
   if (!noteId) {
@@ -310,7 +311,13 @@ export async function createNote({
 
 ### Update a note
 
-`updateNote.ts` is the canonical fetch-then-bump-revision write. It calls `sdk.documents.get` to read the on-chain revision, increments it by one, builds a new `Document` with the same id and ownerId, and submits via `sdk.documents.replace`. Replays without bumping the revision are rejected by the state transition.
+`updateNote.ts` is the canonical fetch-then-bump-revision write:
+
+- Call `sdk.documents.get` to read the current on-chain revision.
+- Increment it by one and build a new `Document` with the same id and ownerId.
+- Submit via `sdk.documents.replace`. Replays without bumping the revision are rejected by the state transition.
+
+The optional `expectedRevision` parameter guards against a concurrent edit: if the on-chain revision no longer matches what the caller last loaded, the update is refused with a "reload and try again" error instead of silently overwriting the newer version.
 
 ```{code-block} typescript
 :caption: updateNote.ts
@@ -319,6 +326,10 @@ export async function createNote({
 /**
  * Update an existing note. Fetches the current document to bump its revision,
  * then submits a replace state transition.
+ *
+ * Pass `expectedRevision` to refuse the update if the network's revision
+ * doesn't match — i.e. the note was changed on the network after the local
+ * copy was loaded.
  *
  * SDK methods:
  *   sdk.documents.get(contractId, documentTypeName, documentId)
@@ -335,6 +346,7 @@ export interface UpdateNoteParams {
   noteId: string;
   title?: string;
   message: string;
+  expectedRevision?: number;
   log?: Logger;
 }
 
@@ -345,6 +357,7 @@ export async function updateNote({
   noteId,
   title,
   message,
+  expectedRevision,
   log,
 }: UpdateNoteParams): Promise<bigint> {
   log?.(`Saving note ${noteId}…`);
@@ -354,8 +367,18 @@ export async function updateNote({
     throw new Error(`Note ${noteId} not found.`);
   }
 
+  const currentRevision = BigInt(existingDoc.revision ?? 0);
+  if (
+    expectedRevision !== undefined &&
+    currentRevision !== BigInt(expectedRevision)
+  ) {
+    throw new Error(
+      `Note changed on network (you had revision ${expectedRevision}, network is at ${currentRevision}). Reload your notes and try again.`,
+    );
+  }
+
   const { Document } = await loadSdkModule();
-  const revision = BigInt(existingDoc.revision ?? 0) + 1n;
+  const revision = currentRevision + 1n;
   const trimmedTitle = title?.trim();
   const document = new Document({
     properties: {
@@ -431,7 +454,7 @@ export async function deleteNote({
 The note contract is intentionally minimal: one document type, two user-editable fields, two indices to support the recent-notes list. Key choices worth calling out:
 
 - `documentsMutable: true` and `canBeDeleted: true` — notes are editable and deletable.
-- `maxLength: 120` for `title` and `maxLength: 10000` for `message` are **UTF-8 byte budgets**, not character counts. The editor's progress bar reflects bytes; emoji and non-ASCII sequences consume more of the budget than ASCII.
+- `maxLength: 120` for `title` caps the title; `message` carries no `maxLength` and is instead bounded by Platform's per-field byte limit. The editor's progress bar tracks the `message` byte count against that limit — emoji and non-ASCII sequences consume more of the budget than ASCII.
 - `byOwnerUpdated` (`$ownerId`, `$updatedAt`) is the index the recent-notes list paginates on; `byOwnerCreated` is its created-time sibling.
 
 `registerContract` builds the `DataContract`, calls `setConfig()` to lock in those choices, then publishes via `sdk.contracts.publish`. `ensureContract` is the lazy wrapper used by the login flow: re-use a saved contract ID if one is present, otherwise register a fresh one.
@@ -464,7 +487,6 @@ export const NOTE_SCHEMAS = {
       },
       message: {
         type: "string",
-        maxLength: 10000,
         position: 1,
       },
     },
