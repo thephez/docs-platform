@@ -6,7 +6,7 @@
 
 ## Platform Error Codes
 
-Dash Platform Protocol implements a comprehensive set of consensus error codes. Refer to the tables below for a list of the codes as specified in [codes.rs](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/errors/consensus/codes.rs) of the consensus source code.
+Dash Platform Protocol implements a comprehensive set of consensus error codes. Refer to the tables below for a list of the codes as specified in [codes.rs](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/errors/consensus/codes.rs) of the consensus source code.
 
 Platform error codes are organized into four categories. Each category may be further divided into sub-categories. The four categories and their error code ranges are:
 
@@ -189,6 +189,7 @@ Code range: 10450-10499
 | 10458 | InvalidTokenAmountError                                |         |
 | 10459 | InvalidTokenNoteTooBigError                            |         |
 | 10460 | TokenNoteOnlyAllowedWhenProposerError                  |         |
+| 10461 | TokenPricingScheduleEmptyError                         |         |
 
 ### Identity
 
@@ -230,6 +231,7 @@ Code range:  10500-10599
 | 10531 | IdentityAssetLockStateTransitionReplayError                   |         |
 | 10532 | WithdrawalOutputScriptNotAllowedWhenSigningWithOwnerKeyError  |         |
 | 10533 | InvalidKeyPurposeForContractBoundsError                       |         |
+| 10534 | IdentityAssetLockTransactionTooManyInputsError                |         |
 
 ### State Transition
 
@@ -279,9 +281,11 @@ Code range: 10800-10899
 | 10820 | ShieldedEmptyProofError                        |         |
 | 10821 | ShieldedZeroAnchorError                        |         |
 | 10822 | ShieldedInvalidValueBalanceError               |         |
-| 10823 | *(reserved/unassigned)*                        |         |
+| 10823 | ShieldedEncryptedNoteSizeMismatchError         |         |
 | 10824 | *(reserved/unassigned)*                        |         |
 | 10825 | ShieldedTooManyActionsError                    |         |
+| 10826 | ShieldedImplicitFeeCapExceededError            |         |
+| 10827 | ShieldedInvalidDenominationError               |         |
 
 ## Signature Errors
 

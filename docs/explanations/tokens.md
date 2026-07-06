@@ -107,8 +107,8 @@ When creating a token, you define its configuration using the following paramete
 |:------------------------|:------------------|:--------|
 | Description                              | Yes | None |
 | [Conventions](#display-conventions)      | Yes | N/A. Depends on implementation |
-| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L46) |
-| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v3.1-dev/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L498) |
+| [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L47) |
+| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L498) |
 | [Maximum supply](#token-supply)          | Yes | None |
 | [Keep history](#history)                 | Yes | True (all history types) |
 | [Start paused](#initial-state)           | Yes | False |
@@ -290,9 +290,8 @@ When enabled, the authorized party can set the token price using a state transit
 
 ### Marketplace
 
-Token contracts already expose marketplace rules in their configuration, which declares a trade mode that governs how tokens may be traded on Platform. The currently supported trade modes are:
+Token contracts already expose marketplace rules in their configuration, which declares a trade mode that governs how tokens may be traded on Platform. The only trade mode currently defined is:
 
-- **`NotTradeable`** - the token cannot be traded on Platform (default).
-- **`TradeableOnMarketplace`** - the token is eligible for trading via Platform's marketplace mechanism.
+- **`NotTradeable`** - the token cannot be traded on Platform. This is the default and, at present, the only available value.
 
-The protocol-level marketplace rules are in place, but broader client tooling and user-facing marketplace experiences are expected to continue evolving in future releases.
+A dedicated marketplace trade mode is reserved for a future release. The protocol-level marketplace rules exist to support this, but the trade mode itself, along with broader client tooling and user-facing marketplace experiences, is expected to continue evolving in future releases.
