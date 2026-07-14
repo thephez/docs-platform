@@ -9,19 +9,10 @@ tutorials.
 
 ## Code
 
-Save the following two modules side-by-side — `setupDashClient-core.mjs` and
-`setupDashClient.mjs` — in the same directory. Later Node tutorials import from
+Save the following two modules side-by-side — <a href="https://github.com/dashpay/platform-tutorials/blob/main/setupDashClient-core.mjs" target="_blank">setupDashClient-core.mjs</a> and
+<a href="https://github.com/dashpay/platform-tutorials/blob/main/setupDashClient.mjs" target="_blank">setupDashClient.mjs</a> — in the same directory. Later Node tutorials import from
 `setupDashClient.mjs`; browser apps can import from `setupDashClient-core.mjs`
 directly.
-
-| Export | File | Purpose |
-| ------ | ---- | ------- |
-| `createClient()` | `setupDashClient-core.mjs` | Connects to the network |
-| `IdentityKeyManager` | `setupDashClient-core.mjs` | Derives identity keys and provides signers for write operations |
-| `AddressKeyManager` | `setupDashClient-core.mjs` | Derives platform address keys for address operations |
-| `dip13KeyPath()` / `KEY_SPECS` | `setupDashClient-core.mjs` | DIP-13 path helper and the 5 standard identity key specs |
-| `setupDashClient()` | `setupDashClient.mjs` | Node convenience wrapper — connects and creates key managers from `clientConfig` |
-| `clientConfig` | `setupDashClient.mjs` | Network and mnemonic configuration, sourced from `process.env` |
 
 :::{important}
 After saving, open `setupDashClient.mjs` (the wrapper) and set your mnemonic in
