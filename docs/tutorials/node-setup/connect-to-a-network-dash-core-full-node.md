@@ -8,7 +8,7 @@ Since Dash Platform is fully accessible via DAPI, running a full node is unneces
 
 ## Config File
 
- The config file shown below may be used to connect a Dash Core node to Testnet. Testnet currently operates using [Dash Core v19.3.0](https://github.com/dashpay/dash/releases/tag/v19.3.0).
+ The config file shown below may be used to connect a Dash Core node to Testnet.
 
 ```ini dash-testnet.conf
 # dash-testnet.conf

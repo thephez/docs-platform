@@ -116,22 +116,24 @@ Example output of `dashmate wallet mint 10 --address=yYqfdpePzn2kWtMxr9nz22HBFM7
 
 Once the address is funded, you can begin creating identities, data contracts, etc. and experimenting with Dash Platform. The [other tutorials](../../tutorials/introduction.md) in this section will help you get started.
 
-To make the Dash SDK connect to your local network, set the `network` option to `'local'`:
+To make the Dash SDK connect to your local network, use the `localTrusted()` factory method:
 
 ```javascript
-const clientOpts = {
-  network: 'local',
-  ...
-};
+import { EvoSDK } from '@dashevo/evo-sdk';
 
-const client = new Dash.Client(clientOpts);
+const sdk = EvoSDK.localTrusted();
+await sdk.connect();
 ```
+
+See [Connect to a Local Devnet](../connecting-to-testnet.md#connect-to-a-local-devnet) for more detail.
 
 ## Testnet Masternode Setup
 
 :::{important}
 Running a masternode requires familiarity with Dash Platform services. Improper configuration may impact testing so please exercise caution if running a masternode.
 :::
+
+When upgrading an existing node, check the [platform release notes](https://github.com/dashpay/platform/releases) for per-release upgrade steps and breaking changes.
 
 To setup a testnet masternode, please refer to the comprehensive documentation of the process as described [here](https://docs.dash.org/en/stable/masternodes/setup-testnet.html#dashmate-installation). The following video also details how to complete the process.
 

@@ -51,7 +51,7 @@ Once this returns successfully, you're ready to begin developing! See the [Quick
 
 ## Connect to a Local Devnet
 
-The SDK supports connecting to a local development network managed by [dashmate](https://github.com/dashpay/platform/tree/master/packages/dashmate). The `local` factory methods expect a dashmate-managed environment with a quorum sidecar running at `127.0.0.1:2444`.
+The SDK supports connecting to a local development network managed by [dashmate](https://github.com/dashpay/platform/tree/master/packages/dashmate). The `local` factory methods expect a dashmate-managed environment with a quorum sidecar running at `127.0.0.1:22444`.
 
 ```{code-block} javascript
 :caption: localConnect.mjs
