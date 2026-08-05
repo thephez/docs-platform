@@ -63,3 +63,14 @@ Benefits of indexed querying include:
 Indexes should be planned during contract design since there are [limited index update
 options](./platform-protocol-data-contract.md#updates) for already registered contracts.
 :::
+
+## Aggregate Queries
+
+Beyond returning whole documents, Dash Platform can compute a value over the set of documents a query
+matches - how many there are, their total, or their average - and return that instead of the documents
+themselves. Results can optionally be grouped, so a single query returns one value per group.
+
+Aggregates are not available on every document type. The contract must opt in for the document type
+being queried, which means this is another decision to make during contract design. See the
+[query syntax reference](../reference/query-syntax.md#aggregate-queries) for the supported aggregates
+and how to request them.

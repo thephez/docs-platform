@@ -65,7 +65,7 @@ Permitted changes include:
 * Updating token configuration where the contract's rules authorize changes (for example via the configured main control group)
 * Updating contract keywords and description
 
-Restricted changes include modifications that would break existing stored documents - for example, removing or renaming existing properties, changing their types, or altering existing unique indices.
+Restricted changes include modifications that would break existing stored documents - for example, removing or renaming existing properties, changing their types, or altering existing unique indices. Whether a document type records the history of its transfers, sales, and price changes is also fixed when the document type is created and cannot be turned on or off by a later contract update.
 
 Optional contract revision history storage allows contracts to retain a record of their revisions that can be retrieved and verified. Identity key access rules also allow an encryption or decryption key to be bound to a specific contract or document type for more granular key management.
 

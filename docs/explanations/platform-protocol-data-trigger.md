@@ -20,7 +20,7 @@ Since all application data is submitted in the form of documents, data triggers 
 
 Which trigger runs for a given contract, document type, and action is defined in the data trigger [binding list](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/bindings/list/v0/mod.rs). The trigger implementations linked in the tables below (for example the shared `reject` trigger) are generic and do not name the contracts that use them - the binding list is what associates each action with its trigger.
 
-As an example, DPP contains several [data triggers for DPNS](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dpns). The `domain` document has added constraints for creation, replacing, deleting, transferring, purchasing, and updating prices:
+As an example, DPP contains several [data triggers for DPNS](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dpns). The `domain` document has added constraints for creation, replacing, and deleting:
 
 | Data Contract | Document | Action(s) | Trigger Description |
 | - | - | - | - |
@@ -28,12 +28,9 @@ As an example, DPP contains several [data triggers for DPNS](https://github.com/
 | ---- | ----| ---- | ---- |
 | DPNS | `domain` | [`REPLACE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents updates to any DPNS document type |
 | DPNS | `domain` | [`DELETE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents deletion of any DPNS document type |
-| DPNS | `domain` | [`TRANSFER`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents transfer of any DPNS document type |
-| DPNS | `domain` | [`PURCHASE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents purchase of any DPNS document type |
-| DPNS | `domain` | [`UPDATE_PRICE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents price updates on any DPNS document type |
 
 :::{note}
-The `REPLACE`, `DELETE`, `TRANSFER`, `PURCHASE`, and `UPDATE_PRICE` rows for DPNS all link to the same shared `reject` trigger, which DPNS reuses to disallow those actions on `domain` documents.
+The `REPLACE` and `DELETE` rows for DPNS both link to the same shared `reject` trigger, which DPNS reuses to disallow those actions on `domain` documents.
 :::
 
 In addition to DPNS, DPP ships data triggers for a small set of other system contracts:

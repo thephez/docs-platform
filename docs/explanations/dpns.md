@@ -70,14 +70,20 @@ Assuming masternodes do not vote to lock, the identity receiving the most votes 
 Locked names cannot currently be re-requested or awarded. This policy may be revisited in future Platform releases.
 :::
 
+### Name transfers and sales
+
+Registering a name is not necessarily the end of its lifecycle. Since Dash Platform v4.1, a registered name can be transferred to another identity or offered for sale and bought by another identity. Once ownership changes, the name resolves to its new owner, and that identity's private keys are what prove ownership from then on.
+
+The name record itself remains immutable and permanent: it cannot be edited or deleted, only transferred or sold. A name's transfer, purchase, and listing history is recorded, so the chain of ownership and the prices it was offered at can be retrieved and verified.
+
 ### Implementation
 
-DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
+DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
 
 1. Minimum length - 3 characters
 1. Maximum length - 63 characters
 1. Usable characters - `0-9`, `-` (hyphen), `a-z`, and `A-Z` (case sensitive)
-    * Note: Use of `-` as a prefix/suffix to a name is _not_ allowed (e.g. `-name` or `name-`). This constraint is defined by this JSON-Schema [pattern](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json#L44) in the DPNS data contract: `"^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$"`
+    * Note: Use of `-` as a prefix/suffix to a name is _not_ allowed (e.g. `-name` or `name-`). This constraint is defined by this JSON-Schema [pattern](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json#L47) in the DPNS data contract: `"^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$"`
 1. Domain labels are converted to lowercase for case-insensitive uniqueness validation.
 1. To mitigate [homograph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack), `o` is replaced with `0` and `i`/`l` are replaced with `1`. For example, "Alice" is normalized to "a11ce".
 
