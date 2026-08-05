@@ -5,7 +5,7 @@
 # Platform Address System
 
 :::{attention}
-Address-based state transitions were [enabled in Protocol Version 11](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-platform-version/src/version/feature_initial_protocol_versions.rs). These transitions enable direct operations using Platform addresses without requiring a pre-existing identity for some operations.
+Address-based state transitions were [enabled in Protocol Version 11](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/feature_initial_protocol_versions.rs). These transitions enable direct operations using Platform addresses without requiring a pre-existing identity for some operations.
 :::
 
 ## Overview
@@ -38,7 +38,7 @@ Platform addresses are derived from standard Bitcoin/Dash address formats and en
 A `PlatformAddress` has two distinct byte encodings depending on context. The type bytes above (`0xb0` / `0x80`) apply to the user-facing bech32m encoding — what appears in address strings like `dash1k...`. Internal GroveDB storage keys use bincode variant indices `0x00` / `0x01` instead. Decoding one through the other's code path will fail.
 :::
 
-See the [Platform address implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/address_funds/platform_address.rs).
+See the [Platform address implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/address_funds/platform_address.rs).
 
 ### Address Witness
 
@@ -63,7 +63,7 @@ Witnesses provide cryptographic proof of address ownership. Each input in an add
 3. Double-SHA256 hash the signable bytes (reused for all signatures)
 4. Match M signatures to N public keys in order
 
-See the [witness implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/address_funds/witness.rs).
+See the [witness implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/address_funds/witness.rs).
 
 ### Fee Strategy
 
@@ -78,7 +78,7 @@ The fee strategy specifies how transaction fees are deducted from inputs or outp
 Fee strategy cannot be empty. Maximum steps: 4 (`max_address_fee_strategies`). No duplicate steps allowed. Steps are processed in sequence until the fee is fully covered.
 :::
 
-See the [fee strategy implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/address_funds/fee_strategy/mod.rs).
+See the [fee strategy implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/address_funds/fee_strategy/mod.rs).
 
 ### Common Type Aliases
 
@@ -107,7 +107,7 @@ Transfer credits from an existing identity to one or more Platform addresses.
 Minimum recipients: 1. Maximum recipients: `max_address_outputs`. Minimum per recipient: 500,000 credits. Fee: 500,000 credits base + 6,000,000 credits per recipient (example: 1 recipient = 6,500,000 credits minimum fee).
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_to_addresses_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_to_addresses_transition/).
 
 ### Identity Create from Addresses
 
@@ -128,7 +128,7 @@ Create a new identity funded from Platform address balances.
 **Cost:** Base cost 2,000,000 + 6,500,000 per key. Example: 2 keys = 15,000,000 credits.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_from_addresses_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_from_addresses_transition/).
 
 ### Identity Top-Up from Addresses
 
@@ -149,7 +149,7 @@ Add credits to an existing identity from Platform address balances.
 **Fee:** Base top-up cost: 500,000 credits.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_from_addresses_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_from_addresses_transition/).
 
 ### Address Funds Transfer
 
@@ -173,7 +173,7 @@ Unlike other address transitions, fund transfers enforce strict balance preserva
 **Fee:** 500,000 credits per input + 6,000,000 credits per output.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funds_transfer_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funds_transfer_transition/).
 
 ### Address Funding from Asset Lock
 
@@ -199,7 +199,7 @@ Exactly one output must have a `None` value. This remainder output receives what
 **Constraints:** Minimum outputs: 1. Maximum inputs: `max_address_inputs`. Maximum outputs: `max_address_outputs`. Minimum per input: 100,000 credits. Minimum per explicit output: 500,000 credits. No output can also be an input.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funding_from_asset_lock_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funding_from_asset_lock_transition/).
 
 ### Address Credit Withdrawal
 
@@ -222,7 +222,7 @@ Withdraw credits from Platform addresses back to the Core chain.
 **Fee:** 400,000,000 credits. Withdrawal fees are significantly higher due to the complexity and finality of moving funds back to the Core chain.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_credit_withdrawal_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_credit_withdrawal_transition/).
 
 ### Address State Transition Signing
 
@@ -233,6 +233,18 @@ Address-based state transitions use different signing methods depending on the t
 | Identity-signed             | Type 9               | Existing identity key                      |
 | Address-witness-signed      | Types 10, 11, 12, 14 | Address owner(s)                           |
 | Dual (Asset lock + Address) | Type 13              | Asset lock owner + optional address owners |
+
+### Other Sources of Address Balance Changes
+
+Platform address balances do not change only through the address transitions above. [Shielded pool](shielded-pool.md) activity can also credit an address:
+
+- An [Unshield](shielded-pool.md#unshield) net output
+- A [Shield from Asset Lock](shielded-pool.md#shield-from-asset-lock) surplus
+- The [Identity Create From Shielded Pool](shielded-pool.md#identity-create-from-shielded-pool) fallback credit, paid to `sendToAddressOnCreationFailure` when identity creation fails a stateful check
+
+Since protocol version 13, these shielded-origin credits, along with the balance effects of paid-but-invalid state transitions, are recorded in the recent per-block address balance change set that incremental client sync reads. Because the recorded set feeds the committed state root, the expansion was not in effect before protocol version 13.
+
+The recent per-block set is served by the [`getRecentAddressBalanceChanges`](../reference/dapi-endpoints-platform-endpoints.md#getrecentaddressbalancechanges) and [`getRecentCompactedAddressBalanceChanges`](../reference/dapi-endpoints-platform-endpoints.md#getrecentcompactedaddressbalancechanges) endpoints.
 
 ## Related Constants
 

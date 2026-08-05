@@ -18,17 +18,19 @@ When document state transitions are received, DPP checks if there is a trigger a
 
 ### Example
 
-As an example, DPP contains several data triggers for DPNS as defined in the [data trigger bindings](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/bindings/list/v0/mod.rs). The `domain` document has added constraints for creation, replacement or deletion:
+As an example, DPP contains several data triggers for DPNS as defined in the [data trigger bindings](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/bindings/list/v1/mod.rs). The `domain` document has added constraints for creation, replacement or deletion:
 
 | Data Contract | Document           | Action(s)                                                                                                                            | Trigger Description                                                                                      |
 | ------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| DPNS          | `domain`           | [`CREATE`](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dpns/v1/mod.rs#L48) | Enforces DNS compatibility, validates provided hashes, and restricts top-level domain (TLD) registration |
+| DPNS          | `domain`           | [`CREATE`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dpns/v1/mod.rs#L48) | Enforces DNS compatibility, validates provided hashes, and restricts top-level domain (TLD) registration |
 | ----          | ----               | ----                                                                                                                                 | ----                                                                                                     |
-| DPNS          | `domain`           | [`REPLACE`](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25)                | Prevents updates to existing documents                                                                   |
-| DPNS          | `domain`           | [`DELETE`](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25)                 | Prevents deletion of existing documents                                                                  |
-| DPNS          | `domain`           | [`TRANSFER`](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents transfer of existing documents |
-| DPNS          | `domain`           | [`PURCHASE`](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents purchase of existing documents |
-| DPNS          | `domain`           | [`UPDATE_PRICE`](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents updating price of existing documents |
+| DPNS          | `domain`           | [`REPLACE`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25)                | Prevents updates to existing documents                                                                   |
+| DPNS          | `domain`           | [`DELETE`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25)                 | Prevents deletion of existing documents                                                                  |
+| DPNS          | `domain`           | [`TRANSFER`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents transfer of existing documents (protocol version 12 and earlier only) |
+| DPNS          | `domain`           | [`PURCHASE`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents purchase of existing documents (protocol version 12 and earlier only) |
+| DPNS          | `domain`           | [`UPDATE_PRICE`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs#L25) | Prevents updating price of existing documents (protocol version 12 and earlier only) |
+
+Starting in protocol version 13, the `TRANSFER`, `PURCHASE` and `UPDATE_PRICE` actions have no DPNS trigger binding. They are validated by the generic document validation paths, which permit them because the DPNS data contract declares `transferable: 1` and `tradeMode: 1`. `REPLACE` and `DELETE` remain rejected.
 
 **DPNS Trigger Constraints**
 
@@ -47,9 +49,9 @@ The following table details the DPNS constraints applied via data triggers. Thes
 | `domain`   | `CREATE`  | Referenced `preorder` document must exist                                                                   |
 | `domain`   | `REPLACE` | Action not allowed                                                                                          |
 | `domain`   | `DELETE`       | Action not allowed                                                                                          |
-| `domain`   | `TRANSFER`     | Action not allowed                                                                                          |
-| `domain`   | `PURCHASE`     | Action not allowed                                                                                          |
-| `domain`   | `UPDATE_PRICE` | Action not allowed                                                                                          |
+| `domain`   | `TRANSFER`     | Action not allowed (protocol version 12 and earlier only)                                                   |
+| `domain`   | `PURCHASE`     | Action not allowed (protocol version 12 and earlier only)                                                   |
+| `domain`   | `UPDATE_PRICE` | Action not allowed (protocol version 12 and earlier only)                                                   |
 
 :::{note}
 The trigger for `domain` `CREATE` attempts to validate that `ownerId` matches
@@ -58,6 +60,10 @@ DPNS v1 schema defines only `records.identity` and sets `additionalProperties:
 false`, so neither field can exist in a valid document. Both checks are
 therefore permanent no-ops and `records.identity` is not validated against
 `ownerId` at the trigger level.
+:::
+
+:::{note}
+Starting in protocol version 13, when a DPNS `domain` document is transferred or purchased platform rewrites the document's `records.identity` to the new owner's identity ID as part of applying the transition. Name resolution and `records.identity` queries therefore follow the ownership change. This rewrite is applied outside the data trigger system and is scoped to the DPNS `domain` document type.
 :::
 
 ### Other System Contract Triggers
