@@ -18,7 +18,7 @@ Given a number of technical considerations (security, masternode processing capa
 
 Since all application data is submitted in the form of documents, data triggers are defined in the context of documents. To provide even more granularity, they also incorporate the document `action` so separate triggers can be created for the `CREATE`, `REPLACE`, or `DELETE` actions.
 
-Which trigger runs for a given contract, document type, and action is defined in the data trigger [binding list](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/bindings/list/v0/mod.rs). The trigger implementations linked in the tables below (for example the shared `reject` trigger) are generic and do not name the contracts that use them - the binding list is what associates each action with its trigger.
+Which trigger runs for a given contract, document type, and action is defined in the data trigger [binding list](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/bindings/list/v1/mod.rs). The trigger implementations linked in the tables below (for example the shared `reject` trigger) are generic and do not name the contracts that use them - the binding list is what associates each action with its trigger.
 
 As an example, DPP contains several [data triggers for DPNS](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dpns). The `domain` document has added constraints for creation, replacing, and deleting:
 
@@ -26,11 +26,11 @@ As an example, DPP contains several [data triggers for DPNS](https://github.com/
 | - | - | - | - |
 | DPNS | `domain` | [`CREATE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dpns/v0/mod.rs) | Enforces DNS compatibility, validate provided hashes, and restrict top-level domain (TLD) registration |
 | ---- | ----| ---- | ---- |
-| DPNS | `domain` | [`REPLACE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents updates to any DPNS document type |
-| DPNS | `domain` | [`DELETE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents deletion of any DPNS document type |
+| DPNS | `domain` | [`REPLACE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents updates to DPNS `domain` documents |
+| DPNS | `domain` | [`DELETE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents deletion of DPNS `domain` documents |
 
 :::{note}
-The `REPLACE` and `DELETE` rows for DPNS both link to the same shared `reject` trigger, which DPNS reuses to disallow those actions on `domain` documents.
+The `REPLACE` and `DELETE` rows for DPNS both link to the same shared `reject` trigger, which DPNS reuses to disallow those actions on `domain` documents. The DPNS `preorder` document type has no data triggers at all - its immutability comes from the contract schema rather than from trigger logic.
 :::
 
 In addition to DPNS, DPP ships data triggers for a small set of other system contracts:
@@ -39,6 +39,9 @@ In addition to DPNS, DPP ships data triggers for a small set of other system con
 | - | - | - | - |
 | DashPay | `contactRequest` | [`CREATE`](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dashpay) | Enforces DashPay-specific rules on outgoing contact requests |
 | ---- | ---- | ---- | ---- |
-| Withdrawals | `withdrawal` | [`REPLACE`/`DELETE`](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/withdrawals) | Enforces withdrawal status transitions and prevents direct external mutation of withdrawal documents |
+| Masternode Rewards | `rewardShare` | [`CREATE`/`REPLACE`/`DELETE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Rejects all three actions so ordinary identities cannot write reward share records |
+| ---- | ---- | ---- | ---- |
+| Withdrawals | `withdrawal` | [`REPLACE`](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/reject/v0/mod.rs) | Prevents direct external mutation of withdrawal documents |
+| Withdrawals | `withdrawal` | [`DELETE`](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/withdrawals) | Allows deletion only once the withdrawal has reached `COMPLETE` status |
 
 When document state transitions are received, DPP checks if there is a trigger associated with the document type and action. If a trigger is found, DPP executes the trigger logic. Successful execution of the trigger logic is necessary for the document to be accepted and applied to the [platform state](../explanations/drive-platform-state.md).

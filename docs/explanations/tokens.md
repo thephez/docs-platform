@@ -82,10 +82,14 @@ The initial token implementation includes all actions required to create, use, a
 
 Update token configuration parameters, including:
 
-- Localization options
+- Localization options and other display conventions
 - Maximum supply
-- History retention
-- Group membership
+- Perpetual distribution settings and the destination for newly minted tokens
+- The authorized party for each action rule
+- Marketplace trade mode
+- Which group acts as the main control group
+
+A configuration update can point the token at a different [group](#groups), but it cannot change any group's members or their powers. Groups are fixed when the data contract is registered.
 
 #### Set Purchase Price
 
@@ -101,20 +105,20 @@ Update token configuration parameters, including:
 
 ### Configuration
 
-When creating a token, you define its configuration using the following parameters. Most parameters can be configured to allow modifications after data contract registration; however, the base supply is immutable:
+When creating a token, you define its configuration using the following parameters. Some parameters can be configured to allow modifications after data contract registration, but several are fixed permanently when the contract is registered:
 
 | Configuration Parameter | Mutable           | Default |
 |:------------------------|:------------------|:--------|
-| Description                              | Yes | None |
+| Description                              | **No** | None |
 | [Conventions](#display-conventions)      | Yes | N/A. Depends on implementation |
 | [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L47) |
 | [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L606) |
 | [Maximum supply](#token-supply)          | Yes | None |
-| [Keep history](#history)                 | Yes | True (all history types) |
-| [Start paused](#initial-state)           | Yes | False |
-| [Allow transfer to frozen balance](#allow-transfer-to-frozen-balance) | Yes | True |
+| [Keep history](#history)                 | **No** | True (all history types) |
+| [Start paused](#initial-state)           | **No** | False |
+| [Allow transfer to frozen balance](#allow-transfer-to-frozen-balance) | **No** | True |
 | [Main control group](#main-control-group)| Yes | None |
-| Main control group can be modified       | Yes | NoOne |
+| Main control group can be modified       | **No** | NoOne |
 | Marketplace rules                        | Yes | None |
 | [Distribution rules](#distribution-rules)| Yes | None |
 
@@ -132,7 +136,8 @@ When creating a token, you define its configuration using the following paramete
 
 #### History
 
-- Whether or not to store a complete on-chain log of every token action (e.g., transfers, burns, etc.)
+- Whether or not to store an on-chain log of token actions. History is configured per action category (for example transfers, minting, burning, and freezing) rather than as a single switch, so a token can record some categories and not others.
+- Some categories are always recorded regardless of configuration: configuration updates, destroying frozen funds, emergency actions, and distribution.
 
 #### Initial State
 
@@ -180,6 +185,7 @@ following table summarizes the configurable rules and their default authorized p
 | Conventions change rules              | Yes             | NoOne                    |
 | Max supply change rules               | Yes             | NoOne                    |
 | Main control group can be modified    | Yes             | NoOne                    |
+| Marketplace trade mode change rules   | Yes             | NoOne                    |
 
 ###### Minting and Burning
 
@@ -219,8 +225,8 @@ distribution options are summarized below:
 | Method | Description |  Example |  Notes |
 | ------ | ----------- | -------- | ------ |
 | Manual Minting      | Authorized users/groups can create new tokens until `maxSupply` is reached | On-demand minting | - Requires proper configuration to enable<br>- Minting actions may be logged or controlled via permissions |
-| Programmed Distribution | A fixed number of tokens are automatically minted to designated identities at a specific timestamp | *On Jan 1, 2047, allocate `X` tokens to the provided identity* | - Automates token release at known times<br>- Useful for predictable, one-time or recurring events at fixed timestamps |
-| [Perpetual Distribution](../protocol-ref/data-contract-token.md#perpetual-distribution-options) | Scheduled release of tokens based on blocks or time intervals | *Emit 100 tokens every 20 blocks*, or *Halve the emission every year* | - Offers ongoing, dynamic token emission patterns.<br>- Supports variable rates (e.g., linear, steps).<br>- Configurable to trigger automatically or require manual "release" actions. |
+| Programmed Distribution | A fixed number of tokens are allocated to designated identities at explicit timestamps, and the recipients must [claim](#claim) them to receive the tokens | *On Jan 1, 2047, allocate `X` tokens to the provided identity* | - Schedules token release at known times<br>- Each entry is a one-time allocation at a fixed timestamp; there is no recurrence option |
+| [Perpetual Distribution](../protocol-ref/data-contract-token.md#perpetual-distribution-options) | Scheduled release of tokens based on blocks or time intervals | *Emit 100 tokens every 20 blocks*, or *Halve the emission every year* | - Offers ongoing, dynamic token emission patterns.<br>- Supports variable rates (e.g., linear, steps).<br>- Emissions accrue on schedule and are always collected by the recipient via a [claim](#claim). |
 
 Dash Platform also supports three options to control the destination for newly minted tokens:
 
@@ -230,12 +236,16 @@ Dash Platform also supports three options to control the destination for newly m
 | **Fixed Destination**  | Newly minted tokens are always directed to one predetermined (fixed) identity. | - Ensures a strict, predictable allocation.<br>- No choice at the time of minting once configured. |
 | **Combination / Exclusive** | These two approaches can be used exclusively (only one rule active) or combined for more granular control. | - In a combined setup, some mints could go to a fixed address while others go to a chosen address. |
 
+Perpetual distributions can also target evonodes as a group rather than a single identity, allocating the emission across them in proportion to their participation. This recipient mode applies only to epoch-based perpetual distributions.
+
 ### Groups
 
 Groups can be used to distribute token configuration and update authorization across multiple identities. Each group defines a set of member identities, the voting power of each member, and the required power threshold to authorize an action.
 
-- Each group member is assigned an integer power.
+- Each group member is assigned an integer power. No member may have a power of zero.
 - The group itself has a required power threshold to authorize an action.
+- A group must have at least two members.
+- No member's power may exceed the group's required threshold, so no single member can be given more weight than the threshold itself.
 - Groups can currently have up to 256 members, each with a maximum power of 65535 (2^16 - 1).
 - Changes to a token (e.g., mint, burn, freeze) can be configured so they require group authorization. This is done by assigning the group under the [token rule configuration](#rules).
 
@@ -253,7 +263,7 @@ In this group, Member A and Member C have a combined power of 11 and can perform
 
 ### Token-Based Fees
 
-Dash Platform allows developers to charge token fees for document-related actions (e.g., creating or transferring a document). This provides a way to monetize app usage or implement economic incentives using tokens. These fees are configured in the data contract and apply to all document types in the contract.
+Dash Platform allows developers to charge token fees for document-related actions (e.g., creating or transferring a document). This provides a way to monetize app usage or implement economic incentives using tokens. These fees are configured per document type in the data contract, and each document action (create, replace, delete, transfer, set price, purchase) can carry its own cost. Different document types in the same contract can therefore charge different amounts, or nothing at all.
 
 Examples:
 
@@ -265,6 +275,10 @@ This allows for:
 - Spam protection (pay-to-post)
 - Revenue generation for app creators
 - Deflationary models via token burning
+- Shared-currency ecosystems, by pricing document actions in a token that belongs to another contract. Such external-token payments transfer to the contract owner; burning is only permitted for a contract's own token.
+- A gasless user experience, by having the contract owner rather than the document owner pay the Platform credit cost of the action
+
+Alongside the amount and its effect, each cost specifies who pays the Platform gas fees and may set minimum and maximum bounds. Clients should generally set a maximum: without one, a contract whose rules allow the price to change could charge more than the user expected between signing and execution.
 
 ## Token Creation
 

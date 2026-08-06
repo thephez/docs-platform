@@ -28,6 +28,8 @@ Each unit of value in the pool is held as a **note** — an off-chain record des
 
 The root of the note commitment tree is called an **anchor**. Anchors serve as snapshots that shielded transitions reference to prove "the note I am spending was added to the tree by some earlier transition." Spenders prove membership against an anchor without revealing *which* note they are spending.
 
+Anchors do not remain valid indefinitely. Only a recent window of anchors is retained; older ones are pruned, and a transition referencing a pruned anchor is rejected. A wallet must therefore build its spends against a current anchor rather than reusing one it cached earlier. The retention window is given in the [Shielded Pool protocol reference](../protocol-ref/shielded-pool.md).
+
 ### Nullifiers
 
 When a note is spent, the spender publishes a unique **nullifier** derived from the note. The platform tracks all nullifiers ever published; spending the same note twice would produce the same nullifier and be rejected as a double-spend.
@@ -45,6 +47,8 @@ A shielded transition is composed of one or more **actions**. Each action struct
 ## Transition types
 
 Six state transition types interact with the shielded pool. The wire-level structure of each — including field-by-field tables and source links — is documented in the [Shielded Pool protocol reference](../protocol-ref/shielded-pool.md).
+
+Consensus gates every transition that moves credits *out of* the pool on the pool holding a minimum number of encrypted notes. This is not a soft privacy recommendation: until the pool reaches that size, unshields, shielded withdrawals, and identity creation from the pool are rejected outright. The gate exists so that exits always draw from a meaningful anonymity set, but its practical effect is that funds shielded into a young or lightly used pool cannot leave it immediately. The threshold is given in the [Shielded Pool protocol reference](../protocol-ref/shielded-pool.md).
 
 ### Shield
 
@@ -70,8 +74,11 @@ Moves credits *out of* the pool back to Dash Core (L1) via the platform's withdr
 
 Creates a new identity funded directly from the pool by spending one or more notes. Like an unshield, this moves credits *out of* the pool — here into a freshly created identity rather than a Platform address. The new identity's ID is derived from the sorted set of spend nullifiers, making it unique and single-use.
 
+The funding amount cannot be chosen freely: it must be one of a small fixed set of allowed denominations, and any other amount is rejected. Restricting the exit to standard sizes means every identity created at a given denomination looks identical on-chain, so the new identity cannot be linked back to a particular shielded balance by its amount. The permitted denominations are listed in the [Shielded Pool protocol reference](../protocol-ref/shielded-pool.md).
+
 ## What the pool does not provide
 
 - **Anonymity sets**: The privacy guarantee depends on how many other notes exist in the pool. A pool with a single user offers limited cover; privacy improves as more users participate.
 - **L1 transaction privacy**: Funds entering or leaving the pool traverse transparent transitions or L1 transactions on either side. Only activity *inside* the pool is shielded.
 - **Hiding the act of using the pool**: Observers can see that a transition is a shield, unshield, or transfer — they just cannot see who or how much is involved on the shielded side.
+- **Hiding amounts entering or leaving the pool**: Shield and unshield transitions carry the moved amount in the clear. Only movements *within* the pool conceal value.

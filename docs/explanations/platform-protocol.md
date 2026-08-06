@@ -6,9 +6,15 @@
 
 ## Overview
 
-To ensure the consistency and integrity of data stored on Layer 2, all data is governed by the Dash Platform Protocol (DPP). Dash Platform Protocol describes serialization and validation rules for the platform's core data structures: data contracts (including tokens, groups, and keywords), documents, and state transitions. Each of these structures are briefly described below.
+To ensure the consistency and integrity of data stored on Layer 2, all data is governed by the Dash Platform Protocol (DPP). Dash Platform Protocol describes serialization and validation rules for the platform's core data structures: identities, data contracts (including tokens, groups, and keywords), documents, and state transitions. It also governs the [Platform address system](../protocol-ref/address-system.md) and the [shielded pool](../explanations/shielded-pool.md), which together account for a substantial share of the available state transition types. Each of these structures are briefly described below.
 
 ## Structure Descriptions
+
+### Identity
+
+An identity is the actor that owns data and authorizes changes on the platform. It holds the public keys used to sign state transitions, a credit balance used to pay fees, and the nonces that order an owner's submissions. Most other structures are anchored to an identity: data contracts and documents record an owner, and identity keys are what authorize the transitions that modify them.
+
+For additional detail, see the [Identity](../explanations/identity.md) explanation.
 
 ### Data Contract
 
@@ -34,9 +40,9 @@ A state transition represents a change made by a user to the application and pla
 * A payload
 * The user's signature
 
-The payload varies by type and covers a range of operations including document and token updates, data contract creation, identity management, credit transfers, and masternode voting.
+The payload varies by type and covers a range of operations including document and token updates, data contract creation, identity management, credit transfers, masternode voting, [Platform address](../protocol-ref/address-system.md) funding and transfers, and [shielded pool](../explanations/shielded-pool.md) operations.
 
-The user signature is made for the binary representation of the state transition using a private key associated with an [identity](../explanations/identity.md). A state transition is constructed by a client-side library when the user creates documents and submits them to the platform API.
+How a transition is authorized depends on its family. Identity-owned transitions carry a signature made for the binary representation of the state transition using a private key associated with an [identity](../explanations/identity.md). Platform address transitions are instead authorized by a witness signature on each input, and shielded pool transitions by a zero-knowledge proof rather than any signature at all. A state transition is constructed by a client-side library when the user creates documents and submits them to the platform API.
 
 For additional detail, see the [State Transition](../explanations/platform-protocol-state-transition.md) explanation.
 
@@ -52,14 +58,19 @@ For additional detail, see the [Data Contract](../explanations/platform-protocol
 
 ## Versions
 
-Platform Protocol evolves together with the public Dash Platform codebase. For the latest
-implementation details and release history, see the
+Platform Protocol carries its own protocol version, which is distinct from the Dash Platform release
+version. Each protocol version selects a coherent set of feature versions - the specific serialization,
+validation, and execution behavior in effect - so that every node processing a given block agrees on
+exactly which rules apply.
+
+The active protocol version advances by network consensus rather than by deploying new software.
+Evonodes signal the version they are prepared to run, and once enough of them signal a newer version,
+it activates at the following epoch boundary. This is why a feature can be present in a release but
+inactive on the network until activation occurs.
+
+For the latest implementation details and release history, see the
 [Dash Platform monorepo](https://github.com/dashpay/platform) and the
 [GitHub releases page](https://github.com/dashpay/platform/releases).
-
-Older version-specific notes that referenced pre-mainnet releases have been removed from this page
-because they no longer reflect the current public Platform state as clearly as the source
-repositories do.
 
 ```{toctree}
 :maxdepth: 2

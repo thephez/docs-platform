@@ -8,7 +8,7 @@
 
 Identities are foundational to Dash Platform. They provide a familiar, easy-to-use way for users to interact and identify one another using names rather than complicated cryptocurrency identifiers such as public key hashes.
 
-Identities are separate from names and can be thought of as a lower-level primitive that provides the foundation for various user-facing functionality. An identity consists primarily of one or more public keys recorded on the platform chain that can be used to control a user's profile and sign their documents. Each identity also has a balance of [credits](#credits) that is established by locking funds on layer 1. These credits are used to pay fees associated with the [state transitions](../explanations/platform-protocol-state-transition.md) used to perform actions on the platform.
+Identities are separate from names and can be thought of as a lower-level primitive that provides the foundation for various user-facing functionality. An identity consists primarily of one or more public keys recorded on the platform chain that can be used to control a user's profile and sign their documents. Each identity also has a balance of [credits](#credits), most commonly established by locking funds on layer 1. These credits are used to pay fees associated with the [state transitions](../explanations/platform-protocol-state-transition.md) used to perform actions on the platform.
 
 :::{tip}
 The [Identities Dash Improvement Proposal (DIP)](https://github.com/dashpay/dips/blob/master/dip-0011.md) provides more extensive background information and details.
@@ -19,6 +19,8 @@ The [Identities Dash Improvement Proposal (DIP)](https://github.com/dashpay/dips
 In order to [create an identity](#identity-create-process), a user pays the network to store their public key(s) on the platform chain. This is done by locking Dash on the Core chain in an asset lock transaction and then submitting an identity create state transition that references a proof of that lock.
 
 Once an identity is created, its credit balance is used to pay for activity (e.g. use of applications). The [topup process](#identity-balance-topup-process) provides a way to add additional funds to the balance when necessary.
+
+Locking Dash on layer 1 is the primary funding route, but it is not the only one. An identity can also be created or topped up from credits already held at a [Platform address](../protocol-ref/address-system.md), or created directly from the [shielded pool](./shielded-pool.md) by spending shielded notes. Both routes fund the identity entirely on layer 2, without a Core chain asset lock.
 
 ### Identity Create Process
 
@@ -54,7 +56,7 @@ Unique identities are created for the owner, operator, and voting roles, with ea
 
 #### Voting
 
-All masternodes can use their identities to vote on Platform polls for contested resources. In Platform v1.0, masternode voting is used to resolve cases where multiple identities attempt to register the same [DPNS name](./dpns.md).
+All masternodes can use their identities to vote on Platform polls for contested resources. The best-known example is [DPNS](./dpns.md), where voting resolves cases in which multiple identities attempt to register the same name. Contested resources are a general data contract feature: any contract can mark a unique index as contested, so that competing attempts to claim the same value are settled by a masternode vote.
 
 #### Reward distribution
 
@@ -64,6 +66,6 @@ Note: the payout key is associated with the masternode owner identity, so both t
 
 ## Credits
 
-Credits provide the mechanism for paying fees that cover the cost of platform usage. Once a user locks Dash on the core blockchain and proves ownership of the locked value in an identity create or topup state transition, their credit balance increases by that amount. As they perform platform actions, these credits are deducted to pay the associated fees.
+Credits provide the mechanism for paying fees that cover the cost of platform usage. Once a user locks Dash on the core blockchain and proves ownership of the locked value in an identity create or topup state transition, their credit balance increases by that amount. Credits can also reach an identity from a [Platform address](../protocol-ref/address-system.md) or the [shielded pool](./shielded-pool.md) without a layer 1 lock. As they perform platform actions, these credits are deducted to pay the associated fees.
 
-Credits can be converted back to Dash using the identity credit withdrawal state transition, subject to a daily network-wide limit.
+Credits can be converted back to Dash using the identity credit withdrawal state transition, subject to a daily network-wide limit. That limit is a proportion of the total credits held on Platform rather than a fixed amount, so it grows and shrinks with the size of the network.

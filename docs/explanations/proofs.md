@@ -56,7 +56,7 @@ The complete verification process follows these steps:
 3. Client receives the response containing data, GroveDB proof, and consensus signature
 4. Client verifies the GroveDB proof to extract the root hash
 5. Client verifies the BLS signature against the root hash using the quorum's public key
-6. Client checks that the response is anchored to an acceptable block height, rejecting responses whose height has fallen too far behind the most recent one seen and responses that omit this information entirely
+6. Client checks freshness on two independent axes: the signed response timestamp against its own local clock, and the block height the response is anchored to, rejecting responses whose height has fallen too far behind the most recent one seen and responses that omit this information entirely. The timestamp check matters because the height high-water mark is itself derived from responses, so height alone cannot detect a server replaying an old but internally consistent signed response
 7. If these verifications pass, the data is cryptographically confirmed
 
 ## What Can Be Proven
@@ -87,6 +87,20 @@ Dash Platform supports proofs for all core data types:
 - Token balances for identities
 - Token total supply
 - Token status and configuration
+
+**Groups**
+
+- Group state and member powers
+- Group action status and the votes recorded against it
+
+**Address System**
+
+- [Platform address](../protocol-ref/address-system.md) balances
+- Address system state
+
+**Shielded Transactions**
+
+- [Shielded pool](../explanations/shielded-pool.md) state, including anchors and nullifiers
 
 **System State**
 

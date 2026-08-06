@@ -19,9 +19,9 @@ Tendermint is a mostly asynchronous, pBFT-based consensus protocol. Here is a qu
 - Validators participate by taking turns to propose. They validate state transitions by voting on them.
 - If a validator successfully validates a block, it gets added to the chain. Do note that voting on state transitions is indirect. Plus, validators don't work on individual transitions, but vote on a block of transitions. This method is a lot more resource-friendly.
 - If a validator fails to add a block, the protocol automatically moves to the next round, and a new validator is chosen to propose the block.
-- Following the proposal, Tendermint goes through two stages to voting – Pre-vote and Pre-Commit.
+- Following the proposal, Tendermint goes through two stages to voting - Pre-vote and Pre-Commit.
 - A block gets committed when it gets >2/3rd of the total validators pre-committing for it in one round. The sequence of Propose -> Pre-vote -> Pre-commit is one round.
-- In the event of a network dispute, Tendermint prefers consistency over availability.No additional blocks are confirmed or finalized until the dispute is resolved. This takes network reorg out of the equation.
+- In the event of a network dispute, Tendermint prefers consistency over availability. No additional blocks are confirmed or finalized until the dispute is resolved. This takes network reorg out of the equation.
 
 Tendermint has been mainly designed to enable efficient verification and authentication of the latest state of the blockchain. It does so by embedding cryptographic commitments for certain information in the block "header." This information includes:
 
@@ -59,13 +59,13 @@ As with Tendermint, Tenderdash provides Byzantine Fault Tolerant (BFT) State Mac
 - BLS threshold signing results in more compact block headers since only a single BLS threshold signature is required instead of individual signatures from each validator. Notably, this means that any client can easily verify the block signatures using the deterministic masternode list.
 - The validators' signature is produced by an LLMQ, which is secured by the core blockchain’s Proof-of-Work (PoW).
 
-This allows Dash Platform to leverage the best of both worlds – the speed and finality of Tendermint and the security of PoW.
+This allows Dash Platform to leverage the best of both worlds - the speed and finality of Tendermint and the security of PoW.
 
 ### Dynamic Validator Set Rotation
 
 Rather than having a static validator set, Tenderdash periodically changes to a new set of validator nodes. These validator sets are a subset of masternodes that belong to the LLMQs.
 
-The validator set is assigned to a currently active masternode quorum. Rotation to a new quorum happens when the current quorum completes a proposer cycle (proposer duty reaches the last member) or when the current quorum is no longer in the active set.
+The validator set is assigned to a currently active masternode quorum. Rotation to a new quorum happens when the current quorum completes a proposer cycle (proposer duty reaches the last member), when the current quorum is no longer in the active set, or when the proposer sequence wraps within the current quorum while more than one quorum is active. The last trigger exists so that quorums rotating out do not give a small advantage to proposers that sort earlier in the sequence.
 
 There are many advantages to adopting this dynamic rotation approach:
 
@@ -81,4 +81,4 @@ Here are the differences between Tenderdash and Tendermint:
 - **Execution Timing**: Tenderdash facilitates same-block execution, optimizing transaction processing, whereas Tendermint traditionally relies on next-block execution.
 - **Consensus Module Refactoring**: Tenderdash has undergone a complete overhaul of its vote-extensions and consensus module, working diligently to eliminate deadlocks and increase stability.
 - **Dynamic Validator Management**: Tenderdash incorporates logic to actively connect with new validators in a set and disconnect those that are no longer in the validator set, thereby ensuring an adaptable and efficient network.
-- **Project Activity**: Whereas Tenderdash continues to evolve and improve, Tendermint appears somewhat inactive lately, though this observation might be subjective.
+- **Maintenance**: Tenderdash is maintained as part of the Dash Platform release process, so consensus-layer changes ship alongside the Platform releases that depend on them.

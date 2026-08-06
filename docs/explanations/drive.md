@@ -6,7 +6,7 @@
 
 ## Overview
 
-Using the traditional, layer 1 blockchain for data storage is widely known to be expensive and inefficient. Consequently, data for Dash Platform applications is stored in Drive, a layer 2 component that provides decentralized storage hosted by masternodes. As data changes over time, Drive maintains a record of the current state of each item to support easy retrieval using [DAPI](../explanations/dapi.md).
+Using the traditional, layer 1 blockchain for data storage is widely known to be expensive and inefficient. Consequently, data for Dash Platform applications is stored in Drive, a layer 2 component that provides decentralized storage hosted by evonodes. As data changes over time, Drive maintains a record of the current state of each item to support easy retrieval using [DAPI](../explanations/dapi.md).
 
 ## Details
 

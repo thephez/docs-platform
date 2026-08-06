@@ -11,7 +11,7 @@ similar to traditional databases while retaining decentralized trust benefits.
 ## Querying the State
 
 Queries operate on the finalized data stored within Platform’s state tree. Responses reflect the
-most recently committed block and do not include pending or historical intermediate changes.
+most recently committed block and do not include pending changes.
 
 This means:
 
@@ -20,7 +20,7 @@ This means:
 - Data retrieval is deterministic and efficient
 
 :::{note}
-Queries return the *current finalized state*, not the sequence of events that created it.
+By default, queries return the *current finalized state* rather than the sequence of events that created it. Data contracts and document types configured to retain history are the exception: dedicated history queries return their successive revisions, and those responses support proofs like any other query.
 :::
 
 ## Deterministic Results

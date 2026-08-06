@@ -42,8 +42,8 @@ Since some names may be popular, the registration process includes a voting mech
 :::{note}
 This process only applies to valid names that meet the following conditions:
 
-* Less than 20 characters long (i.e. "alice", "quantumexplorer") AND
-* Contain no numbers or only contain the number(s) 0 and/or 1 (i.e. "bob", "carol01")
+* Between 3 and 19 characters long (i.e. "alice", "quantumexplorer") AND
+* Contain no numbers other than 0 and/or 1, and no characters besides letters and hyphens (i.e. "bob", "carol01", "quantum-explorer")
 
 All other available names can be registered immediately.
 :::
@@ -72,7 +72,7 @@ Locked names cannot currently be re-requested or awarded. This policy may be rev
 
 ### Name transfers and sales
 
-Registering a name is not necessarily the end of its lifecycle. Since Dash Platform v4.1, a registered name can be transferred to another identity or offered for sale and bought by another identity. Once ownership changes, the name resolves to its new owner, and that identity's private keys are what prove ownership from then on.
+Registering a name is not necessarily the end of its lifecycle. A registered name can be transferred to another identity or offered for sale and bought by another identity. The DPNS contract has always declared names transferable and available for direct purchase, but Platform's validation rules rejected those operations until protocol version 13 (introduced in Dash Platform v4.1) lifted the restriction. Once ownership changes, the name resolves to its new owner, and that identity's private keys are what prove ownership from then on.
 
 The name record itself remains immutable and permanent: it cannot be edited or deleted, only transferred or sold. A name's transfer, purchase, and listing history is recorded, so the chain of ownership and the prices it was offered at can be retrieved and verified.
 
