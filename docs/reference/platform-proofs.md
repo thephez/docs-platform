@@ -19,8 +19,9 @@ flow, what can be proven, and asset lock proofs -- see [Proofs](../explanations/
 
 ## Proof structure
 
-A `Proof` is a single unified [GroveDB](https://github.com/dashpay/grovedb) proof plus the
-consensus signature that authenticates it. It has six fields:
+A `Proof` is normally a single unified [GroveDB](https://github.com/dashpay/grovedb) proof plus the
+consensus signature that authenticates it. One response type is an exception: see [compacted
+address balance proofs](#compacted-address-balance-proofs) below. A `Proof` has six fields:
 
 | Field | Type | Description |
 | - | - | - |
@@ -61,6 +62,27 @@ operators, node types, absence proofs, the V0/V1 proof formats, and the verifica
 is documented in the [GroveDB Proof System
 documentation](https://dashpay.github.io/grovedb/proof-system.html). Clients that use an SDK do
 not need to work at this level.
+
+### Compacted address balance proofs
+
+:::{versionchanged} 4.1.0
+At protocol version 13 and above, the `grovedbProof` returned by
+[`getRecentCompactedAddressBalanceChanges`](../reference/dapi-endpoints-platform-endpoints.md#getrecentcompactedaddressbalancechanges)
+is not a single GroveDB proof. It is a [bincode envelope carrying two independent GroveDB
+proofs](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/verify/address_funds/verify_compacted_address_balance_changes/mod.rs#L21-L30):
+
+- a **predecessor proof**, which authenticates which compacted range contains the requested start height, and
+- a **forward proof**, verified against a query derived only from that authenticated result.
+
+Both proofs must commit to the same state root hash. Binding the forward query's start key to an
+independently verified predecessor result makes this trust model slightly stronger than the
+single-proof case. Protocol version 12 and below use the legacy single-proof format for this
+response.
+
+A verifier written for the single-proof model will fail to decode a protocol version 13 compacted
+proof, so clients implementing verification outside the provided SDKs must handle both formats and
+select by protocol version.
+:::
 
 ## Related topics
 

@@ -35,3 +35,16 @@ The [gRPC UI](https://github.com/fullstorydev/grpcui) tool provides a way to int
 # Use Core gRPC
 grpcui -insecure -open-browser  -proto protos/core/v0/core.proto  seed-1.testnet.networks.dash.org:1443
 ```
+
+## Stream termination and backpressure
+
+:::{versionadded} 4.1.0
+:::
+
+Streaming endpoints apply per-stream delivery bounds, so a stream that has already been established can be terminated by the server with `RESOURCE_EXHAUSTED`. This happens when:
+
+- The client cannot keep up with delivery and the stream's pending-event or pending-byte budget is exceeded.
+- The initial mempool snapshot exceeds the per-stream transaction count or byte budget.
+- The handover from replaying historical data to live delivery does not complete within 180 seconds.
+
+Treat this status as a resumable backpressure signal rather than a fatal error: reconnect and resume from the last block your client finished processing. A `RESOURCE_EXHAUSTED` returned when *opening* a stream means the node's concurrent-stream limit for that endpoint is reached — back off and retry, or connect to a different node.

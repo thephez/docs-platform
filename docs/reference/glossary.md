@@ -118,6 +118,18 @@ An epoch is a fixed time period used to organize and manage blockchain operation
 
 An era consists of 40 [epochs](#epoch) and equals approximately one year. At the end of an era, Dash Platform may optionally do additional accounting or reconfiguration.
 
+## History (contract revision)
+
+The record of successive revisions of a [data contract](#data-contract), retained when the contract sets `keepsHistory` at creation. Retrieved with [`getDataContractHistory`](../reference/dapi-endpoints-platform-endpoints.md#getdatacontracthistory). This tracks changes to the contract definition itself, not to the documents stored under it. See [Retrieve data contract history](../tutorials/contracts-and-documents/retrieve-data-contract-history.md).
+
+## History (document revision)
+
+The record of successive revisions of an individual [document](#document), retained when its document type sets `documentsKeepHistory`. Retrieved with [`getDocumentHistory`](../reference/dapi-endpoints-platform-endpoints.md#getdocumenthistory). This tracks edits to a document's own fields, not its transfers or sales.
+
+## History (document ownership and pricing)
+
+The record of transfers, purchases and price updates for documents, written to the [document history system contract](../protocol-ref/data-contract.md#document-history-system-contract). Document types opt in with the [document history flags](../protocol-ref/data-contract-document.md#document-history-flags) `keepsTransferHistory`, `keepsPurchaseHistory` and `keepsPricingHistory`. This is separate from both revision histories above: it records ownership and pricing events rather than changes to contract or document content.
+
 ## Layer (1, 2, 3)  
 
 - Layer 1: Core blockchain and [Dash Core](#dash-core)

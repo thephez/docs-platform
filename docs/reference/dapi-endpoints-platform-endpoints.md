@@ -13,6 +13,12 @@ Please refer to the [gRPC Overview](../reference/dapi-endpoints-grpc-overview.md
 All Dash Platform endpoints are versioned so future updates can be done without creating significant
 issues for API consumers.
 
+### Request size limit
+
+:::{versionadded} 4.1.0
+Platform gRPC requests are capped at 128 KiB encoded, reduced from 64 MiB. A larger request is rejected by the transport before it reaches the endpoint. The limit sits above every per-endpoint budget — the largest are [`getPathElements`](#getpathelements) at 64 KiB of path and key components and [`broadcastStateTransition`](#broadcaststatetransition) at 20 KiB — so requests within those bounds are unaffected.
+:::
+
 ### Data Proofs and Metadata
 
 Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L142-L149) so the data returned for a request can be verified as being valid. When requesting proofs, the data requested will be encoded as part of the proof in the response. Proofs are supported in the [js-evo-sdk](https://github.com/dashpay/platform/tree/master/packages/js-evo-sdk) and via the low-level [dapi-grpc library](https://github.com/dashpay/platform/tree/master/packages/dapi-grpc).
@@ -1197,7 +1203,7 @@ Returns one aggregate count, or per-group counts when `group_by` is set. Require
 | `selects` | `[Select{ function: COUNT }]` | Yes | Projection. |
 | `group_by` | Repeated string | No | `[]`, `[in_field]`, `[range_field]`, or `[in_field, range_field]`. |
 
-`limit` is rejected for `group_by=[]` and `group_by=[in_field]` (the result is bounded by construction). `start_at` / `start_after` are not valid in this mode — paginate by narrowing the where clause.
+`limit` is rejected for `group_by=[]` and `group_by=[in_field]` (the result is bounded by construction). `limit: 0` is rejected with `InvalidLimit` in every mode — omit the field to request the server default (SDK bindings that require a numeric argument use `-1`). `start_at` / `start_after` are not valid in this mode — paginate by narrowing the where clause. See [limits on aggregate queries](query-syntax.md#limits-on-aggregate-queries) for the full per-mode contract.
 
 **Response shape**
 
@@ -1265,7 +1271,7 @@ Returns the sum of an integer field across matched documents, or per-group sums 
 | `selects` | `[Select{ function: SUM, field: "<prop>" }]` | Yes | `field` must name the summable property. |
 | `group_by` | Repeated string | No | Same shape rules as Count above. |
 
-`start_at` / `start_after` are not valid.
+`limit` follows the same rules as Count: rejected for `group_by=[]` and `group_by=[in_field]`, and `limit: 0` is rejected with `InvalidLimit` in every mode. `start_at` / `start_after` are not valid. See [limits on aggregate queries](query-syntax.md#limits-on-aggregate-queries).
 
 **Response shape**
 
@@ -1331,7 +1337,7 @@ Why `(count, sum)` instead of a single `average`? Returning the pair preserves f
 | `selects` | `[Select{ function: AVG, field: "<prop>" }]` | Yes | `field` must name the averageable property. |
 | `group_by` | Repeated string | No | Same shape rules as Count above. |
 
-`start_at` / `start_after` are not valid.
+`limit` follows the same rules as Count: rejected for `group_by=[]` and `group_by=[in_field]`, and `limit: 0` is rejected with `InvalidLimit` in every mode. `start_at` / `start_after` are not valid. See [limits on aggregate queries](query-syntax.md#limits-on-aggregate-queries).
 
 **Response shape**
 
@@ -2682,7 +2688,11 @@ The [`waitForStateTransitionResult` endpoint](#waitforstatetransitionresult) sho
 
 | Name               | Type           | Required | Description                                                          |
 | ------------------ | -------------- | -------- | -------------------------------------------------------------------- |
-| `state_transition` | Bytes (Base64) | Yes      | A [state transition](../explanations/platform-protocol-state-transition.md) |
+| `state_transition` | Bytes (Base64) | Yes      | A [state transition](../explanations/platform-protocol-state-transition.md). Must be non-empty and no larger than the maximum state transition size (20 KiB at protocol version 13). |
+
+:::{versionadded} 4.1.0
+DAPI now rejects an oversized state transition with `INVALID_ARGUMENT` before attempting to broadcast it. An empty payload is rejected the same way. The DAPI-side check is a static upper bound; Drive enforces the active protocol version's limit authoritatively, so a state transition that passes this check can still be rejected later.
+:::
 
 ```{eval-rst}
 ..
@@ -2703,8 +2713,14 @@ The [`waitForStateTransitionResult` endpoint](#waitforstatetransitionresult) sho
 
 | Name                    | Type    | Required | Description                      |
 | ----------------------- | ------- | -------- | -------------------------------- |
-| `state_transition_hash` | Bytes   | Yes      | Hash of the state transition     |
+| `state_transition_hash` | Bytes   | Yes      | Hash of the state transition. Must be exactly 32 bytes (the SHA-256 of the serialized state transition). |
 | `prove`                 | Boolean | Yes      | Set to `true` to request a proof. The data requested will be encoded as part of the proof in the response. |
+
+:::{versionadded} 4.1.0
+A `state_transition_hash` of any length other than 32 bytes is now rejected with `INVALID_ARGUMENT`. Previously only an empty hash was rejected, so a truncated or differently derived hash was accepted and simply never matched, causing the call to wait until it timed out.
+
+A node also serves a bounded number of concurrent pending waits (1,024). Once saturated, further calls return `RESOURCE_EXHAUSTED`; clients should back off and retry, or connect to a different node.
+:::
 
 **Example Request**
 
@@ -3046,11 +3062,17 @@ Retrieves finalized epoch information within a specified index range.
 
 | Name                         | Type    | Required | Description |
 | ---------------------------- | ------- | -------- | ----------- |
-| `start_epoch_index`          | Integer | No       | Starting epoch index for the query |
+| `start_epoch_index`          | Integer | No       | Starting epoch index for the query. Must not exceed 65,279. |
 | `start_epoch_index_included` | Boolean | No       | Whether to include the `start_epoch_index` in the results |
-| `end_epoch_index`            | Integer | No       | Ending epoch index for the query |
+| `end_epoch_index`            | Integer | No       | Ending epoch index for the query. Must not exceed 65,279. |
 | `end_epoch_index_included`   | Boolean | No       | Whether to include the `end_epoch_index` in the results |
 | `prove`                      | Boolean | No       | Set to `true` to receive a cryptographic proof instead of epoch data |
+
+:::{versionadded} 4.1.0
+The requested range may contain at most 100 epochs, and each index must be no greater than 65,279. Exceeding either bound returns `InvalidArgument`. The `*_included` flags count toward the range size, so callers requesting a wider window must page through it in successive requests of at most 100 epochs each.
+
+When `start_epoch_index` and `end_epoch_index` are equal, both boundaries must be included or the request is rejected, since the range would otherwise be empty.
+:::
 
 **Example Request and Response**
 
@@ -3199,9 +3221,13 @@ Retrieves elements for a specified path in the platform.
 
 | Name    | Type     | Required | Description |
 | ------- | -------- | -------- | ----------- |
-| `path`  | Array    | Yes      | The path for which elements are being requested |
-| `keys`  | Array    | No       | The keys associated with the elements being requested |
+| `path`  | Array    | Yes      | The path for which elements are being requested. At most 256 components, each no larger than 255 bytes. |
+| `keys`  | Array    | No       | The keys associated with the elements being requested. At most 100 entries, each no larger than 255 bytes. |
 | `prove` | Boolean  | No       | Set to `true` to receive a proof that contains the requested elements |
+
+:::{versionadded} 4.1.0
+Requests are now bounded: at most 256 path components, at most 100 keys, at most 255 bytes per component, and at most 64 KiB for the combined byte length of all path and key components. Exceeding any of these returns `RESOURCE_EXHAUSTED`.
+:::
 
 **Example Request and Response**
 
@@ -4654,7 +4680,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 ### getShieldedAnchors
 
-Returns all commitment tree anchors for the shielded pool. Anchors are used by shielded transaction provers to reference a valid state of the commitment tree.
+Returns the commitment tree anchors currently retained by the node for the shielded pool. Anchors are used by shielded transaction provers to reference a valid state of the commitment tree.
 
 **Returns**: A list of commitment tree anchors or a cryptographic proof.
 
@@ -4663,6 +4689,12 @@ Returns all commitment tree anchors for the shielded pool. Anchors are used by s
 | Name    | Type    | Required | Description |
 |---------|---------|----------|-------------|
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested anchors |
+
+The response covers the [node's retention window](../protocol-ref/shielded-pool.md#anchors) rather than the full history of the pool: older anchors are pruned, so the retained set is bounded by the retention and pruning policy.
+
+:::{versionadded} 4.1.0
+If the retained anchor set exceeds what this unpaginated response can enumerate, the call returns `RESOURCE_EXHAUSTED` instead of doing unbounded work. Treat it as retryable rather than fatal.
+:::
 
 **Example Request and Response**
 
@@ -4930,5 +4962,5 @@ A nullifier's `is_spent` field is omitted from the response when `false` (proto3
 
 Implementation details related to the information on this page can be found in:
 
-* The [Platform repository](https://github.com/dashpay/platform/tree/master/packages/dapi) `packages/dapi/lib/grpcServer/handlers/core` folder
+* The [Platform repository](https://github.com/dashpay/platform/tree/master/packages/rs-dapi/src/services) `packages/rs-dapi/src/services` folder, which contains the DAPI implementation deployed by dashmate
 * The [Platform repository](https://github.com/dashpay/platform/tree/master/packages/dapi-grpc) `packages/dapi-grpc/protos` folder

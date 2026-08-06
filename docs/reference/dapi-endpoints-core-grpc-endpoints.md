@@ -15,9 +15,13 @@ Please refer to the [gRPC Overview](../reference/dapi-endpoints-grpc-overview.md
 
 | Name              | Type    | Required | Description                          |
 | ----------------- | ------- | -------- | ------------------------------------ |
-| `transaction`     | Bytes   | Yes      | A raw transaction                    |
-| `allow_high_fees` | Boolean | No       | Enables bypassing the high fee check |
-| `bypass_limits`   | Boolean | No       |                                      |
+| `transaction`     | Bytes   | Yes      | A raw transaction. Must be non-empty and must not exceed the standard transaction weight limit (400,000). |
+| `allow_high_fees` | Boolean | No       | Enables bypassing the high fee check. Currently ignored by the node. |
+| `bypass_limits`   | Boolean | No       | Currently ignored by the node. |
+
+:::{versionadded} 4.1.0
+Two size checks were added. Raw transaction bytes exceeding the standard transaction weight limit are rejected with `RESOURCE_EXHAUSTED` before parsing, and a transaction whose computed weight exceeds that limit once parsed is rejected with `INVALID_ARGUMENT`. An empty or malformed transaction is also rejected with `INVALID_ARGUMENT`.
+:::
 
 #### Example Request and Response
 
@@ -399,11 +403,17 @@ This endpoint helps support simplified payment verification ([SPV](https://docs.
 | Name                      | Type    | Required | Description                                                                                       |
 | ------------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------- |
 | ----------                |         |          |                                                                                                   |
-| **One of the following:** |         |          |                                                                                                   |
-| `from_block_hash`         | Bytes   | No       | Return records beginning with the block hash provided                                             |
-| `from_block_height`       | Integer | No       | Return records beginning with the block height provided                                           |
+| **Exactly one of the following is required:** |         |          |                                                                       |
+| `from_block_hash`         | Bytes   | No       | Return records beginning with the block hash provided. Must be exactly 32 bytes. |
+| `from_block_height`       | Integer | No       | Return records beginning with the block height provided. Minimum value is 1.     |
 | ----------                |         |          |                                                                                                   |
 | `count`                   | Integer | No       | Number of blocks to sync. If set to 0 syncing is continuously sends new data as well (default: 0) |
+
+:::{versionadded} 4.1.0
+`from_block_height` must be at least 1 and `from_block_hash` must be exactly 32 bytes; other values are rejected with `INVALID_ARGUMENT`. Omitting both is also rejected.
+
+A node accepts at most 64 concurrent streams on this endpoint. A subscribe attempt beyond that returns `RESOURCE_EXHAUSTED` — back off and retry, or connect to a different node. An established stream can also be terminated with `RESOURCE_EXHAUSTED`; see [stream termination and backpressure](dapi-endpoints-grpc-overview.md#stream-termination-and-backpressure).
+:::
 
 **Example Request and Response**
 
@@ -453,6 +463,10 @@ message and then streams masternode list updates with every new block.
 
 **Parameters**: None
 
+:::{versionadded} 4.1.0
+A node accepts at most 64 concurrent streams on this endpoint. A subscribe attempt beyond that returns `RESOURCE_EXHAUSTED` — back off and retry, or connect to a different node.
+:::
+
 #### Example Request and Response
 
 ::::{tab-set}
@@ -493,12 +507,18 @@ the update messages following a new block.
 | `bloom_filter.n_tweak`       | Integer | Yes      | A random value to add to the seed value in the hash function used by the bloom filter                    |
 | `bloom_filter.n_flags`       | Integer | Yes      | A set of flags that control how matched items are added to the filter                                    |
 | ----------                   |         |          |                                                                                                          |
-| **One of the following:**    |         |          |                                                                                                          |
-| `from_block_hash`            | Bytes   | No       | Return records beginning with the block hash provided                                                    |
-| `from_block_height`          | Integer | No       | Return records beginning with the block height provided                                                  |
+| **Exactly one of the following is required:** |         |          |                                                                         |
+| `from_block_hash`            | Bytes   | No       | Return records beginning with the block hash provided. Must be exactly 32 bytes. |
+| `from_block_height`          | Integer | No       | Return records beginning with the block height provided. Minimum value is 1.     |
 | ----------                   |         |          |                                                                                                          |
 | `count`                      | Integer | No       | Number of blocks to sync. If set to 0, syncing continuously sends new data as well (default: 0)        |
 | `send_transaction_hashes`  | Boolean | No       | When `true`, includes transaction hashes in the response stream |
+
+:::{versionadded} 4.1.0
+`from_block_height` must be at least 1 and `from_block_hash` must be exactly 32 bytes; other values are rejected with `INVALID_ARGUMENT`. Omitting both is also rejected.
+
+A node accepts at most 64 concurrent streams on this endpoint. A subscribe attempt beyond that returns `RESOURCE_EXHAUSTED` — back off and retry, or connect to a different node. An established stream can also be terminated with `RESOURCE_EXHAUSTED`; see [stream termination and backpressure](dapi-endpoints-grpc-overview.md#stream-termination-and-backpressure).
+:::
 
 **Example Request and Response**
 
@@ -990,5 +1010,5 @@ Note: The gRPCurl response `bestBlockHash`, `chainWork`, and `proTxHash` data is
 
 Implementation details related to the information on this page can be found in:
 
-- The [Platform repository](https://github.com/dashpay/platform/tree/master/packages/dapi) `packages/dapi/lib/grpcServer/handlers/core` folder
+- The [Platform repository](https://github.com/dashpay/platform/tree/master/packages/rs-dapi/src/services) `packages/rs-dapi/src/services` folder, which contains the DAPI implementation deployed by dashmate
 - The [Platform repository](https://github.com/dashpay/platform/tree/master/packages/dapi-grpc) `packages/dapi-grpc/protos/core` folder

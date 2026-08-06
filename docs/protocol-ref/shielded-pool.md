@@ -63,6 +63,8 @@ See the [serialized action implementation in rs-dpp](https://github.com/dashpay/
 
 An **anchor** is the Sinsemilla root of the note commitment tree at the time the bundle was constructed. Each shielded transition specifies the anchor it was built against; the platform validates that the anchor was previously published. Clients fetch anchors using [`getShieldedAnchors`](../reference/dapi-endpoints-platform-endpoints.md#getshieldedanchors) or [`getMostRecentShieldedAnchor`](../reference/dapi-endpoints-platform-endpoints.md#getmostrecentshieldedanchor).
 
+Anchors are not retained indefinitely. Nodes keep a rolling window governed by [`shielded_anchor_retention_blocks` and `shielded_anchor_pruning_interval`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/drive_abci_versions/drive_abci_validation_versions/v1.rs#L275-L276), pruning anchors older than the retention window at each pruning boundary. A prover selecting an anchor must therefore choose one from the current window, not from arbitrary history.
+
 ### Platform Sighash
 
 Transitions with transparent fields (Unshield, Shielded Withdrawal, etc.) bind those fields to the Orchard signatures via a platform sighash computed as:

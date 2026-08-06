@@ -157,7 +157,7 @@ The query modifiers described here determine how query results will be sorted an
 
 | Modifier | Effect | Example |
 | - | - | - |
-| `limit` | Restricts the number of results returned (maximum: 100) | `limit: 10` |
+| `limit` | Restricts the number of results returned. Defaults to 100 when omitted, and the [maximum is also 100](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/config.rs#L16-L18). Both values come from Drive's `default_query_limit` / `max_query_limit` node configuration rather than from the protocol, so an operator can tune them. | `limit: 10` |
 | `orderBy` | Returns records sorted by the field(s) provided. The `orderBy` fields must match a consecutive run of the index's properties, read from the end of the index (for a compound index, sort by one or more of its trailing fields). Can only be used with `>`, `<`, `>=`, `<=`, `Between`, `BetweenExcludeBounds`, `BetweenExcludeLeft`, `BetweenExcludeRight`, and `startsWith` queries. | `orderBy: [['normalizedLabel', 'asc']]` |
 | `startAt` | Returns records beginning with the document ID provided | `startAt: '<document ID>'` |
 | `startAfter` | Returns records beginning after the document ID provided | `startAfter: '<document ID>'` |
@@ -165,6 +165,17 @@ The query modifiers described here determine how query results will be sorted an
 
 :::{attention}
 For indices composed of multiple fields ([example from the DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)), the sort order in an `orderBy` must either match the order defined in the data contract OR be the inverse order.
+:::
+
+### Combining a cursor with a range operator
+
+When a `startAt` / `startAfter` cursor is combined with a range operator (`>`, `>=`, `<`, `<=`), the cursor narrows the effective range in the direction of the `orderBy` sort:
+
+- Ascending order — the cursor is the lower bound and the range clause's value is the upper bound. `startAfter` excludes the cursor row itself.
+- Descending order — the roles invert: the range clause's value is the lower bound and the cursor is the upper bound.
+
+:::{versionchanged} 4.1.0
+Ascending queries that combined a cursor with a `<` or `<=` clause previously [built their range backwards](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/query/conditions.rs#L944-L990), returning incorrect or empty results. Paginating a bounded range now returns the expected results, so a query written against the earlier behavior may return different results after upgrading.
 :::
 
 ## Aggregate Queries
@@ -186,6 +197,38 @@ The [getDocuments](../reference/dapi-endpoints-platform-endpoints.md#getdocument
 Aggregate queries impose extra schema requirements on the document type — `COUNT` needs `documentsCountable`, `SUM` needs `documentsSummable`, `AVG` needs `documentsAverageable` (or both base flags). Range-grouped aggregates additionally need the `range*` variants. See the [doctype-level aggregate flags](../protocol-ref/data-contract-document.md#aggregate-query-flags) for the schema annotations and the [`getDocuments` reference](../reference/dapi-endpoints-platform-endpoints.md#getdocuments) for the full `select` × `groupBy` shape table.
 
 `SUM` / `AVG` integer values are returned as JS strings so JavaScript clients don't lose precision on values larger than `Number.MAX_SAFE_INTEGER`.
+
+### Limits on aggregate queries
+
+The `limit` modifier behaves differently on the aggregate surface than it does when returning documents, and in some `select` × `groupBy` combinations it is rejected outright. On the wire, [`limit` is an optional field](https://github.com/dashpay/platform/blob/v4.1.0/packages/dapi-grpc/protos/platform/v0/platform.proto#L958-L1002):
+
+- Omit `limit` to request the server's default.
+- Send a positive value to request an explicit cap.
+- `limit: 0` is rejected with `InvalidLimit` in every `select` mode. A zero cap is structurally meaningless, so it is never treated as "no limit".
+
+SDK bindings that must pass a numeric argument use `-1` as the server-default sentinel; any other negative value is rejected.
+
+:::{versionadded} 4.1.0
+An effective limit of zero is now rejected with `InvalidLimit` rather than walking storage with a zero bound, which previously surfaced as an empty result set.
+:::
+
+How a positive `limit` is interpreted depends on `groupBy`:
+
+| `select` / `groupBy` | Effect of `limit` |
+| - | - |
+| `DOCUMENTS` | Caps the number of matched documents, as described under [Query Modifiers](#query-modifiers). |
+| `COUNT` with an empty `groupBy` | Rejected with `InvalidLimit`. An aggregate count is a single row by construction. |
+| `COUNT` grouped by an `In` field | Rejected with `InvalidLimit`. The `In` array is already capped at 100 entries, so the result is bounded. Narrow the `In` array instead. |
+| `COUNT` grouped by a range field | Caps the distinct-range walk, so the response carries at most `limit` groups. |
+| `COUNT` grouped by an `In` field and a range field | A global cap over the emitted stream, not a per-branch cap. With three `In` values and `limit: 5`, the response carries at most 5 entries in total across all branches. |
+
+`SUM` and `AVG` follow the same policy as `COUNT`: distinct walks apply the default/cap/reject-zero rules, and a zero limit is rejected.
+
+:::{attention}
+On range-grouped aggregates, an oversized `limit` is handled differently depending on whether a proof is requested. With `prove: true`, a `limit` above the node's maximum (100 by default) is rejected with `InvalidLimit` so that proof bytes stay deterministic. With `prove: false`, the limit is silently clamped to the maximum instead — a caller requesting 500 groups receives at most 100 with no error, which can look like missing data.
+:::
+
+Compound carrier-aggregate shapes that pair an `In` field with a range field and request a proof cap the outer range walk at [10 entries](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/query/drive_document_count_query/mod.rs#L127). This is a hard ceiling: a `limit` above it is rejected, and callers needing more results issue repeated queries over disjoint outer-range windows.
 
 :::{note}
 `HAVING`, `OFFSET`, `COUNT(<field>)`, `MIN`, `MAX`, and multi-projection `SELECT` are present on the wire but currently return `Unsupported`. Callers can encode them in builders ahead of server support landing, but evaluation rejects them today.
