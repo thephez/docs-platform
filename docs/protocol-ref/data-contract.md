@@ -45,9 +45,9 @@ There are a variety of constraints currently defined for performance and securit
 
 | Parameter | Size |
 | - | - |
-| Estimated maximum serialized data contract size | [16384 bytes (16 KB)](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-platform-version/src/version/system_limits/v1.rs#L4) |
-| Maximum field value size | [5120 bytes (5 KB)](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-platform-version/src/version/system_limits/v1.rs#L5) |
-| Maximum state transition size | [20480 bytes (20 KB)](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-platform-version/src/version/system_limits/v1.rs#L6) |
+| Estimated maximum serialized data contract size | [16384 bytes (16 KB)](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v1.rs#L4) |
+| Maximum field value size | [5120 bytes (5 KB)](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v1.rs#L5) |
+| Maximum state transition size | [20480 bytes (20 KB)](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v1.rs#L7) |
 
 A document cannot exceed the maximum state transition size in any case. For example, although it is
 possible to define a data contract with 10 document fields that each support the maximum field size
@@ -67,7 +67,7 @@ Include the following at the same level as the `properties` keyword to ensure pr
 
 ## Data Contract Object
 
-The data contract object consists of the following fields as defined in the Rust reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/v1/data_contract.rs#L77-L121)):
+The data contract object consists of the following fields as defined in the Rust reference client ([rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/v1/data_contract.rs#L77-L121)):
 
 | Property        | Type           | Size | Description |
 | --------------- | -------------- | ---- | ----------- |
@@ -92,7 +92,15 @@ The data contract object consists of the following fields as defined in the Rust
 
 ### Document type meta-schema
 
-Each document type defined within a data contract is validated against the document meta-schema. This page reflects the v1 meta-schema used since protocol version 12 (Dash Platform v4.0.0); earlier protocol versions validated against the v0 meta-schema. The full schema is [defined in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/schema/meta_schemas/document/v1/document-meta.json), hosted on [GitHub](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/schema/meta_schemas/document/v1/document-meta.json), and can be viewed by expanding this dropdown:
+Each document type defined within a data contract is validated against the document meta-schema. The meta-schema version is determined by the protocol version in effect:
+
+| Meta-schema | Protocol version |
+| - | - |
+| v2 | 13 and later |
+| v1 | 12 |
+| v0 | 11 and earlier |
+
+This page reflects the v2 meta-schema, which adds [document history flags](./data-contract-document.md#document-history-flags). The full schema is [defined in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json) and can be viewed by expanding this dropdown:
 
 ::: {dropdown} Full schema
 
@@ -100,7 +108,7 @@ Each document type defined within a data contract is validated against the docum
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v1/document-meta.json",
-  "$comment": "EDITABLE UNTIL 3.1 RELEASE — FROZEN AFTER. This v1 document meta-schema activates with protocol v12 (CONTRACT_VERSIONS_V4) and admits every v12+ contract written to disk. Once Platform 3.1 ships, mutating it would change historical validation results and break consensus replay. After release, any new top-level property or rule MUST go in a newer meta-schema version (v2+).",
+  "$comment": "EDITABLE UNTIL 4.1 RELEASE — FROZEN AFTER. This v2 document meta-schema activates with protocol v13 (CONTRACT_VERSIONS_V5). It is v1 plus the keepsTransferHistory, keepsPurchaseHistory and keepsPricingHistory document type configuration flags, and admits every v13+ contract written to disk. Once the release carrying protocol v13 ships, mutating it would change historical validation results and break consensus replay. After release, any new top-level property or rule MUST go in a newer meta-schema version (v3+).",
   "type": "object",
   "$defs": {
     "documentProperties": {
@@ -593,6 +601,18 @@ Each document type defined within a data contract is validated against the docum
       "type": "boolean",
       "description": "True if the documents keep all their history, default is false"
     },
+    "keepsTransferHistory": {
+      "type": "boolean",
+      "description": "True if transfers of these documents are recorded in the document history system contract, default is false"
+    },
+    "keepsPurchaseHistory": {
+      "type": "boolean",
+      "description": "True if purchases of these documents are recorded in the document history system contract, default is false"
+    },
+    "keepsPricingHistory": {
+      "type": "boolean",
+      "description": "True if price updates on these documents are recorded in the document history system contract, default is false"
+    },
     "documentsMutable": {
       "type": "boolean",
       "description": "True if the documents are mutable, default is true"
@@ -813,7 +833,7 @@ Each document type defined within a data contract is validated against the docum
 
 ### Data Contract id
 
-The data contract `id` is a hash of the `ownerId` and `identity_nonce` as shown in the [rs-dpp implementation](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/generate_data_contract.rs).
+The data contract `id` is a hash of the `ownerId` and `identity_nonce` as shown in the [rs-dpp implementation](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/generate_data_contract.rs).
 
 ```rust
 // From the Rust reference implementation (rs-dpp)
@@ -841,7 +861,7 @@ See the [data contract documents](./data-contract-document.md) page for details,
 
 ### Data Contract config
 
-The data contract config defines configuration options for data contracts, controlling their lifecycle, mutability, history management, and encryption requirements. Data contracts support three categories of configuration options to provide flexibility in contract design. It is only necessary to include them in a data contract when non-default values are used. The default values for these configuration options are defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/config/fields.rs).
+The data contract config defines configuration options for data contracts, controlling their lifecycle, mutability, history management, and encryption requirements. Data contracts support three categories of configuration options to provide flexibility in contract design. It is only necessary to include them in a data contract when non-default values are used. The default values for these configuration options are defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/config/fields.rs).
 
 | Contract option                         | Default | Description |
 |-----------------------------------------|---------|-------------|
@@ -871,7 +891,7 @@ These security options can be set at the root level of the data contract or the 
 
 **Example**
 
-The following example (from the [DashPay contract's `contactRequest` document](https://github.com/dashpay/platform/blob/v4.0.0/packages/dashpay-contract/schema/v1/dashpay.schema.json#L142-L146)) demonstrates the use of both key-related options at the document level:
+The following example (from the [DashPay contract's `contactRequest` document](https://github.com/dashpay/platform/blob/v4.1.0/packages/dashpay-contract/schema/v1/dashpay.schema.json#L142-L146)) demonstrates the use of both key-related options at the document level:
 
 ``` json
 "contactRequest": {
@@ -880,7 +900,7 @@ The following example (from the [DashPay contract's `contactRequest` document](h
 }
 ```
 
-See the data contract [config implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/config/v1/mod.rs#L21-L48) for more details.
+See the data contract [config implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/config/v1/mod.rs#L21-L48) for more details.
 
 ### Data Contract groups
 
@@ -897,9 +917,9 @@ Groups can be used to distribute contract configuration and update authorization
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| Minimum group size | [2](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L107-L110) | Minimum members per group |
+| Minimum group size | [2](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L107-L110) | Minimum members per group |
 | `max_contract_group_size` | 256 | Maximum members per group |
-| Maximum member power | 65,535 (u32; cap enforced at u16::MAX) | Maximum voting power per member. Each member's power must also not exceed the group's [`requiredPower`](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L129-L134) value. |
+| Maximum member power | 65,535 (u32; cap enforced at u16::MAX) | Maximum voting power per member. Each member's power must also not exceed the group's [`requiredPower`](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L129-L134) value. |
 | Maximum required power | 65,535 (u32; cap enforced at u16::MAX) | Maximum threshold power |
 
 #### Group Action Info
@@ -937,7 +957,7 @@ When submitting a group-authorized action, the transition includes:
 
 In this example, any two of the three members can authorize an action.
 
-See the [groups implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L36-L39) for more details.
+See the [groups implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/group/v0/mod.rs#L36-L39) for more details.
 
 ### Data Contract tokens
 
@@ -947,6 +967,28 @@ See the [groups implementation in rs-dpp](https://github.com/dashpay/platform/bl
 - Tokens provide token-related functionality within the contract, such as base supply, maximum supply, and manual minting/burning rules.  
 - Token configurations include change control rules, ensuring proper governance for modifying supply limits and token-related settings.
 - This enables contracts to define and manage tokens while ensuring compliance with governance rules (e.g., who can mint or burn tokens).
+
+### Document history system contract
+
+:::{versionadded} 4.1.0
+:::
+
+The document history contract is a [system data contract](https://github.com/dashpay/platform/blob/v4.1.0/packages/data-contracts/src/lib.rs) that records document transfers, purchases and price updates for document types that opt in via the [document history flags](./data-contract-document.md#document-configuration).
+
+| Property | Value |
+| - | - |
+| Contract ID | `6voHRaoiPcfmMhbqCA9dixH98xcgPQ9UEcuaXjpVu3LD` |
+| Owner ID | `11111111111111111111111111111111` |
+
+Its documents are written by the protocol while applying the corresponding document transition; they cannot be created directly (`creationRestrictionMode` 2). All three document types are immutable (`documentsMutable` false) and cannot be deleted (`canBeDeleted` false).
+
+| Document type | Recorded properties |
+| - | - |
+| `transfer` | `dataContractId`, `documentTypeName`, `documentId`, `toIdentityId` |
+| `purchase` | `dataContractId`, `documentTypeName`, `documentId`, `sellerId`, `price` |
+| `priceUpdate` | `dataContractId`, `documentTypeName`, `documentId`, `price` |
+
+See the [contract schema in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/document-history-contract/schema/v1/document-history-contract-documents.json).
 
 ## Data Contract State Transition Details
 
@@ -966,7 +1008,7 @@ Data contracts are created on the platform by submitting the [data contract obje
 | signaturePublicKeyId | unsigned integer | 32 bits | The `id` of the [identity public key](../protocol-ref/identity.md#identity-publickeys) that signed the state transition (`=> 0`) |
 | signature            | array of bytes | 65 bytes | Signature of state transition data |
 
-See the [data contract create implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_create_transition/v0/mod.rs#L40-L48) for more details.
+See the [data contract create implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_create_transition/v0/mod.rs#L36-L44) for more details.
 
 ### Data Contract Update
 
@@ -990,7 +1032,7 @@ object](#data-contract-object) in a data contract update state transition consis
 | signaturePublicKeyId | unsigned integer | 32 bits | The `id` of the [identity public key](../protocol-ref/identity.md#identity-publickeys) that signed the state transition (`=> 0`) |
 | signature            | array of bytes | 65 bytes | Signature of state transition data |
 
-See the [data contract update implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.0.0/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_update_transition/v0/mod.rs#L35-L47) for more details.
+See the [data contract update implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/contract/data_contract_update_transition/v0/mod.rs#L31-L43) for more details.
 
 ### Data Contract State Transition Signing
 
