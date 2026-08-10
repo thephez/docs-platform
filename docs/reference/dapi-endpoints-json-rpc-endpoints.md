@@ -222,6 +222,64 @@ puts response.read_body
 }
 ```
 
+### getStatus
+
+**Returns**: Platform status information. This is the JSON-RPC equivalent of the Platform
+[`getStatus`](../reference/dapi-endpoints-platform-endpoints.md#getstatus) gRPC endpoint, and returns
+the same response object.
+
+**Parameters**: none
+
+#### Example Request and Response
+
+::::{tab-set}
+:::{tab-item} Curl
+:sync: curl
+```shell
+curl -k --request POST \
+  --url https://seed-1.testnet.networks.dash.org:1443/ \
+  --header 'content-type: application/json' \
+  --data '{
+      "method":"getStatus",
+      "id":1,
+      "jsonrpc":"2.0",
+      "params":{}
+    }'
+```
+:::
+::::
+
+### sendRawTransaction
+
+**Returns**: the transaction id (TXID) of the submitted transaction
+
+**Parameters**:
+
+| Name             | Type    | Required | Description                                                        |
+| ---------------- | ------- | -------- | ------------------------------------------------------------------ |
+| `transaction`    | String  | Yes      | The raw transaction, hex-encoded                                    |
+| `allowHighFees`  | Boolean | No       | Set to `true` to bypass the high-fee rejection check (default: `false`) |
+| `bypassLimits`   | Boolean | No       | Set to `true` to bypass mempool rate limits (default: `false`)      |
+
+#### Example Request and Response
+
+::::{tab-set}
+:::{tab-item} Curl
+:sync: curl
+```shell
+curl -k --request POST \
+  --url https://seed-1.testnet.networks.dash.org:1443/ \
+  --header 'content-type: application/json' \
+  --data '{
+      "method":"sendRawTransaction",
+      "id":1,
+      "jsonrpc":"2.0",
+      "params": ["03000000019a2b1b2b...", false, false]
+    }'
+```
+:::
+::::
+
 ## Deprecated Endpoints
 
 The following endpoints were recently deprecated. See the [previous version of this
@@ -368,4 +426,4 @@ puts response.read_body
 
 Implementation details related to the information on this page can be found in:
 
-- The [DAPI repository](https://github.com/dashpay/platform/tree/master/packages/dapi) `lib/rpcServer/commands` folder
+- The [rs-dapi package](https://github.com/dashpay/platform/tree/master/packages/rs-dapi) `src/protocol/jsonrpc_translator` module
