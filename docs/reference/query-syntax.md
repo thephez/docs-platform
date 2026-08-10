@@ -26,12 +26,12 @@ The Where clause is an optional array of conditions. If omitted or empty, all do
 
 ### Fields
 
-Valid fields consist of the indices defined for the document being queried. For example, the [DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json) defines two indices for domain documents:
+Valid fields consist of the indices defined for the document being queried. For example, the [DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json) defines two indices for domain documents:
 
 | Index Field(s) | Index Type | Unique |
 | - | - | :-: |
-| [normalizedParentDomainName, normalizedLabel](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json#L11-L18) | Compound | Yes |
-| [records.identity](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json#L31-L39) | Single Field | No |
+| [normalizedParentDomainName, normalizedLabel](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json#L12-L33) | Compound | Yes |
+| [records.identity](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json#L34-L42) | Single Field | No |
 
 ```{eval-rst}
 ..
@@ -59,25 +59,38 @@ Valid fields consist of the indices defined for the document being queried. For 
 | <= | Matches values that are less than or equal to a specified value |
 | >= | Matches values that are greater than or equal to a specified value |
 | > | Matches values that are greater than a specified value |
-| in | Matches all document(s) where the value of the field equals any value in the specified array <br>Array may include up to 100 (unique) elements |
+| in | Matches all document(s) where the value of the field equals any value in the specified array <br>The array must contain between 1 and 100 values, with no duplicates. Empty arrays, oversized arrays, and duplicate values are rejected with `InvalidInClause` |
 | Between | Matches values between two bounds (inclusive on both sides) — value must be a two-element array `[lower, upper]` with `lower < upper` |
 | BetweenExcludeBounds | Matches values strictly between two bounds (exclusive on both sides) |
 | BetweenExcludeLeft | Matches values between two bounds, excluding the lower bound |
 | BetweenExcludeRight | Matches values between two bounds, excluding the upper bound |
 
-:::{tip}
-- Only one range operator is allowed in a query. `Between` and its variants are single operators that replace a `>=`/`<=` pair — the engine also normalizes two range operators on the same field into the equivalent `Between*` form automatically
+##### Range operator constraints
+
+- A query can have only one effective range clause. Use `Between` or one of its variants to express both bounds, or supply two complementary range clauses on the same field; Platform normalizes the pair to the equivalent `Between*` form
 - The `in` operator is only allowed for last two indexed properties
 - Range operators apply to an indexed field that follows any `==` and `in` clauses in the index. A standalone range (with no preceding `==`/`in` clause) is valid when a matching index exists
 - Range operators are only allowed for the last two fields used in the where condition
 - Queries using range operators (including `in`, which is treated as a range) must also include an `orderBy` statement
-:::
+
+##### Operator aliases
+
+Operator names are matched against a fixed set of aliases:
+
+| Operator | Accepted aliases |
+| - | - |
+| `==` | `=` |
+| `in` | `In` |
+| `Between` | `between` |
+| `BetweenExclude*` | CamelCase, lowercase, and snake_case variants, such as `betweenExcludeLeft`, `betweenexcludeleft`, and `between_exclude_left` |
+
+Any other spelling is rejected.
 
 ### Evaluation Operators
 
 | Name | Description |
 | :-: | - |
-| startsWith | Selects documents where the value of a field begins with the specified characters. Must include an `orderBy` statement. |
+| startsWith | Selects documents where the value of a field begins with the specified characters. Must include an `orderBy` statement. Also accepted as `StartsWith`, `startswith`, and `starts_with` |
 
 ### Operator Examples
 
@@ -157,15 +170,15 @@ The query modifiers described here determine how query results will be sorted an
 
 | Modifier | Effect | Example |
 | - | - | - |
-| `limit` | Restricts the number of results returned. Defaults to 100 when omitted, and the [maximum is also 100](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/config.rs#L16-L18). Both values come from Drive's `default_query_limit` / `max_query_limit` node configuration rather than from the protocol, so an operator can tune them. | `limit: 10` |
+| `limit` | Restricts the number of results returned. Defaults to 100 when omitted. The [maximum is also 100](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/config.rs#L16-L18) by default, although node operators may configure a different limit. | `limit: 10` |
 | `orderBy` | Returns records sorted by the field(s) provided. The `orderBy` fields must match a consecutive run of the index's properties, read from the end of the index (for a compound index, sort by one or more of its trailing fields). Can only be used with `>`, `<`, `>=`, `<=`, `Between`, `BetweenExcludeBounds`, `BetweenExcludeLeft`, `BetweenExcludeRight`, and `startsWith` queries. | `orderBy: [['normalizedLabel', 'asc']]` |
 | `startAt` | Returns records beginning with the document ID provided | `startAt: '<document ID>'` |
 | `startAfter` | Returns records beginning after the document ID provided | `startAfter: '<document ID>'` |
-| `offset` | Skips the first N matching results (available at the CBOR/DAPI layer; not exposed in the JS SDK) | `offset: 10` |
+| `offset` | Not supported for document queries in v4.1.0. Use `startAt` or `startAfter` for pagination. | n/a |
 
-:::{attention}
-For indices composed of multiple fields ([example from the DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)), the sort order in an `orderBy` must either match the order defined in the data contract OR be the inverse order.
-:::
+### Ordering compound indexes
+
+For indices composed of multiple fields ([example from the DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)), the sort order in an `orderBy` must either match the order defined in the data contract OR be the inverse order.
 
 ### Combining a cursor with a range operator
 
@@ -180,10 +193,7 @@ Ascending queries that combined a cursor with a `<` or `<=` clause previously [b
 
 ## Aggregate Queries
 
-:::{versionadded} 4.0.0
-:::
-
-The [getDocuments](../reference/dapi-endpoints-platform-endpoints.md#getdocuments) v1 surface adds an aggregate-query mode. The same `where` / `orderBy` clauses described above still apply; an additional `select` projection (and optional `groupBy`) determines whether the request returns documents or aggregate values over the matched set.
+Available since Platform 4.0.0, the [getDocuments](../reference/dapi-endpoints-platform-endpoints.md#getdocuments) v1 surface adds an aggregate-query mode. The same `where` / `orderBy` clauses described above still apply; an additional `select` projection (and optional `groupBy`) determines whether the request returns documents or aggregate values over the matched set.
 
 | `select`         | Returns |
 | ---------------- | ------- |
@@ -208,7 +218,7 @@ The `limit` modifier behaves differently on the aggregate surface than it does w
 
 SDK bindings that must pass a numeric argument use `-1` as the server-default sentinel; any other negative value is rejected.
 
-:::{versionadded} 4.1.0
+:::{versionchanged} 4.1.0
 An effective limit of zero is now rejected with `InvalidLimit` rather than walking storage with a zero bound, which previously surfaced as an empty result set.
 :::
 
@@ -224,15 +234,19 @@ How a positive `limit` is interpreted depends on `groupBy`:
 
 `SUM` and `AVG` follow the same policy as `COUNT`: distinct walks apply the default/cap/reject-zero rules, and a zero limit is rejected.
 
-:::{attention}
+### Aggregate cursors
+
+`startAt` and `startAfter` are supported only with `DOCUMENTS`. Aggregate queries reject cursors; narrow the `where` range to query a different group range.
+
+### Proof limits
+
 On range-grouped aggregates, an oversized `limit` is handled differently depending on whether a proof is requested. With `prove: true`, a `limit` above the node's maximum (100 by default) is rejected with `InvalidLimit` so that proof bytes stay deterministic. With `prove: false`, the limit is silently clamped to the maximum instead — a caller requesting 500 groups receives at most 100 with no error, which can look like missing data.
-:::
 
 Compound carrier-aggregate shapes that pair an `In` field with a range field and request a proof cap the outer range walk at [10 entries](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/query/drive_document_count_query/mod.rs#L127). This is a hard ceiling: a `limit` above it is rejected, and callers needing more results issue repeated queries over disjoint outer-range windows.
 
-:::{note}
+### Unsupported aggregate operations
+
 `HAVING`, `OFFSET`, `COUNT(<field>)`, `MIN`, `MAX`, and multi-projection `SELECT` are present on the wire but currently return `Unsupported`. Callers can encode them in builders ahead of server support landing, but evaluation rejects them today.
-:::
 
 ## Example query
 

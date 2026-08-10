@@ -35,6 +35,7 @@ Data contracts support three categories of configuration options to provide flex
 | `canBeDeleted`                          | `false` | Determines if the contract can be deleted |
 | `readonly`                              | `false` | Determines if the contract is read-only. Read-only contracts cannot be updated. |
 | `keepsHistory`                          | `false` | Enables or disables the storing of contract update history |
+| `sized_integer_types`                   | `true`  | Use sized integer types for `integer` properties based on their validation rules. Note that this key is snake_case, unlike the other contract configuration keys. |
 
 | Document default option                 | Default | Description |
 |-----------------------------------------|---------|-------------|
@@ -46,6 +47,7 @@ Data contracts may also define the following top-level fields:
 
 | Contract field | Type | Description |
 |----------------|------|-------------|
+| `tokens`       | object | (Optional) Token definitions keyed by token contract position. Each entry configures base supply, maximum supply, minting and burning rules, and change control. See [Contract Tokens](../protocol-ref/data-contract-token.md). |
 | `groups`       | object | (Optional) Groups that allow for specific multiparty actions on the contract. See [Data Contract groups](../protocol-ref/data-contract.md#data-contract-groups). |
 | `keywords`     | array of strings | (Optional) Keywords associated with the contract to improve searchability via the `search` system contract. Maximum of 50 unique keywords. |
 | `description`  | string | (Optional) Brief human-readable description of the contract (3-100 characters). Also added to the `search` system contract. |
@@ -106,6 +108,9 @@ Documents support the following configuration options to provide flexibility in 
 | `transferable`                       | integer  | Transferable without a marketplace sell:<br>`0` - Never<br>`1` - Always<br>See the [NFT page](../explanations/nft.md#transfer-and-trade) for more details |
 | `tradeMode`                          | integer  | Built-in marketplace system:<br>`0` - None<br>`1` - Direct purchase (the purchaser can buy the item without requiring approval)<br>See the [NFT page](../explanations/nft.md#transfer-and-trade) for more details |
 | `creationRestrictionMode`            | integer  | Restriction of document creation:<br>`0` - No restrictions<br>`1` - Contract owner only<br>`2` - No Creation Allowed<br>See the [NFT page](../explanations/nft.md#creation-restrictions) for more details |
+| `keepsTransferHistory`               | boolean  | If true, transfers of these documents are recorded in the document history system contract. Default: false. |
+| `keepsPurchaseHistory`               | boolean  | If true, purchases of these documents are recorded in the document history system contract. Default: false. |
+| `keepsPricingHistory`                | boolean  | If true, price updates on these documents are recorded in the document history system contract. Default: false. |
 
 | Security option | Type | Description |
 |-----------------|------|-------------|
@@ -121,7 +126,7 @@ Document types can opt into aggregate queries with the flags `documentsCountable
 
 :::{dropdown} List of all usable document properties
 
-  This list of properties is defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/mod.rs#L31) and the [document meta-schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json).
+  This list of properties is defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/mod.rs#L31) and the [document meta-schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json).
 
   | Property Name | Type | Description |
   |---------------|------|-------------|
@@ -136,6 +141,9 @@ Document types can opt into aggregate queries with the flags `documentsCountable
   | `transferable`                       | integer  | Transferable without a marketplace sell:<br>`0` - Never<br>`1` - Always |
   | `tradeMode`                          | integer  | Built-in marketplace system:<br>`0` - None<br>`1` - Direct purchase (the purchaser can buy the item without requiring approval) |
   | `creationRestrictionMode`            | integer  | Restriction of document creation:<br>`0` - No restrictions<br>`1` - Contract owner only<br>`2` - No Creation Allowed. |
+  | `keepsTransferHistory`               | boolean  | If true, transfers of these documents are recorded in the document history system contract. Default: false. |
+  | `keepsPurchaseHistory`               | boolean  | If true, purchases of these documents are recorded in the document history system contract. Default: false. |
+  | `keepsPricingHistory`                | boolean  | If true, price updates on these documents are recorded in the document history system contract. Default: false. |
   | [`requiresIdentity`<br>`EncryptionBoundedKey`](#key-management) | integer  | Key requirements for identity encryption:<br>`0` - Unique non-replaceable<br>`1` - Multiple<br>`2` - Multiple with reference to latest key |
   | [`requiresIdentity`<br>`DecryptionBoundedKey`](#key-management) | integer  | Key requirements for identity decryption:<br>`0` - Unique non-replaceable<br>`1` - Multiple<br>`2` - Multiple with reference to latest key |
   | [`properties`](#document-properties) | object   | Defines the properties of the document. |
@@ -152,7 +160,7 @@ Document types can opt into aggregate queries with the flags `documentsCountable
 
 **Example**
 
-The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)) demonstrates the use of several configuration options:
+The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)) demonstrates the use of several configuration options:
 
 ```json
 {
@@ -161,6 +169,9 @@ The following example (from the [DPNS contract's `domain` document](https://gith
     "canBeDeleted": true,
     "transferable": 1,
     "tradeMode": 1,
+    "keepsTransferHistory": true,
+    "keepsPurchaseHistory": true,
+    "keepsPricingHistory": true,
     "..."
   }
 }
@@ -245,7 +256,7 @@ Each document may have transient fields that require validation but do not need 
 
 **Example**  
 
-The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)) demonstrates a document that has 1 transient field:
+The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)) demonstrates a document that has 1 transient field:
 
 ```json
     "transient": [
@@ -318,7 +329,7 @@ The table below describes the properties used to configure a contested index:
 
 **Example**
 
-This example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)) demonstrates the use of a contested index:
+This example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)) demonstrates the use of a contested index:
 
 ``` json
 "contested": {
@@ -449,13 +460,14 @@ There are a variety of constraints currently defined for performance and securit
 | ------- | ---------- |
 | `default`             | Restricted - cannot be used (defined in DPP logic) |
 | `propertyNames`       | Restricted - cannot be used (defined in DPP logic) |
-| `uniqueItems: true`   | `maxItems` must be defined (maximum: 100000) |
 | `pattern: <something>` | `maxLength` must be defined (maximum: [50000](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L187)) |
 | `format: <something>` | `maxLength` must be defined (maximum: [50000](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v0/document-meta.json#L200)) |
-| `$ref: <something>`   | Disabled for data contracts |
+| `$ref: <something>`   | Internal references only - the value must begin with `#` (e.g. `#/$defs/myType`). External and remote references, and reference cycles, are rejected |
 | `if`, `then`, `else`, `allOf`, `anyOf`, `oneOf`, `not` | Disabled for data contracts |
-| `dependencies`        | Not supported. Use `dependentRequired` and `dependentSchema` instead |
-| `additionalItems`     | Not supported. Use `items: false` and `prefixItems` instead |
+| `dependencies`        | Not supported. Use `dependentRequired` instead |
+| `dependentSchemas`    | Not supported. Schema-based dependencies are not available in document schemas; use `dependentRequired` for property-presence dependencies |
+| `type: array`         | Only byte arrays are supported. `byteArray: true` must be defined; schemas for individual array items are not available |
+| `additionalItems`     | Not supported. Per-item array schemas (`items` / `prefixItems`) are not available in document schemas; constrain arrays with `minItems`, `maxItems`, `uniqueItems`, `contains`, and `byteArray` |
 | `patternProperties`   | Restricted - cannot be used for data contracts |
 | `pattern`             | Accept only [RE2](https://github.com/google/re2/wiki/Syntax) compatible regular expressions (defined in DPP logic) |
 
@@ -463,7 +475,9 @@ There are a variety of constraints currently defined for performance and securit
 
 **Note:** These constraints are defined in the Dash Platform Protocol logic (not in JSON Schema).
 
-All serialized data (including state transitions) is limited to a maximum size of [16 KB](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/util/cbor_serializer.rs#L8).
+A state transition is limited to a maximum size of [20 KiB](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs) (`max_state_transition_size`). Oversized transitions are rejected.
+
+An individual document field value is limited to [5 KiB](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs) (`max_field_value_size`).
 
 ### Additional Properties
 

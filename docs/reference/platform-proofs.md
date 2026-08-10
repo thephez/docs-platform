@@ -11,8 +11,10 @@ agreed upon by the validator network -- without trusting whoever supplied the da
 The most common way to obtain a proof is to request one over [DAPI](../explanations/dapi.md): set
 the optional `"prove": true` parameter on a [Platform gRPC
 endpoint](../reference/dapi-endpoints-platform-endpoints.md) and the response carries a `Proof`
-message instead of the plain result. A proof does not depend on how it was retrieved, though --
-it can be verified independently by any party that holds it.
+message instead of the plain result. Most Platform endpoints work this way. The two address-tree
+sync endpoints are different: they have no `prove` parameter and always return proof data. See
+[address tree sync proofs](#address-tree-sync-proofs) below. A proof does not depend on how it was
+retrieved, though -- it can be verified independently by any party that holds it.
 
 For the concepts behind proofs -- the two-layer GroveDB + consensus trust model, the verification
 flow, what can be proven, and asset lock proofs -- see [Proofs](../explanations/proofs.md).
@@ -50,8 +52,9 @@ address balance proofs](#compacted-address-balance-proofs) below. A `Proof` has 
 Clients do not parse proofs manually. Verification is performed by the
 `rs-drive-proof-verifier` crate, which checks the quorum's BLS threshold signature (the
 Tenderdash consensus half) and decodes the unified `grovedbProof` to recover the requested data
-and the state root hash. This logic is exposed to JavaScript and browser clients through the
-`wasm-drive-verify` package, so the SDKs verify proofs automatically whenever one is requested.
+and the state root hash. Dash Platform SDKs verify requested proofs automatically. Applications
+performing verification directly can use `rs-drive-proof-verifier`; JavaScript and browser
+applications can use the available WebAssembly bindings.
 
 See the [Proofs](../explanations/proofs.md) explanation for the step-by-step verification flow.
 
@@ -83,6 +86,26 @@ A verifier written for the single-proof model will fail to decode a protocol ver
 proof, so clients implementing verification outside the provided SDKs must handle both formats and
 select by protocol version.
 :::
+
+### Address tree sync proofs
+
+The two address-tree sync endpoints used for incremental address balance sync differ from the rest
+of the Platform surface. Neither takes a `prove` parameter; both always return proof data.
+
+[`getAddressesTrunkState`](../reference/dapi-endpoints-platform-endpoints.md#getaddressestrunkstate)
+returns a standard `Proof` message plus response metadata. Unlike every other proof-bearing
+endpoint, its proof is served from the latest available **checkpoint** rather than from current
+state. The returned `metadata.height` is therefore a checkpoint height that generally trails the
+chain tip, and the `quorumHash`, `signature`, `blockIdHash`, and `round` all correspond to that
+checkpoint height. A verifier must resolve the signing quorum at the checkpoint height rather than
+at the tip, or signature verification will fail.
+
+[`getAddressesBranchState`](../reference/dapi-endpoints-platform-endpoints.md#getaddressesbranchstate)
+is the further exception: its response carries neither a `Proof` message nor a `metadata` block,
+only a bare `merkProof` byte string. Consistency with the trunk proof is established by passing the
+trunk's `metadata.height` back as the request's `checkpoint_height`, rather than by anything in the
+response itself. Branch proofs are served only from checkpoints, so a height that no longer has a
+checkpoint returns an error.
 
 ## Related topics
 

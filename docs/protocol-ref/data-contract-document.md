@@ -401,13 +401,14 @@ schema](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/schema/m
 | ------- | ---------- |
 | `default`                   | Restricted - cannot be used (defined in DPP logic)  |
 | `propertyNames`             | Restricted - cannot be used (defined in DPP logic) |
-| `uniqueItems: true`         | `maxItems` must be defined (maximum: 100000) |
 | `pattern: <something>`      | `maxLength` must be defined (maximum: 50000) |
 | `format: <something>`       | `maxLength` must be defined (maximum: 50000) |
-| `$ref: <something>`         | **Disabled**<br>`$ref` can only reference `$defs`. Remote references not supported. |
+| `$ref: <something>`         | Internal references only - the value must begin with `#` (e.g. `#/$defs/myType`). External and remote references, and reference cycles, are rejected |
 | `if`, `then`, `else`, `allOf`, `anyOf`, `oneOf`, `not` | Disabled for data contracts |
-| `dependencies`              | Not supported. Use `dependentRequired` and `dependentSchema` instead |
-| `additionalItems`           | Not supported. Use `items: false` and `prefixItems` instead |
+| `dependencies`              | Not supported. Use `dependentRequired` instead |
+| `dependentSchemas`          | Not supported. Schema-based dependencies are not available in document schemas; use `dependentRequired` for property-presence dependencies |
+| `type: array`               | Only byte arrays are supported. `byteArray: true` must be defined; schemas for individual array items are not available |
+| `additionalItems`           | Not supported. Per-item array schemas (`items` / `prefixItems`) are not available in document schemas; constrain arrays with `minItems`, `maxItems`, `uniqueItems`, `contains`, and `byteArray` |
 | `patternProperties`         | Restricted - cannot be used for data contracts |
 | `pattern`                   | Accept only [RE2](https://github.com/google/re2/wiki/Syntax) compatible regular expressions (defined in DPP logic) |
 
