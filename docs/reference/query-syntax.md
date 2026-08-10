@@ -65,7 +65,7 @@ Valid fields consist of the indices defined for the document being queried. For 
 | BetweenExcludeLeft | Matches values between two bounds, excluding the lower bound |
 | BetweenExcludeRight | Matches values between two bounds, excluding the upper bound |
 
-##### Range operator constraints
+**Range operator constraints**
 
 - A query can have only one effective range clause. Use `Between` or one of its variants to express both bounds, or supply two complementary range clauses on the same field; Platform normalizes the pair to the equivalent `Between*` form
 - The `in` operator is only allowed for last two indexed properties
@@ -73,7 +73,13 @@ Valid fields consist of the indices defined for the document being queried. For 
 - Range operators are only allowed for the last two fields used in the where condition
 - Queries using range operators (including `in`, which is treated as a range) must also include an `orderBy` statement
 
-##### Operator aliases
+### Evaluation Operators
+
+| Name | Description |
+| :-: | - |
+| startsWith | Selects documents where the value of a field begins with the specified characters. Must include an `orderBy` statement. |
+
+### Operator aliases
 
 Operator names are matched against a fixed set of aliases:
 
@@ -83,14 +89,9 @@ Operator names are matched against a fixed set of aliases:
 | `in` | `In` |
 | `Between` | `between` |
 | `BetweenExclude*` | CamelCase, lowercase, and snake_case variants, such as `betweenExcludeLeft`, `betweenexcludeleft`, and `between_exclude_left` |
+| `startsWith` | `StartsWith`, `startswith`, `starts_with` |
 
 Any other spelling is rejected.
-
-### Evaluation Operators
-
-| Name | Description |
-| :-: | - |
-| startsWith | Selects documents where the value of a field begins with the specified characters. Must include an `orderBy` statement. Also accepted as `StartsWith`, `startswith`, and `starts_with` |
 
 ### Operator Examples
 
@@ -170,17 +171,19 @@ The query modifiers described here determine how query results will be sorted an
 
 | Modifier | Effect | Example |
 | - | - | - |
-| `limit` | Restricts the number of results returned. Defaults to 100 when omitted. The [maximum is also 100](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/config.rs#L16-L18) by default, although node operators may configure a different limit. | `limit: 10` |
+| `limit` | Restricts the number of documents returned. An omitted value or `0` uses the configured default (100 by default). Positive values cannot exceed the configured maximum (also 100 by default). See [Aggregate query limits](#aggregate-query-limits) for aggregate result modes. | `limit: 10` |
 | `orderBy` | Returns records sorted by the field(s) provided. The `orderBy` fields must match a consecutive run of the index's properties, read from the end of the index (for a compound index, sort by one or more of its trailing fields). Can only be used with `>`, `<`, `>=`, `<=`, `Between`, `BetweenExcludeBounds`, `BetweenExcludeLeft`, `BetweenExcludeRight`, and `startsWith` queries. | `orderBy: [['normalizedLabel', 'asc']]` |
 | `startAt` | Returns records beginning with the document ID provided | `startAt: '<document ID>'` |
 | `startAfter` | Returns records beginning after the document ID provided | `startAfter: '<document ID>'` |
-| `offset` | Not supported for document queries in v4.1.0. Use `startAt` or `startAfter` for pagination. | n/a |
+| `offset` | Present on the wire but currently rejected with `Unsupported`. Use `startAt` or `startAfter` for pagination. | n/a |
 
 ### Ordering compound indexes
 
 For indices composed of multiple fields ([example from the DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)), the sort order in an `orderBy` must either match the order defined in the data contract OR be the inverse order.
 
 ### Combining a cursor with a range operator
+
+This behavior applies when returning `DOCUMENTS`; aggregate result modes do not support cursors.
 
 When a `startAt` / `startAfter` cursor is combined with a range operator (`>`, `>=`, `<`, `<=`), the cursor narrows the effective range in the direction of the `orderBy` sort:
 
@@ -193,14 +196,17 @@ Ascending queries that combined a cursor with a `<` or `<=` clause previously [b
 
 ## Aggregate Queries
 
-Available since Platform 4.0.0, the [getDocuments](../reference/dapi-endpoints-platform-endpoints.md#getdocuments) v1 surface adds an aggregate-query mode. The same `where` / `orderBy` clauses described above still apply; an additional `select` projection (and optional `groupBy`) determines whether the request returns documents or aggregate values over the matched set.
+:::{versionadded} 4.0.0
+:::
 
-| `select`         | Returns |
-| ---------------- | ------- |
-| `DOCUMENTS`      | Matched documents (same as v0). |
-| `COUNT(*)`       | Number of documents matching the query. |
-| `SUM(<field>)`   | Sum of `<field>` across matching documents. |
-| `AVG(<field>)`   | `(count, sum)` pair the client divides to compute the average. |
+The [getDocuments](../reference/dapi-endpoints-platform-endpoints.md#getdocuments) v1 surface adds an aggregate-query mode. The same `where` / `orderBy` clauses described above still apply; an additional `select` projection (and optional `groupBy`) determines whether the request returns documents or aggregate values over the matched set.
+
+| `select` | Returns |
+| - | - |
+| `DOCUMENTS` | Matched documents (same as v0). |
+| `COUNT(*)` | Number of documents matching the query. |
+| `SUM(<field>)` | Sum of `<field>` across matching documents. |
+| `AVG(<field>)` | `(count, sum)` pair the client divides to compute the average. |
 
 `groupBy` is optional. With an empty `groupBy`, the response carries a single aggregate value; with a `groupBy` of one or two fields, the response carries one entry per group.
 
@@ -208,25 +214,25 @@ Aggregate queries impose extra schema requirements on the document type — `COU
 
 `SUM` / `AVG` integer values are returned as JS strings so JavaScript clients don't lose precision on values larger than `Number.MAX_SAFE_INTEGER`.
 
-### Limits on aggregate queries
+### Aggregate query limits
 
-The `limit` modifier behaves differently on the aggregate surface than it does when returning documents, and in some `select` × `groupBy` combinations it is rejected outright. On the wire, [`limit` is an optional field](https://github.com/dashpay/platform/blob/v4.1.0/packages/dapi-grpc/protos/platform/v0/platform.proto#L958-L1002):
+The `limit` modifier behaves differently in aggregate result modes than it does when returning `DOCUMENTS`, and some `select` × `groupBy` combinations reject it outright. On the wire, [`limit` is an optional field](https://github.com/dashpay/platform/blob/v4.1.0/packages/dapi-grpc/protos/platform/v0/platform.proto#L958-L1002):
 
 - Omit `limit` to request the server's default.
 - Send a positive value to request an explicit cap.
-- `limit: 0` is rejected with `InvalidLimit` in every `select` mode. A zero cap is structurally meaningless, so it is never treated as "no limit".
+- In aggregate result modes, `limit: 0` is rejected with `InvalidLimit`. When returning `DOCUMENTS`, `0` uses the configured default as described under [Query Modifiers](#query-modifiers).
 
 SDK bindings that must pass a numeric argument use `-1` as the server-default sentinel; any other negative value is rejected.
 
 :::{versionchanged} 4.1.0
-An effective limit of zero is now rejected with `InvalidLimit` rather than walking storage with a zero bound, which previously surfaced as an empty result set.
+In aggregate result modes, an effective limit of zero is now rejected with `InvalidLimit` rather than walking storage with a zero bound, which previously surfaced as an empty result set.
 :::
 
 How a positive `limit` is interpreted depends on `groupBy`:
 
 | `select` / `groupBy` | Effect of `limit` |
 | - | - |
-| `DOCUMENTS` | Caps the number of matched documents, as described under [Query Modifiers](#query-modifiers). |
+| `DOCUMENTS` | Uses the general behavior described under [Query Modifiers](#query-modifiers). |
 | `COUNT` with an empty `groupBy` | Rejected with `InvalidLimit`. An aggregate count is a single row by construction. |
 | `COUNT` grouped by an `In` field | Rejected with `InvalidLimit`. The `In` array is already capped at 100 entries, so the result is bounded. Narrow the `In` array instead. |
 | `COUNT` grouped by a range field | Caps the distinct-range walk, so the response carries at most `limit` groups. |
@@ -234,19 +240,16 @@ How a positive `limit` is interpreted depends on `groupBy`:
 
 `SUM` and `AVG` follow the same policy as `COUNT`: distinct walks apply the default/cap/reject-zero rules, and a zero limit is rejected.
 
-### Aggregate cursors
+#### Oversized limits with and without proofs
 
-`startAt` and `startAfter` are supported only with `DOCUMENTS`. Aggregate queries reject cursors; narrow the `where` range to query a different group range.
-
-### Proof limits
-
-On range-grouped aggregates, an oversized `limit` is handled differently depending on whether a proof is requested. With `prove: true`, a `limit` above the node's maximum (100 by default) is rejected with `InvalidLimit` so that proof bytes stay deterministic. With `prove: false`, the limit is silently clamped to the maximum instead — a caller requesting 500 groups receives at most 100 with no error, which can look like missing data.
+On range-grouped aggregates, an oversized `limit` is handled differently depending on whether a proof is requested. With `prove: true`, a `limit` above the node's configured maximum is rejected with `InvalidLimit` so that proof bytes stay deterministic. With `prove: false`, the limit is silently clamped to that maximum instead. With the default maximum of 100, for example, a caller requesting 500 groups receives at most 100 with no error, which can look like missing data.
 
 Compound carrier-aggregate shapes that pair an `In` field with a range field and request a proof cap the outer range walk at [10 entries](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-drive/src/query/drive_document_count_query/mod.rs#L127). This is a hard ceiling: a `limit` above it is rejected, and callers needing more results issue repeated queries over disjoint outer-range windows.
 
-### Unsupported aggregate operations
+### Other aggregate restrictions
 
-`HAVING`, `OFFSET`, `COUNT(<field>)`, `MIN`, `MAX`, and multi-projection `SELECT` are present on the wire but currently return `Unsupported`. Callers can encode them in builders ahead of server support landing, but evaluation rejects them today.
+- `startAt` and `startAfter` are supported only with `DOCUMENTS`. Aggregate result modes reject cursors; narrow the `where` range to query a different group range.
+- `HAVING`, `OFFSET`, `COUNT(<field>)`, `MIN`, `MAX`, and multi-projection `SELECT` are present on the wire but currently return `Unsupported`. Callers can encode them in builders ahead of server support landing, but evaluation rejects them today.
 
 ## Example query
 
@@ -294,5 +297,40 @@ for (const [id, doc] of results) {
   console.log(id.toString(), doc?.toJSON());
 }
 ```
+:::
+
+:::{tab-item} Evo SDK aggregate example
+The Evo SDK does not expose `select` directly. Each aggregate mode has its own method — `documents.count()`, `documents.sum(query, property)`, and `documents.average(query, property)`. `groupBy` is passed as part of the query.
+
+```javascript
+import { EvoSDK } from '@dashevo/evo-sdk';
+
+const sdk = EvoSDK.testnetTrusted();
+await sdk.connect();
+
+// COUNT grouped by a range field: one entry per distinct rating.
+// The `rating` range clause is what puts the query in grouped mode.
+const counts = await sdk.documents.count({
+  dataContractId: 'BdgTqaTAPYMyhp1WdeWdcvYSgoD7AuJ7tVCaCSXyQgyP',
+  documentTypeName: 'review',
+  where: [
+    ['resourceId', '==', 'dashnote'],
+    ['rating', 'between', [1, 5]],
+  ],
+  orderBy: [
+    ['rating', 'asc'],
+  ],
+  groupBy: ['rating'],
+});
+
+// Keys are hex-encoded index keys, not the raw field values, and
+// counts are BigInt. A small positive integer encodes as `0x80 | value`,
+// so rating 5 is the key "85".
+for (const [key, count] of counts) {
+  console.log(`${key - 80} stars: ${count.toString()} review(s)`);
+}
+```
+
+Both the document type's schema flags and the query's index must support the aggregate — this example needs `documentsCountable` plus `rangeCountable`, and a `[resourceId, rating]` index. An ungrouped `count()` returns a single-entry map keyed by the empty string, so read it with `counts.values().next().value`.
 :::
 ::::

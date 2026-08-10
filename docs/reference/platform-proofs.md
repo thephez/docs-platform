@@ -11,19 +11,16 @@ agreed upon by the validator network -- without trusting whoever supplied the da
 The most common way to obtain a proof is to request one over [DAPI](../explanations/dapi.md): set
 the optional `"prove": true` parameter on a [Platform gRPC
 endpoint](../reference/dapi-endpoints-platform-endpoints.md) and the response carries a `Proof`
-message instead of the plain result. Most Platform endpoints work this way. The two address-tree
-sync endpoints are different: they have no `prove` parameter and always return proof data. See
-[address tree sync proofs](#address-tree-sync-proofs) below. A proof does not depend on how it was
-retrieved, though -- it can be verified independently by any party that holds it.
+message instead of the plain result. A proof does not depend on how it was retrieved. It
+can be verified independently by any party that holds it.
 
 For the concepts behind proofs -- the two-layer GroveDB + consensus trust model, the verification
 flow, what can be proven, and asset lock proofs -- see [Proofs](../explanations/proofs.md).
 
 ## Proof structure
 
-A `Proof` is normally a single unified [GroveDB](https://github.com/dashpay/grovedb) proof plus the
-consensus signature that authenticates it. One response type is an exception: see [compacted
-address balance proofs](#compacted-address-balance-proofs) below. A `Proof` has six fields:
+A `Proof` is a unified [GroveDB](https://github.com/dashpay/grovedb) proof plus the consensus
+signature that authenticates it. It has six fields:
 
 | Field | Type | Description |
 | - | - | - |
@@ -46,6 +43,11 @@ address balance proofs](#compacted-address-balance-proofs) below. A `Proof` has 
   }
 }
 ```
+
+Two endpoint families depart from this standard structure: compacted address balance proofs use a
+version-dependent `grovedbProof` encoding, while address-tree sync endpoints use different
+proof-bearing response shapes. See [Proof internals](#proof-internals) and [Address tree sync
+verification](#address-tree-sync-verification), respectively.
 
 ## Verifying proofs
 
@@ -87,25 +89,20 @@ proof, so clients implementing verification outside the provided SDKs must handl
 select by protocol version.
 :::
 
-### Address tree sync proofs
+## Address tree sync verification
 
 The two address-tree sync endpoints used for incremental address balance sync differ from the rest
 of the Platform surface. Neither takes a `prove` parameter; both always return proof data.
 
 [`getAddressesTrunkState`](../reference/dapi-endpoints-platform-endpoints.md#getaddressestrunkstate)
-returns a standard `Proof` message plus response metadata. Unlike every other proof-bearing
-endpoint, its proof is served from the latest available **checkpoint** rather than from current
-state. The returned `metadata.height` is therefore a checkpoint height that generally trails the
-chain tip, and the `quorumHash`, `signature`, `blockIdHash`, and `round` all correspond to that
-checkpoint height. A verifier must resolve the signing quorum at the checkpoint height rather than
-at the tip, or signature verification will fail.
+returns a standard `Proof` message plus response metadata. Because the proof is anchored to the
+returned checkpoint height rather than the chain tip, a verifier must resolve the signing quorum
+at that checkpoint height or signature verification will fail.
 
 [`getAddressesBranchState`](../reference/dapi-endpoints-platform-endpoints.md#getaddressesbranchstate)
 is the further exception: its response carries neither a `Proof` message nor a `metadata` block,
-only a bare `merkProof` byte string. Consistency with the trunk proof is established by passing the
-trunk's `metadata.height` back as the request's `checkpoint_height`, rather than by anything in the
-response itself. Branch proofs are served only from checkpoints, so a height that no longer has a
-checkpoint returns an error.
+only a bare `merkProof` byte string with no signature of its own. See the endpoint references for
+the checkpoint workflow and request/response details.
 
 ## Related topics
 

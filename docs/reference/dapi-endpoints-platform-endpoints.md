@@ -1275,7 +1275,7 @@ Returns one aggregate count, or per-group counts when `group_by` is set. Require
 | `selects` | `[Select{ function: COUNT }]` | Yes | Projection. |
 | `group_by` | Repeated string | No | `[]`, `[in_field]`, `[range_field]`, or `[in_field, range_field]`. |
 
-`limit` is rejected for `group_by=[]` and `group_by=[in_field]` (the result is bounded by construction). `limit: 0` is rejected with `InvalidLimit` in every mode — omit the field to request the server default (SDK bindings that require a numeric argument use `-1`). `start_at` / `start_after` are not valid in this mode — paginate by narrowing the where clause. See [limits on aggregate queries](query-syntax.md#limits-on-aggregate-queries) for the full per-mode contract.
+`limit` is rejected for `group_by=[]` and `group_by=[in_field]` (the result is bounded by construction). `limit: 0` is rejected with `InvalidLimit` in every mode — omit the field to request the server default (SDK bindings that require a numeric argument use `-1`). `start_at` / `start_after` are not valid in this mode — paginate by narrowing the where clause. See [aggregate query limits](query-syntax.md#aggregate-query-limits) for the full per-mode contract.
 
 **Response shape**
 
@@ -1343,7 +1343,7 @@ Returns the sum of an integer field across matched documents, or per-group sums 
 | `selects` | `[Select{ function: SUM, field: "<prop>" }]` | Yes | `field` must name the summable property. |
 | `group_by` | Repeated string | No | Same shape rules as Count above. |
 
-`limit` follows the same rules as Count: rejected for `group_by=[]` and `group_by=[in_field]`, and `limit: 0` is rejected with `InvalidLimit` in every mode. `start_at` / `start_after` are not valid. See [limits on aggregate queries](query-syntax.md#limits-on-aggregate-queries).
+`limit` follows the same rules as Count: rejected for `group_by=[]` and `group_by=[in_field]`, and `limit: 0` is rejected with `InvalidLimit` in every mode. `start_at` / `start_after` are not valid. See [aggregate query limits](query-syntax.md#aggregate-query-limits).
 
 **Response shape**
 
@@ -1409,7 +1409,7 @@ Why `(count, sum)` instead of a single `average`? Returning the pair preserves f
 | `selects` | `[Select{ function: AVG, field: "<prop>" }]` | Yes | `field` must name the averageable property. |
 | `group_by` | Repeated string | No | Same shape rules as Count above. |
 
-`limit` follows the same rules as Count: rejected for `group_by=[]` and `group_by=[in_field]`, and `limit: 0` is rejected with `InvalidLimit` in every mode. `start_at` / `start_after` are not valid. See [limits on aggregate queries](query-syntax.md#limits-on-aggregate-queries).
+`limit` follows the same rules as Count: rejected for `group_by=[]` and `group_by=[in_field]`, and `limit: 0` is rejected with `InvalidLimit` in every mode. `start_at` / `start_after` are not valid. See [aggregate query limits](query-syntax.md#aggregate-query-limits).
 
 **Response shape**
 
@@ -4701,6 +4701,9 @@ their size limit. If the response contains 25 entries, page forward by re-issuin
 | `prove`              | Boolean | No       | Set to `true` to receive a proof that contains the requested changes |
 
 **Example Request and Response**
+
+The example response below was captured at protocol version 11. At protocol version 13 and above,
+proof responses use the [compacted proof encoding described in Platform Proofs](platform-proofs.md#compacted-address-balance-proofs).
 
 ::::{tab-set}
 :::{tab-item} gRPCurl
