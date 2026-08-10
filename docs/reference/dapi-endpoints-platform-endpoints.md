@@ -19,6 +19,30 @@ issues for API consumers.
 Platform gRPC requests are capped at 128 KiB encoded, reduced from 64 MiB. A larger request is rejected by the transport before it reaches the endpoint. The limit sits above every per-endpoint budget — the largest are [`getPathElements`](#getpathelements) at 64 KiB of path and key components and [`broadcastStateTransition`](#broadcaststatetransition) at 20 KiB — so requests within those bounds are unaffected.
 :::
 
+### Result limits and pagination
+
+Endpoints that return a list accept a `count` or `limit` field. Unless an endpoint states otherwise,
+the default and maximum are 100, although node operators may configure a different limit. A value of
+`0` or a value above the node's limit is rejected. Exceptions are documented in the relevant
+endpoint sections.
+
+Endpoints that accept an array of identifiers (for example identity IDs, token IDs, or ProTx hashes)
+accept at most 100 entries.
+
+A few endpoints accept a different range:
+
+| Endpoint | Accepted range |
+| -------- | -------------- |
+| [`getShieldedEncryptedNotes`](#getshieldedencryptednotes) | `count` is capped at 8,192 notes; `0` requests the maximum rather than being rejected |
+
+Some endpoints also cap the response independently of what the request asks for. These caps are
+applied by the server and cannot be raised by the caller:
+
+| Endpoint | Response cap |
+| -------- | ------------ |
+| [`getRecentAddressBalanceChanges`](#getrecentaddressbalancechanges) | 100 blocks |
+| [`getRecentCompactedAddressBalanceChanges`](#getrecentcompactedaddressbalancechanges) | 25 entries |
+
 ### Data Proofs and Metadata
 
 Platform gRPC endpoints can provide [proofs](https://github.com/dashpay/platform/blob/master/packages/dapi-grpc/protos/platform/v0/platform.proto#L142-L149) so the data returned for a request can be verified as being valid. When requesting proofs, the data requested will be encoded as part of the proof in the response. Proofs are supported in the [js-evo-sdk](https://github.com/dashpay/platform/tree/master/packages/js-evo-sdk) and via the low-level [dapi-grpc library](https://github.com/dashpay/platform/tree/master/packages/dapi-grpc).
@@ -42,30 +66,35 @@ Some [additional metadata](https://github.com/dashpay/platform/blob/master/packa
 
 [Masternode identities](../explanations/identity.md#masternode-identities) are created automatically
 by the system based on the [Core masternode registration transaction (protx)
-hash](inv:user:std#ref-txs-proregtx). Masternode identity IDs are created by converting the protx
-hash to base58. This can be done using an [online base58
+hash](inv:user:std#ref-txs-proregtx). The masternode *owner* identity ID is the protx hash itself, so
+it is created by converting the protx hash to base58. This can be done using an [online base58
 encoder](https://appdevtools.com/base58-encoder-decoder) or through JavaScript using the [bs58
 package](https://www.npmjs.com/package/bs58) as shown below. For gRPCurl, convert the protx hash to
 base64 instead. This can be done using an [online hex to base64
 encoder](https://base64.guru/converter/encode/hex).
+
+The *voter* and *operator* identities use derived IDs instead: `SHA-256(protx_hash || voting_address)`
+for the voter identity and `SHA-256(protx_hash || operator_public_key)` for the operator identity
+([source](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identifier/mod.rs#L5-L31)).
+Encoding the protx hash alone will not produce a voter or operator identity ID.
 
 ```{eval-rst}
 .. _reference-dapi-endpoints-platform-grpc-protx-to-id:
 ```
 
 :::{code-block} javascript
-:caption: Protx hash to identity ID
+:caption: Protx hash to owner identity ID
 
 const bs58 = require('bs58').default;
 
 const protx = '8eca4bcbb3a124ab283afd42dad3bdb2077b3809659788a0f1daffce5b9f001f';
 const base58Protx = bs58.encode(Buffer.from(protx, 'hex'));
-console.log(`Masternode identity id (base58): ${base58Protx}`);
+console.log(`Masternode owner identity id (base58): ${base58Protx}`);
 const base64Protx = Buffer.from(protx, 'hex').toString('base64');
-console.log(`Masternode identity id (base64): ${base64Protx}`);
+console.log(`Masternode owner identity id (base64): ${base64Protx}`);
 // Output:
-//  Masternode identity id (base58): AcPogCxrxeas7jrWYG7TnLHKbsA5KLHGfvg6oYgANZ8J
-//  Masternode identity id (base64): jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=
+//  Masternode owner identity id (base58): AcPogCxrxeas7jrWYG7TnLHKbsA5KLHGfvg6oYgANZ8J
+//  Masternode owner identity id (base64): jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=
 :::
 
 ## Contested Resource Endpoints
@@ -80,6 +109,15 @@ DPNS names.
 The endpoints in this section allow clients to check the status of active contests, retrieve
 contestants, and obtain the outcome.
 
+:::{versionadded} 4.1.0
+Serialized index and cursor values are now bounded. A request to `getContestedResources`,
+`getContestedResourceVotersForIdentity`, or `getContestedResourceVoteState` is rejected with
+`InvalidArgument` if it supplies more values than the contested index has properties, if any single
+encoded value exceeds 4 KiB, if the combined encoded size of all index and cursor values in the
+request exceeds 4 KiB, if a value nests arrays or maps more than 64 levels deep, or if a value has
+trailing bytes after its encoding. Previously these values were decoded without bounds.
+:::
+
 ### getContestedResources
 
 Retrieves the contested resources for a specific contract, document type, and index.
@@ -92,11 +130,11 @@ Retrieves the contested resources for a specific contract, document type, and in
 | ---------------------- | -------- | -------- | --------------------------------------------------------------------------- |
 | `contract_id`          | Bytes    | Yes      | The ID of the data contract associated with the contested resources         |
 | `document_type_name`   | String   | Yes      | The name of the document type associated with the contested resources       |
-| `index_name`           | String   | Yes      | The name of the index used to query the contested resources                 |
+| `index_name`           | String   | Yes      | The name of the document type's contested index. A document type has at most one contested index; naming any other index is rejected with `InvalidArgument` |
 | `start_index_values`   | Array    | No       | Start values for index, for pagination                                      |
 | `end_index_values`     | Array    | No       | End values for index, for pagination                                        |
 | `start_at_value_info`  | Object   | No       | Start value information for pagination                                      |
-| `count`                | Integer  | No       | Number of contested resources to return                                     |
+| `count`                | Integer  | No       | Number of contested resources to return. See [Result limits and pagination](#result-limits-and-pagination) |
 | `order_ascending`      | Boolean  | No       | Sort order for results                                                      |
 | `prove`                | Boolean  | No       | Set to `true` to receive a proof that contains the requested contested resources |
 
@@ -157,7 +195,7 @@ Retrieves the voting record of a specific identity.
 | Name                           | Type     | Required | Description |
 | ------------------------------ | -------- | -------- | ------------|
 | `identity_id`                  | Bytes    | Yes      | The ID of the identity whose votes are being requested |
-| `limit`                        | Integer  | No       | Maximum number of results to return |
+| `limit`                        | Integer  | No       | Maximum number of results to return. See [Result limits and pagination](#result-limits-and-pagination) |
 | `offset`                       | Integer  | No       | Offset for pagination |
 | `order_ascending`              | Boolean  | No       | Sort order for results |
 | `start_at_vote_poll_id_info`   | Object   | No       | Start poll ID information for pagination |
@@ -271,6 +309,11 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+Each `voteChoice` carries a `voteChoiceType` of `TOWARDS_IDENTITY`, `ABSTAIN`, or `LOCK`. Because
+`TOWARDS_IDENTITY` is the proto3 default it is omitted from JSON output, so the entries above are all
+`TOWARDS_IDENTITY` votes. `identityId` is present only for `TOWARDS_IDENTITY`; abstain and lock votes
+carry no `identityId`.
+
 ### getContestedResourceVotersForIdentity
 
 Retrieves the voters for a specific identity associated with a contested resource.
@@ -287,7 +330,7 @@ Retrieves the voters for a specific identity associated with a contested resourc
 | `index_values`         | Array    | Yes      | The values used to query the contested resource                             |
 | `contestant_id`        | Bytes    | Yes      | The ID of the identity for which to retrieve voters                         |
 | `start_at_identifier_info` | Object | No      | Start identifier information for pagination                                 |
-| `count`                | Integer  | No       | Number of results to return                                                 |
+| `count`                | Integer  | No       | Number of results to return. See [Result limits and pagination](#result-limits-and-pagination) |
 | `order_ascending`      | Boolean  | No       | Sort order for results                                                      |
 | `prove`                | Boolean  | No       | Set to `true` to receive a proof that contains the requested voters         |
 
@@ -359,13 +402,33 @@ Retrieves the state of a vote for a specific contested resource.
 | ------------------------------------------------ | -------- | -------- | ------------------------------------------------------------------------------------------------------- |
 | `contract_id`                                    | Bytes    | Yes      | The ID of the data contract associated with the contested resource |
 | `document_type_name`                             | String   | Yes      | The name of the document type associated with the contested resource |
-| `index_name`                                     | String   | Yes      | The name of the index used to query the contested resource |
-| `index_values`                                   | Array    | Yes      | The values used to query the contested resource. |
+| `index_name`                                     | String   | Yes      | The name of the document type's contested index. A document type has at most one contested index; naming any other index is rejected with `InvalidArgument` |
+| `index_values`                                   | Array    | Yes      | The values used to query the contested resource. Must contain exactly one value per contested index property. |
 | `result_type`                                    | Enum     | Yes      | Specifies the result type to return: `DOCUMENTS`, `VOTE_TALLY`, or `DOCUMENTS_AND_VOTE_TALLY` |
 | `allow_include_locked_and`<br>`_abstaining_vote_tally` | Boolean  | No       | Include votes that are locked or abstaining in the tally |
 | `start_at_identifier_info`                       | Object   | No       | Start identifier information for pagination |
-| `count`                                          | Integer  | No       | Number of results to return |
+| `count`                                          | Integer  | No       | Number of results to return. See [Result limits and pagination](#result-limits-and-pagination) |
 | `prove`                                          | Boolean  | No       | Set to `true` to receive a proof that contains the requested vote state |
+
+**Response Object** (`contestedResourceContenders`)
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `contenders` | Array | Contenders in the contest. Each has an `identifier`, an optional `voteCount`, and an optional serialized `document` |
+| `abstainVoteTally` | Integer | Number of abstain votes. Returned only when `allow_include_locked_and_abstaining_vote_tally` is `true` |
+| `lockVoteTally` | Integer | Number of lock votes. Returned only when `allow_include_locked_and_abstaining_vote_tally` is `true` |
+| `finishedVoteInfo` | Object | Present only once the contest has concluded. See below |
+
+When the contest has finished, `finishedVoteInfo` contains:
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `finishedVoteOutcome` | Enum | `TOWARDS_IDENTITY`, `LOCKED`, or `NO_PREVIOUS_WINNER`. `TOWARDS_IDENTITY` is the proto3 default and is omitted from JSON output |
+| `wonByIdentityId` | Bytes | The winning identity. Present only when the outcome is `TOWARDS_IDENTITY` |
+| `finishedAtBlockHeight` | String (uint64) | Platform block height at which the contest concluded |
+| `finishedAtCoreBlockHeight` | Integer | Core block height at which the contest concluded |
+| `finishedAtBlockTimeMs` | String (uint64) | Block time in milliseconds at which the contest concluded |
+| `finishedAtEpoch` | Integer | Epoch in which the contest concluded |
 
 **Example Request and Response**
 
@@ -427,10 +490,17 @@ Retrieves vote polls that will end within a specified date range.
 | ------------------ | -------- | -------- | ----------- |
 | `start_time_info`  | Object   | No       | Start time information for filtering vote polls |
 | `end_time_info`    | Object   | No       | End time information for filtering vote polls |
-| `limit`            | Integer  | No       | Maximum number of results to return |
-| `offset`           | Integer  | No       | Offset for pagination |
+| `limit`            | Integer  | No       | Maximum number of results to return. See [Result limits and pagination](#result-limits-and-pagination) |
+| `offset`           | Integer  | No       | Offset for pagination. Cannot be combined with `prove`; a proof request with a non-zero `offset` is rejected |
 | `ascending`        | Boolean  | No       | Sort order for results |
 | `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested vote polls |
+
+**Response Object**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `votePollsByTimestamps` | Array | Vote polls grouped by end timestamp. Each entry has a `timestamp` and a `serializedVotePolls` array holding the serialized vote polls ending at that time |
+| `finishedResults` | Boolean | `true` when the returned page is the last one for the requested range |
 
 **Example Request and Response**
 
@@ -1010,6 +1080,8 @@ The request envelope is `oneof version { v0; v1; }`. Pick a version per call:
 | `where_clauses` (v1) / `where` (v0) | Typed (v1) or CBOR bytes (v0) | No | Filter clauses. See [Query Syntax](../reference/query-syntax.md). |
 | `order_by` | Typed (v1) or CBOR bytes (v0) | No | Sort order. See [Query Syntax](../reference/query-syntax.md). |
 | `prove` | Boolean | No | Return a proof instead of data. See [Platform proofs](../reference/platform-proofs.md). |
+| `having` (v1) | Typed | No | Aggregate filters on grouped results. Present on the wire but currently rejected with `Unsupported`. See [Query Syntax](../reference/query-syntax.md). |
+| `offset` (v1) | Integer | No | Row-based pagination offset. Present on the wire but currently rejected with `Unsupported`. Use `start_at` / `start_after` instead. See [Query Syntax](../reference/query-syntax.md). |
 
 For v1, see also the [doctype-level aggregate flags](../protocol-ref/data-contract-document.md#aggregate-query-flags), which control whether a document type supports the `COUNT` / `SUM` / `AVG` modes below.
 
@@ -1021,7 +1093,7 @@ Returns matched documents.
 
 | Name | Type | Required | Description |
 | ---- | ---- | -------- | ----------- |
-| `limit` | Integer | No | Maximum number of documents to return. |
+| `limit` | Integer | No | Maximum number of documents to return. A value of `0` or an omitted value uses the configured default of 100; the [maximum is also 100](query-syntax.md#query-modifiers) by default, and a larger value is rejected with `InvalidLimit`. |
 | `start_at` _or_ `start_after` | Bytes | No | Cursor — start at / after this document ID. |
 
 For v1, `selects` may be omitted (defaults to `[Select{ function: DOCUMENTS }]`) or set explicitly.
@@ -1712,6 +1784,10 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+`balanceAndRevision` also carries a `revision` field. The example above was captured for an identity
+at revision `0`, and proto3 omits zero-valued scalars from JSON output, so the field does not appear.
+An identity that has been updated returns it alongside `balance`, quoted as a string.
+
 ### getIdentityByNonUniquePublicKeyHash
 
 :::{versionadded} 2.0.0
@@ -1926,7 +2002,7 @@ Current identity contract nonce: 0
 | ------- | ------- | -------- | ------------ |
 | `identity_id`  | Bytes | Yes | An identity ID<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids)
 | `request_type` | [KeyRequestType](#request-types) | Yes | Request all keys (`all_keys`), specific keys (`specific_keys`), search for keys (`search_key`)
-| `limit` | Integer  | No      | The maximum number of keys to return |
+| `limit` | Integer  | No      | The maximum number of keys to return. Values above 100 are rejected with `InvalidLimit` |
 | `offset` | Integer | No      | The offset for pagination through the keys |
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested identity
 
@@ -1954,7 +2030,7 @@ To request specific keys for an identity, use the `specific_keys` request type w
 
 **Search keys**
 
-To search for identity keys, use the `search_keys` request type. The options for `security_Level_map` are "CURRENT_KEY_OF_KIND_REQUEST" and "ALL_KEYS_OF_KIND_REQUEST":
+To search for identity keys, use the `search_key` request type. The options for `security_level_map` are "CURRENT_KEY_OF_KIND_REQUEST" and "ALL_KEYS_OF_KIND_REQUEST":
 
 ```json
 "search_key": {
@@ -2166,7 +2242,7 @@ Retrieves the balances for a list of identities.
 
 | Name      | Type    | Required | Description                                              |
 |-----------|---------|----------|----------------------------------------------------------|
-| `ids`     | Array   | No       | An array of identity IDs for which balances are requested<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `ids`     | Array   | No       | An array of identity IDs for which balances are requested. At most 100 IDs per call; more returns `InvalidLimit`<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
 | `prove`   | Boolean | No       | Set to `true` to receive a proof containing the requested balances |
 
 **Example Request and Response**
@@ -2197,12 +2273,12 @@ grpcurl -proto protos/platform/v0/platform.proto \
     "identitiesBalances": {
       "entries": [
         {
-          "identity_id": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
-          "balance": 1000000
+          "identityId": "jspLy7OhJKsoOv1C2tO9sgd7OAlll4ig8dr/zlufAB8=",
+          "balance": "1000000"
         },
         {
-          "identity_id": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14=",
-          "balance": 2500000
+          "identityId": "dUuJ2ujbIPxM7l462wexRtfv5Qimb6Co4QlGdbnao14=",
+          "balance": "2500000"
         }
       ]
     },
@@ -2228,7 +2304,7 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 | Name                 | Type                    | Required | Description |
 |----------------------|-------------------------|----------|-------------|
-| `identities_ids`     | Array                   | Yes      | An array of identity IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `identities_ids`     | Array                   | Yes      | An array of identity IDs. At most 100 IDs per call; more returns `InvalidLimit`<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
 | `contract_id`        | Bytes                   | Yes      | The ID of the contract |
 | `document_type_name` | String                  | No       | Name of the document type |
 | `purposes`           | Array of [KeyPurpose](#key-purposes) | No | Array of purposes for which keys are requested |
@@ -2377,7 +2453,7 @@ Retrieves information about multiple groups within a contract, including their m
 | `start_at_group_contract_position`        | Object  | No       | Filtering options for retrieving groups |
 | `start_at_group_contract_position`<br>`.start_group_contract_position` | UInt32  | No       | The position of the first group to retrieve |
 | `start_at_group_contract_position`<br>`.start_group_contract_position_included` | Boolean | No       | Whether the start position should be included in the results |
-| `count`                                   | UInt32  | No       | The maximum number of groups to retrieve |
+| `count`                                   | UInt32  | No       | The maximum number of groups to retrieve. See [Result limits and pagination](#result-limits-and-pagination) |
 | `prove`                                   | Boolean | No       | Set to `true` to receive a proof that contains the requested group information |
 
 **Example Request and Response**
@@ -2468,7 +2544,7 @@ Retrieves a list of actions performed by a specific group within a contract.
 | `start_at_action_id`              | Object  | No       | Filtering options for retrieving actions |
 | `start_at_action_id.`<br>`start_action_id` | Bytes  | No       | The action ID to start retrieving from |
 | `start_at_action_id.`<br>`start_action_id_included` | Boolean | No | Whether the start action should be included in the results |
-| `count`                           | UInt32  | No       | The maximum number of actions to retrieve |
+| `count`                           | UInt32  | No       | The maximum number of actions to retrieve. See [Result limits and pagination](#result-limits-and-pagination) |
 | `prove`                           | Boolean | No       | Set to `true` to receive a proof that contains the requested group actions |
 
 **Returns**: A list of group actions or a cryptographic proof. The response message contains details about actions performed by a group, including various event types related to token operations, document updates, contract updates, and emergency actions. The list of possible actions is shown in the table below:
@@ -2790,6 +2866,18 @@ Retrieves current quorum details, including validator sets and metadata for each
 **Returns**: Information about current quorums, including quorum hashes, validator sets, and
 the last block proposer.
 
+**Response Object**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `quorumHashes` | Array of Bytes | Hashes of all current quorums |
+| `currentQuorumHash` | Bytes | Hash of the quorum currently responsible for signing |
+| `validatorSets` | Array | One entry per quorum. Each has a `quorumHash`, a `coreHeight`, a `members` array, and a `thresholdPublicKey` |
+| `validatorSets[].members[].proTxHash` | Bytes | ProTx hash of the validator |
+| `validatorSets[].members[].nodeIp` | String | IP address of the validator |
+| `validatorSets[].members[].isBanned` | Boolean | Whether the validator is banned. Omitted from JSON output when `false` |
+| `lastBlockProposer` | Bytes | ProTx hash of the validator that proposed the most recent block |
+
 **Parameters**:
 
 This endpoint does not require any parameters.
@@ -2865,7 +2953,7 @@ Retrieves the number of blocks proposed by the specified evonodes in a certain e
 | Name               | Type     | Required | Description |
 | ------------------ | -------- | -------- | ----------- |
 | `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
-| `ids`              | Array    | Yes    | An array of evonode IDs for which proposed blocks are retrieved IDs<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
+| `ids`              | Array    | Yes    | An array of evonode IDs for which proposed blocks are retrieved. At most 100 IDs per call, each exactly 32 bytes<br>Note: masternode IDs are created uniquely as described in the [masternode identity IDs section](#masternode-identity-ids) |
 | `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
 
 **Example Request and Response**
@@ -2929,9 +3017,9 @@ Retrieves the number of blocks proposed by evonodes for a specified epoch.
 | Name               | Type     | Required | Description |
 | ------------------ | -------- | -------- | ----------- |
 | `epoch`            | Integer  | No       | The epoch to query for. If not set, the current epoch will be used |
-| `limit`            | Integer  | No       | Maximum number of evonodes proposed epoch blocks to return |
-| `start_after`      | Bytes    | No       | Retrieve results starting after this document |
-| `start_at`         | Bytes    | No       | Retrieve results starting at this document |
+| `limit`            | Integer  | No       | Maximum number of evonodes proposed epoch blocks to return. See [Result limits and pagination](#result-limits-and-pagination) |
+| `start_after`      | Bytes    | No       | Retrieve results starting after this document. Mutually exclusive with `start_at` |
+| `start_at`         | Bytes    | No       | Retrieve results starting at this document. Mutually exclusive with `start_after` |
 | `prove`            | Boolean  | No       | Set to `true` to receive a proof that contains the requested data |
 
 **Example Request and Response**
@@ -2988,8 +3076,8 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ----------- |
-| `start_epoch` | Integer | No | First epoch being requested
-| `count` | Integer | No | Number of records to request
+| `start_epoch` | Integer | No | First epoch being requested. Must be below 65535, and `start_epoch` plus `count` must also stay below 65535; otherwise the request is rejected with `InvalidArgument`
+| `count` | Integer | No | Number of records to request. The effective ceiling is 65534 minus `start_epoch`
 | `ascending` | Boolean | No | Set to `true` to query in ascending order. Results are returned in descending order by default.
 | `prove` | Boolean | No | Set to `true` to receive a proof that contains the requested data contracts
 
@@ -3386,8 +3474,8 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 | Name    | Type    | Required | Description |
 | ------- | ------- | -------- | ------------ |
-| `start_pro_tx_hash` | Bytes | No | Protx hash of an evonode
-| `count` | Integer | No       | Number of records to request
+| `start_pro_tx_hash` | Bytes | No | Protx hash of an evonode. Must be represented in base64 if present, and must be exactly 32 bytes; any other length is rejected with `InvalidArgument`
+| `count` | Integer | No       | Number of records to request. Must be below 65535
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested protocol version vote status
 
 **Example Request and Response**
@@ -3447,6 +3535,38 @@ Retrieves status information related to Dash Platform.
 
 **Returns**: Status details including version, node, chain, network, and state sync information, or a cryptographic proof.
 
+**Response Object**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `version.software.dapi` | String | DAPI version |
+| `version.software.drive` | String | Drive version. Missing if Drive is not responding |
+| `version.software.tenderdash` | String | Tenderdash version. Missing if Tenderdash is not responding |
+| `version.protocol.tenderdash.p2p` | Integer | Tenderdash P2P protocol version |
+| `version.protocol.tenderdash.block` | Integer | Tenderdash block protocol version |
+| `version.protocol.drive.latest` | Integer | Highest protocol version supported by this node |
+| `version.protocol.drive.current` | Integer | Protocol version used in the current epoch |
+| `version.protocol.drive.next_epoch` | Integer | Protocol version that will be used in the next epoch |
+| `node.id` | Bytes | Platform node ID |
+| `node.proTxHash` | Bytes | Evonode ProTx hash. Absent if the node is a full node |
+| `chain.catchingUp` | Boolean | `true` while the node is still syncing. Omitted from JSON output when `false` |
+| `chain.latestBlockHash` | Bytes | Hash of the most recent block |
+| `chain.latestAppHash` | Bytes | Application hash of the most recent block |
+| `chain.latestBlockHeight` | String (uint64) | Height of the most recent block |
+| `chain.earliestBlockHash` | Bytes | Hash of the earliest retained block |
+| `chain.earliestAppHash` | Bytes | Application hash of the earliest retained block |
+| `chain.earliestBlockHeight` | String (uint64) | Height of the earliest retained block |
+| `chain.maxPeerBlockHeight` | String (uint64) | Highest block height reported by peers |
+| `chain.coreChainLockedHeight` | Integer | Latest known core height in consensus. Missing if Drive is not responding |
+| `network.chainId` | String | Name of the network |
+| `network.peersCount` | Integer | Number of connected peers |
+| `network.listening` | Boolean | Whether the node is accepting inbound connections |
+| `stateSync` | Object | State sync progress. Empty when no state sync is in progress. Members are `totalSyncedTime`, `remainingTime`, `totalSnapshots`, `chunkProcessAvgTime`, `snapshotHeight`, `snapshotChunksCount`, `backfilledBlocks`, and `backfillBlocksTotal` |
+| `time.local` | String (uint64) | Node's local time in milliseconds |
+| `time.block` | String (uint64) | Most recent block time. Missing if Drive is not responding |
+| `time.genesis` | String (uint64) | Genesis time. Missing if Drive is not responding |
+| `time.epoch` | Integer | Current epoch. Missing if Drive is not responding |
+
 **Parameters**:
 
 This endpoint does not require any parameters.
@@ -3473,9 +3593,9 @@ grpcurl -proto protos/platform/v0/platform.proto \
   "v0": {
     "version": {
       "software": {
-        "dapi": "1.2.0",
-        "drive": "1.2.0",
-        "tenderdash": "1.2.1"
+        "dapi": "4.1.0",
+        "drive": "4.1.0",
+        "tenderdash": "1.6.0"
       },
       "protocol": {
         "tenderdash": {
@@ -3483,36 +3603,37 @@ grpcurl -proto protos/platform/v0/platform.proto \
           "block": 14
         },
         "drive": {
-          "latest": 1,
-          "current": 1
+          "latest": 13,
+          "current": 13,
+          "nextEpoch": 13
         }
       }
     },
     "node": {
-      "id": "H/vx0yVB3Lj1VVMFKVcEqf+a3CQ=",
-      "proTxHash": "LkhlGi6cDLTy+3q4dAYapK8M0otZaVYx5qNa85UO9vs="
+      "id": "QbMI9zfKnjn2e1UxWJAxmKiMUW4=",
+      "proTxHash": "s7V0hXG2D+mtEScV1qUXJdblpSqcOvX9NqFyTPUNhi8="
     },
     "chain": {
-      "latestBlockHash": "XY1U/Ay7DCdZqJJwM4sXSw1OFdBIbnVYFc9sJep1hNw=",
-      "latestAppHash": "9wq6IzU4AjuL27HybKqvWOOPCbnpBJQjk6q64nsd7i8=",
-      "latestBlockHeight": "7768",
+      "latestBlockHash": "pdWnS2qZPt4KW1E5AFojX3FMamipgcXLLoeAt72vfEI=",
+      "latestAppHash": "gK9aXNoc9ARLegnhv210Z70Yjnmphf2jANqHBdPMcpk=",
+      "latestBlockHeight": "505427",
       "earliestBlockHash": "CPoCwn7AOQujAeT8fj1+rbNQyBk+PmKgk2iXBuOiC/o=",
       "earliestAppHash": "vwzLnKBxugGubmegwJD5eAPSbVbWddzVExeBy8rI7I8=",
       "earliestBlockHeight": "1",
-      "maxPeerBlockHeight": "7768",
-      "coreChainLockedHeight": 1099682
+      "maxPeerBlockHeight": "505427",
+      "coreChainLockedHeight": 1531571
     },
     "network": {
       "chainId": "dash-testnet-51",
-      "peersCount": 61,
+      "peersCount": 151,
       "listening": true
     },
     "stateSync": {},
     "time": {
-      "local": "1725890999274",
-      "block": "1725890829092",
+      "local": "1786373846",
+      "block": "1786373752393",
       "genesis": "0",
-      "epoch": 1260
+      "epoch": 18061
     }
   }
 }
@@ -3583,7 +3704,7 @@ Retrieves token balances for a specified identity.
 | Name         | Type     | Required | Description |
 |-------------|---------|----------|-------------|
 | `identity_id` | Bytes   | Yes      | The ID of the identity for which token balances are requested |
-| `token_ids`  | Array of Bytes | No | List of token IDs to filter the balances |
+| `token_ids`  | Array of Bytes | No | List of token IDs to filter the balances. At most 100 entries |
 | `prove`      | Boolean | No       | Set to `true` to receive a proof containing the requested token balances |
 
 **Example Request and Response**
@@ -3646,7 +3767,7 @@ Retrieves the token balances for a list of specified identities.
 | Name         | Type     | Required | Description |
 |-------------|---------|----------|-------------|
 | `token_id`    | Bytes   | Yes      | The ID of the token whose balances are requested |
-| `identity_ids` | Array of Bytes | No      | A list of identity IDs to filter the balances |
+| `identity_ids` | Array of Bytes | No      | A list of identity IDs to filter the balances. At most 100 entries |
 | `prove`        | Boolean | No      | Set to `true` to receive a proof that contains the requested token balances |
 
 **Example Request and Response**
@@ -3710,7 +3831,7 @@ Retrieves information about specified tokens for a given identity.
 | Name         | Type     | Required | Description |
 |-------------|---------|----------|-------------|
 | `identity_id` | Bytes   | Yes      | The ID of the identity whose token information is requested |
-| `token_ids`   | Array of Bytes | No      | A list of token IDs to retrieve information for |
+| `token_ids`   | Array of Bytes | No      | A list of token IDs to retrieve information for. At most 100 entries |
 | `prove`       | Boolean | No      | Set to `true` to receive a proof that contains the requested token information |
 
 **Example Request and Response**
@@ -3775,7 +3896,7 @@ Retrieves token information for a list of specified identities.
 | Name         | Type     | Required | Description |
 |-------------|---------|----------|-------------|
 | `token_id`    | Bytes   | Yes      | The ID of the token whose information is requested |
-| `identity_ids` | Array of Bytes | No      | A list of identity IDs to retrieve token information for |
+| `identity_ids` | Array of Bytes | No      | A list of identity IDs to retrieve token information for. At most 100 entries |
 | `prove`        | Boolean | No      | Set to `true` to receive a proof that contains the requested token information |
 
 **Example Request and Response**
@@ -3896,7 +4017,7 @@ This endpoint provides pricing data for tokens that support direct purchases. Ea
 
 | Name        | Type     | Required | Description |
 |-------------|----------|----------|-------------|
-| `token_ids` | Array    | Yes      | List of 32-byte token IDs to retrieve pricing for. Must be unique and non-empty. |
+| `token_ids` | Array    | Yes      | List of 32-byte token IDs to retrieve pricing for. Must be non-empty and contain at most 100 entries. |
 | `prove`     | Boolean  | No       | Set to `true` to receive a proof that contains the requested pricing data |
 
 **Example Request and Response**
@@ -4065,7 +4186,7 @@ Retrieves pre-programmed distributions of a specified token.
 | `start_at_info.start_time_ms` | UInt64  | No       | Start timestamp (in milliseconds) for filtering distributions |
 | `start_at_info.start_recipient` | Bytes   | No       | The recipient ID to start retrieving distributions from |
 | `start_at_info.start_recipient_included` | Boolean | No       | Whether the start recipient should be included in the results |
-| `limit`                   | UInt32  | No       | Maximum number of results to return |
+| `limit`                   | UInt32  | No       | Maximum number of results to return. See [Result limits and pagination](#result-limits-and-pagination) |
 | `prove`                   | Boolean | No       | Set to `true` to receive a proof that contains the requested token distributions |
 
 **Example Request and Response**
@@ -4147,7 +4268,7 @@ Retrieves the statuses of specified tokens.
 
 | Name        | Type     | Required | Description |
 |------------|---------|----------|-------------|
-| `token_ids`  | Array of Bytes | Yes      | A list of token IDs to retrieve statuses for |
+| `token_ids`  | Array of Bytes | Yes      | A list of token IDs to retrieve statuses for. At most 100 entries |
 | `prove`      | Boolean | No      | Set to `true` to receive a proof that contains the requested token statuses |
 
 **Example Request and Response**
@@ -4325,7 +4446,7 @@ Returns balance and nonce information for multiple addresses.
 
 | Name        | Type             | Required | Description |
 |-------------|------------------|----------|-------------|
-| `addresses` | Array of Bytes   | Yes      | The addresses to query |
+| `addresses` | Array of Bytes   | Yes      | The addresses to query. At most 100 addresses per request; exceeding this returns an invalid-limit error |
 | `prove`     | Boolean          | No       | Set to `true` to receive a proof that contains the requested address info |
 
 **Example Request and Response**
@@ -4387,7 +4508,10 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 ### getAddressesTrunkState
 
-Returns a cryptographic proof of the trunk state of the address balance tree. Used with `getAddressesBranchState` to perform incremental sync of address balances.
+Returns a cryptographic proof of the trunk state of the address balance tree. Used with [`getAddressesBranchState`](#getaddressesbranchstate) to perform incremental sync of address
+balances.
+
+The trunk proof is served from the latest available checkpoint rather than from current state, so the returned `metadata.height` is a checkpoint height that generally trails the chain tip. The quorum signature, `blockIdHash`, and round in the proof correspond to that checkpoint height as well, so verifiers must resolve the signing quorum at the checkpoint height rather than at the tip. Pass the returned height as `checkpoint_height` on follow-up [`getAddressesBranchState`](#getaddressesbranchstate) calls; branch proofs are served only from checkpoints, so a height that no longer has a checkpoint returns an error.
 
 **Returns**: A cryptographic proof of the address tree trunk state.
 
@@ -4479,9 +4603,16 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+Use the `checkpoint_height` from the preceding `getAddressesTrunkState` response to ensure the
+branch proof corresponds to the same checkpoint.
+
 ### getRecentAddressBalanceChanges
 
 Returns address balance changes starting from a specified block height. Supports both inclusive and exclusive start heights for incremental sync.
+
+A single call returns changes for at most 100 blocks. If the response contains 100 blocks, more
+changes may remain: page forward by re-issuing the call with `start_height` set to the highest
+`blockHeight` returned and `start_height_exclusive` set to `true`.
 
 **Returns**: A list of address balance changes grouped by block, or a cryptographic proof.
 
@@ -4556,6 +4687,10 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 Returns compacted address balance changes from a specified block height. Compacted changes merge multiple operations per address into a single entry per block range, reducing response size for bulk sync.
 
+A single call returns at most 25 compacted block-range entries, a bound chosen to keep proofs within
+their size limit. If the response contains 25 entries, page forward by re-issuing the call with
+`start_block_height` set past the `endBlockHeight` of the last entry returned.
+
 **Returns**: A list of compacted address balance changes grouped by block range, or a cryptographic proof.
 
 **Parameters**:
@@ -4603,6 +4738,15 @@ grpcurl -proto protos/platform/v0/platform.proto \
 :::
 ::::
 
+The example above was captured for a range with no balance changes, so
+`compactedAddressBalanceUpdateEntries` is empty. When changes are present it contains a
+`compactedBlockChanges` array; each element has a `startBlockHeight`, an `endBlockHeight`, and a
+`changes` array. Each entry in `changes` carries an `address` plus exactly one of `setCredits` (the
+final balance for the range) or `addToCreditsOperations` (the individual adds, each tagged with its
+block height, so a client can apply only those above its own sync height). Note that these names
+differ from the `setBalance` and `addToBalance` fields used by
+[`getRecentAddressBalanceChanges`](#getrecentaddressbalancechanges).
+
 ## Shielded Transaction Endpoints
 
 :::{versionadded} 4.0.0
@@ -4618,9 +4762,15 @@ Returns encrypted notes from the shielded pool for a specified range. Clients us
 
 | Name          | Type    | Required | Description |
 |---------------|---------|----------|-------------|
-| `start_index` | Integer | Yes      | The index of the first note to retrieve |
-| `count`       | Integer | Yes      | The number of notes to retrieve |
+| `start_index` | Integer | Yes      | The index of the first note to retrieve. Must be chunk-aligned: a multiple of the note commitment tree's MMR chunk size (2048). A non-aligned value is rejected with `InvalidArgument` |
+| `count`       | Integer | Yes      | The number of notes to retrieve, capped at 8,192 (4 MMR chunks of 2,048 notes each). A `count` of `0` or one above the cap is silently treated as a request for the maximum rather than rejected |
 | `prove`       | Boolean | No       | Set to `true` to receive a proof that contains the requested notes |
+
+Because `start_index` must land on an MMR chunk boundary, paginate by advancing `start_index` in
+multiples of the chunk size rather than by the number of notes actually returned.
+
+A response containing fewer notes than requested means the end of the note commitment tree was
+reached, not that the response was truncated. Stop paginating when this occurs.
 
 **Example Request and Response**
 
@@ -4752,6 +4902,10 @@ Returns the most recent commitment tree anchor for the shielded pool.
 | Name    | Type    | Required | Description |
 |---------|---------|----------|-------------|
 | `prove` | Boolean | No       | Set to `true` to receive a proof that contains the requested anchor |
+
+If no anchor has been recorded on the chain yet, the unproved response returns an all-zero 32-byte
+`anchor` as an "absent" sentinel rather than omitting the field or returning an error. Treat an
+all-zero anchor as "no anchor available" and do not use it for proof generation.
 
 **Example Request and Response**
 
@@ -4904,7 +5058,7 @@ Returns the spent status of specified nullifiers. Clients use this to determine 
 
 | Name         | Type           | Required | Description |
 |--------------|----------------|----------|-------------|
-| `nullifiers` | Array of Bytes | Yes      | The nullifiers to query (each 32 bytes) |
+| `nullifiers` | Array of Bytes | Yes      | The nullifiers to query. Must contain between 1 and 100 entries, each exactly 32 bytes. An empty list or a wrong-length entry is rejected with `InvalidArgument`; more than 100 entries is rejected as an invalid limit |
 | `prove`      | Boolean        | No       | Set to `true` to receive a proof that contains the requested nullifier statuses |
 
 **Example Request and Response**
