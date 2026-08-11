@@ -14,12 +14,12 @@ The following example shows a minimal `tokens` object defining a single token wi
 {
   "tokens": {
     "0": {
-      "$format_version": "0",
+      "$formatVersion": "0",
       "conventions": {
-        "$format_version": "0",
+        "$formatVersion": "0",
         "localizations": {
           "en": {
-            "$format_version": "0",
+            "$formatVersion": "0",
             "shouldCapitalize": false,
             "singularForm": "credit-token",
             "pluralForm": "credit-tokens"
@@ -77,7 +77,7 @@ The `localizations` object contains language-specific display properties using [
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `$format_version` | string | Version of the localization format (currently "0") |
+| `$formatVersion` | string | Version of the localization format (currently "0") |
 | `shouldCapitalize` | boolean | Whether the token name should be capitalized when displayed |
 | `singularForm` | string | Singular form of the token name |
 | `pluralForm` | string | Plural form of the token name |
@@ -85,13 +85,13 @@ The `localizations` object contains language-specific display properties using [
 ```json
 "localizations": {
   "en": {
-    "$format_version": "0", 
+    "$formatVersion": "0", 
     "shouldCapitalize": true,
     "singularForm": "loyalty-point",
     "pluralForm": "loyalty-points"
   },
   "es": {
-    "$format_version": "0",
+    "$formatVersion": "0",
     "shouldCapitalize": false,
     "singularForm": "punto-de-lealtad", 
     "pluralForm": "puntos-de-lealtad"
@@ -109,7 +109,7 @@ The `decimals` property specifies the number of decimal places for token amounts
 
 ```json
 "conventions": {
-  "$format_version": "0",
+  "$formatVersion": "0",
   "localizations": { /* ... */ },
   "decimals": 8  // 8 decimal places (default)
 }
@@ -144,7 +144,7 @@ Token configuration controls behavioral aspects of token operations, including s
 | Property | Type | Description |
 |----------|------|-------------|
 | `mainControlGroup` | unsigned integer | Position assigned to the main control group |
-| `mainControlGroupCanBeModified` | string | Who is authorized to modify the main control group. Valid values are listed in the [authorized parties table](#authorized-parties). |
+| `mainControlGroupCanBeModified` | object | Who is authorized to modify the main control group, given as a `$type` map. Valid values are listed in the [authorized parties table](#authorized-parties). |
 
 **Example:**
 
@@ -155,7 +155,7 @@ Token configuration controls behavioral aspects of token operations, including s
   "startAsPaused": false,
   "allowTransferToFrozenBalance": true,
   "mainControlGroup": null,
-  "mainControlGroupCanBeModified": "NoOne"
+  "mainControlGroupCanBeModified": {"$type": "noOne"}
 }
 ```
 
@@ -167,16 +167,18 @@ Change control rules define authorization requirements for modifying various asp
 
 Rules can authorize no one, specific identities, or multiparty groups. The complete set of options [defined by DPP](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/change_control_rules/authorized_action_takers.rs#L26-L33) is:
 
-| Authorized Party     | Description |
-|----------------------|-------------|
-| `NoOne`              | No one is authorized |
-| `ContractOwner`      | Only the contract owner is authorized |
-| `Identity(Identifier)` | Only an identity is authorized |
-| `MainGroup`          | Only the [main control group](../explanations/tokens.md#main-control-group) is authorized |
-| `Group(<x>)`         | Only the specific group based in contract position "x" is authorized |
+| Authorized Party | JSON value | Description |
+| - | - | - |
+| `NoOne` | `{"$type": "noOne"}` | No one is authorized |
+| `ContractOwner` | `{"$type": "contractOwner"}` | Only the contract owner is authorized |
+| `Identity(Identifier)` | `{"$type": "identity", "identity": "<base58>"}` | Only an identity is authorized |
+| `MainGroup` | `{"$type": "mainGroup"}` | Only the [main control group](../explanations/tokens.md#main-control-group) is authorized |
+| `Group(<x>)` | `{"$type": "group", "position": <x>}` | Only the specific group based in contract position "x" is authorized |
+
+Authorized parties are encoded as objects carrying a `$type` discriminator. Bare strings such as `"ContractOwner"` are not accepted.
 
 :::{note}
-Starting in protocol version 13, group-valued authorized parties must resolve when the contract is registered. `Group(<x>)` requires a group defined at contract position `x`, otherwise registration fails with `GroupPositionDoesNotExistError`. `MainGroup` requires `mainControlGroup` to be set, otherwise registration fails with `MainGroupIsNotDefinedError`. This applies to both `authorized_to_make_change` and `admin_action_takers` across every change control rule family.
+Starting in protocol version 13, group-valued authorized parties must resolve when the contract is registered. `Group(<x>)` requires a group defined at contract position `x`, otherwise registration fails with `GroupPositionDoesNotExistError`. `MainGroup` requires `mainControlGroup` to be set, otherwise registration fails with `MainGroupIsNotDefinedError`. This applies to both `authorizedToMakeChange` and `adminActionTakers` across every change control rule family.
 
 At action time, a group action authorized by `MainGroup` succeeds only when the group submitting it is at the same contract position as the token's configured `mainControlGroup`. An unset `mainControlGroup` authorizes no group, and the action is rejected with `UnauthorizedTokenActionError`.
 :::
@@ -187,23 +189,22 @@ Each rule consists of the following parameters [defined in DPP](https://github.c
 
 | Field | Description |
 | - | - |
-| `authorized_to`<br>`_make_change` | This is who is authorized to make such a change. Valid values are listed in the [authorized parties table](#authorized-parties). |
-| `admin_action_takers` | This is who is authorized to make such a change to the people authorized to make a change. Valid values are listed in the [authorized parties table](#authorized-parties). |
-| `changing_authorized`<br>`_action_takers_to`<br>`_no_one_allowed` | Are we allowed to change to `NoOne` in the future (default: false) |
-| `changing_admin_action`<br>`_takers_to_no_one_allowed` | Are we allowed to change the admin action takers to `NoOne` in the future (default: false) |
-| `self_changing_admin_`<br>`action_takers_allowed` | Can the admin action takers change themselves (default: false) |
+| `authorizedTo`<br>`MakeChange` | This is who is authorized to make such a change. Valid values are listed in the [authorized parties table](#authorized-parties). |
+| `adminActionTakers` | This is who is authorized to make such a change to the people authorized to make a change. Valid values are listed in the [authorized parties table](#authorized-parties). |
+| `changingAuthorized`<br>`ActionTakersTo`<br>`NoOneAllowed` | Are we allowed to change to no one in the future (default: false) |
+| `changingAdminAction`<br>`TakersToNoOneAllowed` | Are we allowed to change the admin action takers to no one in the future (default: false) |
+| `selfChangingAdmin`<br>`ActionTakersAllowed` | Can the admin action takers change themselves (default: false) |
 
 **Example**
 
 ```json
 "<rule_name>": {
-  "V0": {
-    "authorized_to_make_change": "ContractOwner",
-    "admin_action_takers": "NoOne",
-    "changing_authorized_action_takers_to_no_one_allowed": false,
-    "changing_admin_action_takers_to_no_one_allowed": false,
-    "self_changing_admin_action_takers_allowed": false
-  }
+  "$formatVersion": "0",
+  "authorizedToMakeChange": {"$type": "contractOwner"},
+  "adminActionTakers": {"$type": "noOne"},
+  "changingAuthorizedActionTakersToNoOneAllowed": false,
+  "changingAdminActionTakersToNoOneAllowed": false,
+  "selfChangingAdminActionTakersAllowed": false
 }
 ```
 
@@ -231,13 +232,12 @@ Tokens support the following change control rules:
 
 ```json
 "manualMintingRules": {
-  "V0": {
-    "authorized_to_make_change": "ContractOwner",
-    "admin_action_takers": "NoOne",
-    "changing_authorized_action_takers_to_no_one_allowed": false,
-    "changing_admin_action_takers_to_no_one_allowed": false,
-    "self_changing_admin_action_takers_allowed": false
-  }
+  "$formatVersion": "0",
+  "authorizedToMakeChange": {"$type": "contractOwner"},
+  "adminActionTakers": {"$type": "noOne"},
+  "changingAuthorizedActionTakersToNoOneAllowed": false,
+  "changingAdminActionTakersToNoOneAllowed": false,
+  "selfChangingAdminActionTakersAllowed": false
 }
 ```
 
@@ -264,18 +264,16 @@ Perpetual distribution enables ongoing token allocation. The following configura
 
 ```json
 "perpetualDistribution": {
-  "$format_version": "0",
+  "$formatVersion": "0",
   "distributionType": {
-    "TimeBasedDistribution": {
-      "interval": 3600000,
-      "function": {
-        "FixedAmount": {
-          "amount": 100
-        }
-      }
+    "$type": "timeBasedDistribution",
+    "interval": 3600000,
+    "function": {
+      "$type": "fixedAmount",
+      "amount": 100
     }
   },
-  "distributionRecipient": "ContractOwner"
+  "distributionRecipient": {"$type": "contractOwner"}
 }
 ```
 
@@ -283,11 +281,11 @@ Perpetual distribution enables ongoing token allocation. The following configura
 
 The `distributionType` field accepts one of three schedule types:
 
-| Type | Interval Unit | Description |
-|------|---------------|-------------|
-| `BlockBasedDistribution` | Block height | Emits tokens every N blocks. By default begins at the block when the data contract is registered. |
-| `TimeBasedDistribution` | Milliseconds | Emits tokens every N milliseconds. By default begins at the time of the block when the data contract is registered. |
-| `EpochBasedDistribution` | Epochs | Emits tokens every N epochs. By default begins at the epoch of the block when the data contract is registered. Distribution happens at the start of the following epoch. Required when using `EvonodesByParticipation` as the distribution recipient. |
+| Type | JSON `$type` value | Interval Unit | Description |
+| - | - | - | - |
+| `BlockBasedDistribution` | `blockBasedDistribution` | Block height | Emits tokens every N blocks. By default begins at the block when the data contract is registered. |
+| `TimeBasedDistribution` | `timeBasedDistribution` | Milliseconds | Emits tokens every N milliseconds. By default begins at the time of the block when the data contract is registered. |
+| `EpochBasedDistribution` | `epochBasedDistribution` | Epochs | Emits tokens every N epochs. By default begins at the epoch of the block when the data contract is registered. Distribution happens at the start of the following epoch. Required when using `EvonodesByParticipation` as the distribution recipient. |
 
 Each type wraps an `interval` (the period length) and a `function` (the emission pattern from the options below). There is no separate `start` field on the distribution type; the schedule begins at contract registration by default and a later start can be set through the function's start offset parameter (`start_step`, `start_moment`, or `start_decreasing_offset`, depending on the function).
 
@@ -295,17 +293,17 @@ Each type wraps an `interval` (the period length) and a `function` (the emission
 
 A wide variety of emission patterns are provided to cover most common scenarios. The following table summarizes the options and links to further details.
 
-| Name | Description |
-| - | - |
-| [Fixed Amount](#fixed-amount) | Emits a constant number of tokens per period |
-| [Random](#random) | Emits a random amount between `min` and `max`, using a PRF |
-| [Step Decreasing Amount](#step-decreasing-amount) | Emits tokens that decrease in discrete steps at fixed intervals |
-| [Linear](#linear) | Linear growth/decay with integer or fractional precision |
-| [Polynomial](#polynomial) | Polynomial with integer or fractional exponents or coefficients |
-| [Exponential](#exponential) | Emits tokens following an exponential function |
-| [Logarithmic](#logarithmic) | Slows emission over time |
-| [Inverted Logarithmic](#inverted-logarithmic) | Slows emission over time |
-| [Stepwise](#stepwise) | Emits constant values within predefined steps |
+| Name | JSON `$type` value | Description |
+| - | - | - |
+| [Fixed Amount](#fixed-amount) | `fixedAmount` | Emits a constant number of tokens per period |
+| [Random](#random) | `random` | Emits a random amount between `min` and `max`, using a PRF |
+| [Step Decreasing Amount](#step-decreasing-amount) | `stepDecreasingAmount` | Emits tokens that decrease in discrete steps at fixed intervals |
+| [Linear](#linear) | `linear` | Linear growth/decay with integer or fractional precision |
+| [Polynomial](#polynomial) | `polynomial` | Polynomial with integer or fractional exponents or coefficients |
+| [Exponential](#exponential) | `exponential` | Emits tokens following an exponential function |
+| [Logarithmic](#logarithmic) | `logarithmic` | Slows emission over time |
+| [Inverted Logarithmic](#inverted-logarithmic) | `invertedLogarithmic` | Slows emission over time |
+| [Stepwise](#stepwise) | `stepwise` | Emits constant values within predefined steps |
 
 ##### Fixed Amount
 
@@ -497,7 +495,7 @@ Pre-programmed distribution allows scheduling specific token allocations at pred
 
 ```json
 "preProgrammedDistribution": {
-  "$format_version": "0",
+  "$formatVersion": "0",
   "distributions": {
     "1749662152621": {
       "2yZbE3TAZAhLwNVQk7JMUUuBXgrVt1NG172PGjeUfjUo": 100
@@ -518,13 +516,12 @@ Direct purchase pricing enables tokens to be [purchased directly using Platform]
 
 ```json
 "changeDirectPurchasePricingRules": {
-  "V0": {
-    "authorized_to_make_change": "ContractOwner",
-    "admin_action_takers": "NoOne",
-    "changing_authorized_action_takers_to_no_one_allowed": false,
-    "changing_admin_action_takers_to_no_one_allowed": false,
-    "self_changing_admin_action_takers_allowed": false
-  }
+  "$formatVersion": "0",
+  "authorizedToMakeChange": {"$type": "contractOwner"},
+  "adminActionTakers": {"$type": "noOne"},
+  "changingAuthorizedActionTakersToNoOneAllowed": false,
+  "changingAdminActionTakersToNoOneAllowed": false,
+  "selfChangingAdminActionTakersAllowed": false
 }
 ```
 
@@ -549,7 +546,7 @@ The properties below are token-level and are nested under the token's `keepsHist
 
 ```json
 "keepsHistory": {
-  "$format_version": "0",
+  "$formatVersion": "0",
   "keepsTransferHistory": true,
   "keepsFreezingHistory": true,
   "keepsMintingHistory": true,
@@ -573,16 +570,15 @@ Marketplace rules define how tokens can be traded within Platform's built-in mar
 
 ```json
 "marketplaceRules": {
-  "$format_version": "0",
+  "$formatVersion": "0",
   "tradeMode": "NotTradeable",
   "tradeModeChangeRules": {
-    "V0": {
-      "authorized_to_make_change": "NoOne",
-      "admin_action_takers": "NoOne",
-      "changing_authorized_action_takers_to_no_one_allowed": false,
-      "changing_admin_action_takers_to_no_one_allowed": false,
-      "self_changing_admin_action_takers_allowed": false
-    }
+    "$formatVersion": "0",
+    "authorizedToMakeChange": {"$type": "noOne"},
+    "adminActionTakers": {"$type": "noOne"},
+    "changingAuthorizedActionTakersToNoOneAllowed": false,
+    "changingAdminActionTakersToNoOneAllowed": false,
+    "selfChangingAdminActionTakersAllowed": false
   }
 }
 ```
@@ -615,11 +611,11 @@ The **Default** column shows typical values rather than code-enforced defaults. 
 
 ### Distribution Recipients
 
-| Recipient | Description |
-|-----------|-------------|
-| `ContractOwner` | Tokens sent to the contract owner |
-| `Identity(Identifier)` | Tokens sent to a specific identity |
-| `EvonodesByParticipation` | Tokens distributed to evonodes proportional to their participation (only valid with `EpochBasedDistribution`) |
+| Recipient | JSON value | Description |
+| - | - | - |
+| `ContractOwner` | `{"$type": "contractOwner"}` | Tokens sent to the contract owner |
+| `Identity(Identifier)` | `{"$type": "identity", "identity": "<base58>"}` | Tokens sent to a specific identity |
+| `EvonodesByParticipation` | `{"$type": "evonodesByParticipation"}` | Tokens distributed to evonodes proportional to their participation (only valid with `EpochBasedDistribution`) |
 
 :::{seealso}
 For all protocol constants, see [Protocol Constants](protocol-constants.md).
@@ -663,12 +659,12 @@ This example shows the complete structure of a token definition with all major c
 {
   "tokens": {
     "0": {
-      "$format_version": "0",
+      "$formatVersion": "0",
       "conventions": {
-        "$format_version": "0",
+        "$formatVersion": "0",
         "localizations": {
           "en": {
-            "$format_version": "0",
+            "$formatVersion": "0",
             "shouldCapitalize": true,
             "singularForm": "reward-token",
             "pluralForm": "reward-tokens"
@@ -677,18 +673,17 @@ This example shows the complete structure of a token definition with all major c
         "decimals": 8
       },
       "conventionsChangeRules": {
-        "V0": {
-          "authorized_to_make_change": "NoOne",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "noOne"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "baseSupply": 1000000,
       "maxSupply": 10000000,
       "keepsHistory": {
-        "$format_version": "0",
+        "$formatVersion": "0",
         "keepsTransferHistory": true,
         "keepsFreezingHistory": true,
         "keepsMintingHistory": true,
@@ -699,126 +694,114 @@ This example shows the complete structure of a token definition with all major c
       "startAsPaused": false,
       "allowTransferToFrozenBalance": true,
       "maxSupplyChangeRules": {
-        "V0": {
-          "authorized_to_make_change": "ContractOwner",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "contractOwner"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "distributionRules": {
-        "$format_version": "0",
+        "$formatVersion": "0",
         "perpetualDistribution": null,
         "perpetualDistributionRules": {
-          "V0": {
-            "authorized_to_make_change": "NoOne",
-            "admin_action_takers": "NoOne",
-            "changing_authorized_action_takers_to_no_one_allowed": false,
-            "changing_admin_action_takers_to_no_one_allowed": false,
-            "self_changing_admin_action_takers_allowed": false
-          }
+          "$formatVersion": "0",
+          "authorizedToMakeChange": {"$type": "noOne"},
+          "adminActionTakers": {"$type": "noOne"},
+          "changingAuthorizedActionTakersToNoOneAllowed": false,
+          "changingAdminActionTakersToNoOneAllowed": false,
+          "selfChangingAdminActionTakersAllowed": false
         },
         "preProgrammedDistribution": null,
         "newTokensDestinationIdentity": null,
         "newTokensDestinationIdentityRules": {
-          "V0": {
-            "authorized_to_make_change": "ContractOwner",
-            "admin_action_takers": "NoOne",
-            "changing_authorized_action_takers_to_no_one_allowed": false,
-            "changing_admin_action_takers_to_no_one_allowed": false,
-            "self_changing_admin_action_takers_allowed": false
-          }
+          "$formatVersion": "0",
+          "authorizedToMakeChange": {"$type": "contractOwner"},
+          "adminActionTakers": {"$type": "noOne"},
+          "changingAuthorizedActionTakersToNoOneAllowed": false,
+          "changingAdminActionTakersToNoOneAllowed": false,
+          "selfChangingAdminActionTakersAllowed": false
         },
         "mintingAllowChoosingDestination": true,
         "mintingAllowChoosingDestinationRules": {
-          "V0": {
-            "authorized_to_make_change": "ContractOwner",
-            "admin_action_takers": "NoOne",
-            "changing_authorized_action_takers_to_no_one_allowed": false,
-            "changing_admin_action_takers_to_no_one_allowed": false,
-            "self_changing_admin_action_takers_allowed": false
-          }
+          "$formatVersion": "0",
+          "authorizedToMakeChange": {"$type": "contractOwner"},
+          "adminActionTakers": {"$type": "noOne"},
+          "changingAuthorizedActionTakersToNoOneAllowed": false,
+          "changingAdminActionTakersToNoOneAllowed": false,
+          "selfChangingAdminActionTakersAllowed": false
         },
         "changeDirectPurchasePricingRules": {
-          "V0": {
-            "authorized_to_make_change": "ContractOwner",
-            "admin_action_takers": "NoOne",
-            "changing_authorized_action_takers_to_no_one_allowed": false,
-            "changing_admin_action_takers_to_no_one_allowed": false,
-            "self_changing_admin_action_takers_allowed": false
-          }
+          "$formatVersion": "0",
+          "authorizedToMakeChange": {"$type": "contractOwner"},
+          "adminActionTakers": {"$type": "noOne"},
+          "changingAuthorizedActionTakersToNoOneAllowed": false,
+          "changingAdminActionTakersToNoOneAllowed": false,
+          "selfChangingAdminActionTakersAllowed": false
         }
       },
       "marketplaceRules": {
-        "$format_version": "0",
+        "$formatVersion": "0",
         "tradeMode": "NotTradeable",
         "tradeModeChangeRules": {
-          "V0": {
-            "authorized_to_make_change": "NoOne",
-            "admin_action_takers": "NoOne",
-            "changing_authorized_action_takers_to_no_one_allowed": false,
-            "changing_admin_action_takers_to_no_one_allowed": false,
-            "self_changing_admin_action_takers_allowed": false
-          }
+          "$formatVersion": "0",
+          "authorizedToMakeChange": {"$type": "noOne"},
+          "adminActionTakers": {"$type": "noOne"},
+          "changingAuthorizedActionTakersToNoOneAllowed": false,
+          "changingAdminActionTakersToNoOneAllowed": false,
+          "selfChangingAdminActionTakersAllowed": false
         }
       },
       "manualMintingRules": {
-        "V0": {
-          "authorized_to_make_change": "ContractOwner",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "contractOwner"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "manualBurningRules": {
-        "V0": {
-          "authorized_to_make_change": "ContractOwner",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "contractOwner"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "freezeRules": {
-        "V0": {
-          "authorized_to_make_change": "NoOne",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "noOne"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "unfreezeRules": {
-        "V0": {
-          "authorized_to_make_change": "NoOne",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "noOne"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "destroyFrozenFundsRules": {
-        "V0": {
-          "authorized_to_make_change": "NoOne",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "noOne"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "emergencyActionRules": {
-        "V0": {
-          "authorized_to_make_change": "NoOne",
-          "admin_action_takers": "NoOne",
-          "changing_authorized_action_takers_to_no_one_allowed": false,
-          "changing_admin_action_takers_to_no_one_allowed": false,
-          "self_changing_admin_action_takers_allowed": false
-        }
+        "$formatVersion": "0",
+        "authorizedToMakeChange": {"$type": "noOne"},
+        "adminActionTakers": {"$type": "noOne"},
+        "changingAuthorizedActionTakersToNoOneAllowed": false,
+        "changingAdminActionTakersToNoOneAllowed": false,
+        "selfChangingAdminActionTakersAllowed": false
       },
       "mainControlGroup": null,
-      "mainControlGroupCanBeModified": "NoOne",
+      "mainControlGroupCanBeModified": {"$type": "noOne"},
       "description": "Reward token for customer loyalty program"
     }
   }

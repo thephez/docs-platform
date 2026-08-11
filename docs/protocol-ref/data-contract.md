@@ -79,8 +79,8 @@ The data contract object consists of the following fields as defined in the Rust
 | $defs           | object         | Varies       | (Optional) Definitions for `$ref` references used in the `documents` object (if present, must be a non-empty object with \<= 100 valid properties) |
 | [groups](#data-contract-groups) | Group | Varies | (Optional) Groups that allow for specific multiparty actions on the contract. |
 | [tokens](./data-contract-token.md) | object         | Varies    | (Optional \*) Token definitions (see [Contract Tokens](./data-contract-token.md) for details) |
-| keywords | array of strings | Varies | (Optional) Keywords associated with the contract to improve searchability. Maximum of 50 keywords. |
-| description | string | 3-100 characters | (Optional) Brief description of the contract. |
+| keywords | array of strings | Varies | (Optional) Keywords associated with the contract to improve searchability. Maximum of 50 keywords. Each keyword must be 3-50 bytes, must not contain control or whitespace characters, and must be unique within the array. |
+| description | string | 3-100 bytes on create<br>3-100 characters on update | (Optional) Brief description of the contract. The length limit is measured in bytes at registration and in characters on update, so the two bounds differ for non-ASCII text. |
 | createdAt | unsigned integer | 64 bits | (Read-only) Timestamp in milliseconds when the contract was created. Set by platform. |
 | updatedAt | unsigned integer | 64 bits | (Read-only) Timestamp in milliseconds when the contract was last updated. Set by platform. |
 | createdAtBlockHeight | unsigned integer | 64 bits | (Read-only) Block height at contract creation. Set by platform. |
@@ -1017,7 +1017,14 @@ of a data contract can be updated:
 
 - Adding a new document
 - Adding a new optional property to an existing document
-- Adding non-unique indices for properties added in the update
+- Adding an index, as long as the index tree remains structurally compatible. Existing index definitions are immutable, and the aggregate flags (`countable`, `rangeCountable`, `summable`, `rangeSummable`, `averageable`, `rangeAverageable`) on an existing index cannot be changed
+- Adding a new token at a previously unused position
+- Adding a new group at a previously unused position
+- Changing the `keywords` array
+- Changing the `description`
+- Enabling `sizedIntegerTypes`. This is a one-way change; it cannot be disabled once enabled
+
+Existing tokens and groups cannot be removed or modified once the contract is registered.
 
 Data contracts are updated on the platform by submitting the modified [data contract  
 object](#data-contract-object) in a data contract update state transition consisting of:

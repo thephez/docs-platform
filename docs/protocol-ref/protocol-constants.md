@@ -22,8 +22,8 @@ Maximum sizes and limits for various platform components.
 | Max withdrawal amount | 50,000,000,000,000 credits | 500 Dash maximum per withdrawal | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs#L19) |
 | Max contract group size | 256 | Maximum members per group | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs#L21) |
 | Max token redemption cycles | 128 | Maximum redemption cycles | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs#L22) |
-| Max shielded transition actions | 16 | Maximum [actions](shielded-pool.md#actions) per shielded transition | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs#L30) |
-| Max CBOR encoded length | 16,384 bytes (16 KiB) | Maximum CBOR encoding size | [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/util/cbor_serializer.rs#L8) |
+| Max shielded transition actions | 16 | Consensus cap on [actions](shielded-pool.md#actions) per shielded transition. The effective limit is 6 - the Halo 2 proof grows ~2,681 bytes per action, so larger transitions exceed the max state transition size | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs#L30) |
+| Max CBOR encoded length | 16,384 bytes (16 KiB) | Maximum CBOR encoding size (defined as `MAX_ENCODED_KBYTE_LENGTH = 16` kibibytes) | [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/util/cbor_serializer.rs#L8) |
 | Contract deserialization limit | 15,000 | Maximum contract deserialization | [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/serialized_version/mod.rs#L40) |
 
 ## Credit System
@@ -166,7 +166,7 @@ Fees related to contested document voting.
 | Limit | Value | Description | Source |
 |-------|-------|-------------|--------|
 | Max public keys per identity | 15,000 | Maximum keys an identity can have | [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/fields.rs#L7) |
-| Max keys in creation | 6 | Keys allowed at identity creation | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L18) |
+| Max keys in creation | 6 | Keys allowed at identity creation | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v3.rs#L18) |
 | Identity nonce value filter | 0xFFFFFFFFFF | 40-bit nonce filter | [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/identity_nonce.rs#L13) |
 | Max missing identity revisions | 24 | Maximum revision gaps | [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/identity_nonce.rs#L15) |
 
@@ -174,10 +174,10 @@ Fees related to contested document voting.
 
 | Requirement | Value | Description | Source |
 |-------------|-------|-------------|--------|
-| Min asset lock balance | 200,000 duffs | 0.002 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L20) |
-| Min top-up balance | 50,000 duffs | 0.0005 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L21) |
-| Min address funding balance | 50,000 duffs | 0.0005 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L22) |
-| Min identity funding amount | 200,000 credits | Minimum for address-based creation | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v1.rs#L42) |
+| Min asset lock balance | 200,000 duffs | 0.002 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v3.rs#L20) |
+| Min top-up balance | 50,000 duffs | 0.0005 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v3.rs#L21) |
+| Min address funding balance | 50,000 duffs | 0.0005 Dash minimum | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v3.rs#L22) |
+| Min identity funding amount | 200,000 credits | Minimum for address-based creation | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v3.rs#L42) |
 | Max asset-lock transaction inputs | 100 | Maximum Core inputs in an asset-lock transaction used to fund an identity or top-up (introduced in protocol v3 to prevent stuck funds; v1/v2 had no effective limit) | [rs-platform-version](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/dpp_versions/dpp_state_transition_versions/v3.rs#L25) |
 
 ## Document & Data Contract Model

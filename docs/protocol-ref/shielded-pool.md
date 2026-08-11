@@ -33,7 +33,7 @@ Every shielded transition includes an Orchard bundle proving that a set of note 
 
 | Field | Type | Size | Description |
 | --- | --- | --- | --- |
-| actions | array | Varies | Orchard [actions](#actions) (spend-output pairs). Limited to [`max_shielded_transition_actions`](protocol-constants.md) per transition. |
+| actions | array | Varies | Orchard [actions](#actions) (spend-output pairs). Limited to [`max_shielded_transition_actions`](protocol-constants.md) per transition. In practice the effective limit is 6, since the Halo 2 proof grows with each action and the serialized transition must stay within the [maximum state transition size](protocol-constants.md). |
 | anchor | array of bytes | 32 bytes | Sinsemilla root of the note commitment tree at bundle creation time. Must match an [anchor](#anchors) the platform has previously recorded |
 | proof | array of bytes | Varies | Halo 2 zero-knowledge proof that the actions are valid |
 | bindingSignature | array of bytes | 64 bytes | RedPallas signature binding the bundle's actions to its net value balance |
@@ -95,6 +95,8 @@ Move credits from one or more [Platform addresses](address-system.md#platform-ad
 
 :::{note}
 Maximum actions per transition: [`max_shielded_transition_actions`](protocol-constants.md). Address witness signatures are excluded from the signable bytes used by the platform sighash.
+
+**Constraints:** Minimum inputs: 1. Maximum inputs: `max_address_inputs`. Minimum per input: 100,000 credits. One witness per input. `amount` must be greater than zero and at most `i64::MAX`, and the input sum must cover the amount plus the minimum shielded fee. The fee strategy must be non-empty, contain no duplicate steps, and have at most `max_address_fee_strategies` steps.
 :::
 
 See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/shielded/shield_transition/v0/mod.rs#L37-L63).
@@ -174,6 +176,8 @@ Move credits from the pool back to Dash Core (L1). The funds leave Platform enti
 
 :::{note}
 Transparent fields (`coreFeePerByte`, `pooling`, `outputScript`) are bound to the Orchard bundle through the [platform sighash](#platform-sighash). Maximum actions per transition: [`max_shielded_transition_actions`](protocol-constants.md).
+
+**Constraints:** Pooling must be `Never` (others not yet implemented). `coreFeePerByte` must be a non-zero Fibonacci number. Output script must be P2PKH or P2SH.
 :::
 
 See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/shielded/shielded_withdrawal_transition/v0/mod.rs#L33-L54).

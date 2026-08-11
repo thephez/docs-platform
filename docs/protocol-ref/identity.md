@@ -291,7 +291,7 @@ The InstantSend asset lock proof is used for transactions that have received an 
 
 | Field       | Type           | Description |
 | ----------- | -------------- | ----------- |
-| type        | integer        | The asset lock proof type (`0` for InstantSend locks) |
+| $type       | string         | The asset lock proof type (`"instant"` for InstantSend locks) |
 | instantLock | array of bytes | The InstantSend lock ([`islock`](https://docs.dash.org/en/stable/docs/core/reference/p2p-network-instantsend-messages.html#islock)) |
 | transaction | array of bytes | The asset lock transaction |
 | outputIndex | integer        | Index of the transaction output to be used |
@@ -302,9 +302,9 @@ The ChainLock asset lock proof is used for transactions that have not received a
 
 | Field                 | Type           | Description |
 | --------------------- | -------------- | ----------- |
-| type                  | integer        | The type of asset lock proof (`1` for ChainLocks) |
+| $type                 | string         | The asset lock proof type (`"chain"` for ChainLocks) |
 | coreChainLockedHeight | integer        | Height of the ChainLocked Core block containing the transaction |
-| outPoint              | object         | The  [outpoint](https://docs.dash.org/en/stable/docs/core/resources/glossary.html#outpoint) being used as the asset lock |
+| outPoint              | string         | The [outpoint](https://docs.dash.org/en/stable/docs/core/resources/glossary.html#outpoint) being used as the asset lock. JSON encodes it as `"<txid>:<vout>"`. The `platform_value` representation is an object containing `txid` as 32 bytes and `vout` as an unsigned 32-bit integer. |
 
 ### Identity State Transition Signing
 

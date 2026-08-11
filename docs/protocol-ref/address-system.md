@@ -217,7 +217,7 @@ Withdraw credits from Platform addresses back to the Core chain.
 | inputWitnesses  | array            | Varies   | [Address witnesses](#address-witness) for each input                                                                 |
 
 :::{note}
-**Constraints:** Minimum inputs: 1. Maximum inputs: `max_address_inputs`. Minimum per input: 100,000 credits. Minimum output: 500,000 credits. Pooling must be `Never` (others not yet implemented). Output script must be P2PKH or P2SH.
+**Constraints:** Minimum inputs: 1. Maximum inputs: `max_address_inputs`. Minimum per input: 100,000 credits. Minimum output: 500,000 credits. Pooling must be `Never` (others not yet implemented). Output script must be P2PKH or P2SH. The withdrawn amount (input sum minus the change output) must be greater than zero and within the [min and max withdrawal amount](protocol-constants.md) limits.
 
 **Fee:** 400,000,000 credits. Withdrawal fees are significantly higher due to the complexity and finality of moving funds back to the Core chain.
 :::

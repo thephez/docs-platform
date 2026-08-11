@@ -113,7 +113,7 @@ The token transfer transition extends the [base transition](#token-base-transiti
 
 | Field | Type | Size | Description |
 | ----- | ---- | ---- | ----------- |
-| amount | unsigned integer | 64 bits | Number of tokens to transfer |
+| $amount | unsigned integer | 64 bits | Number of tokens to transfer. Note the `$` prefix, which is specific to the transfer transition - the mint transition uses a plain `amount` field |
 | recipientId | array | 32 bytes | Identity ID of the recipient |
 | publicNote | string | [<= 2048 bytes](#token-notes) | Optional public note |
 | sharedEncryptedNote | [SharedEncryptedNote object](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/tokens/mod.rs#L20) | [<= 2048 bytes](#token-notes) | Optional shared encrypted note |

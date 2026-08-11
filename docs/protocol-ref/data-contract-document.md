@@ -107,7 +107,7 @@ Each document may have transient fields that require validation but do not need 
 
 **Example**  
 
-The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)) demonstrates a document that has 1 transient field:
+The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)) demonstrates a document that has 1 transient field:
 
 ```json
     "transient": [
@@ -143,6 +143,9 @@ The `indices` array consists of one or more objects that each contain:
 * An optional `unique` element that determines if duplicate values are allowed for the document
 * An optional `nullSearchable` element that indicates whether the index allows searching for NULL values. If nullSearchable is false (default: true) and all properties of the index are null then no reference is added.
 * An optional `contested` element that determines if duplicate values are allowed for the document
+* Optional [aggregate query flags](#aggregate-query-flags) - `countable`, `rangeCountable`, `summable`, `rangeSummable`, `averageable`, and `rangeAverageable` - that enable count, sum, and average fast paths on the index
+
+Index objects do not accept any properties beyond those listed above.
 
 :::{code-block} json
 :force:
@@ -171,6 +174,12 @@ The `indices` array consists of one or more objects that each contain:
     "properties": [
       { "<field name c>": "asc" },
     ],
+    "countable": "countable"|"countableAllowingOffset"|"notCountable",
+    "rangeCountable": true|false,
+    "summable": "<integer field name>",
+    "rangeSummable": true|false,
+    "averageable": "<integer field name>",
+    "rangeAverageable": true|false
   }
 ]
 :::
@@ -192,7 +201,7 @@ The table below describes the properties used to configure a contested index:
 
 **Example**
 
-This example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)) demonstrates the use of a contested index:
+This example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)) demonstrates the use of a contested index:
 
 ``` json
 "contested": {
@@ -332,7 +341,7 @@ The following operation types can each have an independent cost configuration:
 
 **Example**
 
-The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json)) demonstrates the use of several configuration options:
+The following example (from the [DPNS contract's `domain` document](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json)) demonstrates the use of several configuration options:
 
 ```json
 {
@@ -341,6 +350,9 @@ The following example (from the [DPNS contract's `domain` document](https://gith
     "canBeDeleted": true,
     "transferable": 1,
     "tradeMode": 1,
+    "keepsTransferHistory": true,
+    "keepsPurchaseHistory": true,
+    "keepsPricingHistory": true,
     "..."
   }
 }
@@ -351,21 +363,35 @@ The following example (from the [DPNS contract's `domain` document](https://gith
 :::{versionadded} 4.0.0
 :::
 
-Document types can opt into aggregate query support (count / sum / average) by setting flags at the document-type level. These flags control the underlying storage layout — once set on a published contract they cannot be changed by a contract update.
+Document types can opt into aggregate query support (count / sum / average) through flags at the document-type root and on individual [index objects](#document-indices). These flags control the underlying storage layout — once set on a published contract they cannot be changed by a contract update.
 
-There are two axes:
+### Document-type flags
 
-* **Doctype-wide** (`documents*`) — applies the aggregate over the entire document type. Set at the document type root, alongside other doctype options like `documentsKeepHistory`.
-* **Per-index range** (`range*`) — extends the corresponding aggregate to range queries on indexed properties. Set on the index object (alongside `name`, `properties`, `unique`, and `contested`), using the index-level `countable`/`summable`/`averageable` flags and their `range*` variants — not on the individual `{ "field": "asc" }` property entry. Requires the matching base flag.
+Document-type flags configure aggregates on the primary-key tree and are set at the document-type root alongside options such as `documentsKeepHistory`.
 
-| Flag | Type | Purpose | Required for |
-| - | - | - | - |
-| `documentsCountable` | Boolean | Doctype-wide counts (empty `where` or `==`/`IN` clauses on indexed fields). | `SELECT COUNT(*)` without a range clause. |
-| `rangeCountable` | Boolean | Per-index counts over a range. Requires `documentsCountable`. | `SELECT COUNT(*)` with a range clause or `GROUP BY <range_field>`. |
-| `documentsSummable` | String | Doctype-wide sums of the named integer property. | `SELECT SUM(<that property>)`. |
-| `rangeSummable` | Boolean | Per-index sums over a range. Requires `documentsSummable`. | `SELECT SUM(<field>)` with a range clause. |
-| `documentsAverageable` | String | Syntactic sugar for `documentsCountable: true` + `documentsSummable: "<prop>"`. | `SELECT AVG(<that property>)`. |
-| `rangeAverageable` | Boolean | Syntactic sugar for `rangeCountable: true` + `rangeSummable: true`. Requires `documentsAverageable`. | `SELECT AVG(<field>)` with a range clause. |
+| Flag | Type | Purpose |
+| - | - | - |
+| `documentsCountable` | Boolean | Enables total document counts on the primary-key tree. |
+| `rangeCountable` | Boolean | Enables range counts on the primary-key tree and implies `documentsCountable`. |
+| `documentsSummable` | String | Enables total sums of the named integer property. |
+| `rangeSummable` | Boolean | Enables range sums on the primary-key tree. Requires `documentsSummable`. |
+| `documentsAverageable` | String | Syntactic sugar for `documentsCountable: true` plus `documentsSummable: "<property>"`. |
+| `rangeAverageable` | Boolean | Syntactic sugar for root-level `rangeCountable: true` plus `rangeSummable: true`. Requires `documentsAverageable`. |
+
+### Index-level flags
+
+Index-level flags configure aggregates along a specific index path. Set them on the index object alongside `name`, `properties`, `unique`, and `contested`, not on an individual `{ "field": "asc" }` property entry.
+
+| Flag | Type | Purpose |
+| - | - | - |
+| `countable` | Boolean or string | Enables count fast paths for the index. String values are `notCountable`, `countable`, and `countableAllowingOffset`; the last uses a provable count tree that also supports future range and offset queries. |
+| `rangeCountable` | Boolean | Enables range counts over the indexed property. Requires `countable` to be enabled on the same index. |
+| `summable` | String | Enables sums of the named integer document property through the index. |
+| `rangeSummable` | Boolean | Enables range sums over the indexed property. Requires `summable` on the same index. |
+| `averageable` | String | Syntactic sugar for index-level `countable: "countable"` plus `summable: "<property>"`. |
+| `rangeAverageable` | Boolean | Syntactic sugar for index-level `rangeCountable: true` plus `rangeSummable: true`. Requires `averageable` on the same index. |
+
+Properties named by `documentsSummable`, `documentsAverageable`, `summable`, or `averageable` must exist on the document type, be listed in `required`, and have an integer type.
 
 The averageable flags desugar to the underlying count + sum flags during contract parsing — same on-disk layout — so authors who think in terms of averages get a single flag and downstream code paths (insert, query, estimation) stay unchanged. If both `documentsAverageable` and `documentsSummable` are set, they must name the same property.
 
@@ -410,7 +436,7 @@ schema](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/schema/m
 | `type: array`               | Only byte arrays are supported. `byteArray: true` must be defined; schemas for individual array items are not available |
 | `additionalItems`           | Not supported. Per-item array schemas (`items` / `prefixItems`) are not available in document schemas; constrain arrays with `minItems`, `maxItems`, `uniqueItems`, `contains`, and `byteArray` |
 | `patternProperties`         | Restricted - cannot be used for data contracts |
-| `pattern`                   | Accept only [RE2](https://github.com/google/re2/wiki/Syntax) compatible regular expressions (defined in DPP logic) |
+| `pattern`                   | Patterns are compiled with the Rust [`regex`](https://docs.rs/regex/latest/regex/) crate, whose semantics match [RE2](https://github.com/google/re2/wiki/Syntax) (no backtracking, lookaround, or backreferences), with a 5 MiB compiled-pattern size limit. Patterns using unsupported constructs or exceeding the size limit are rejected as JSON schema compilation errors |
 
 ## Example Syntax
 
