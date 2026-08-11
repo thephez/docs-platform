@@ -706,6 +706,10 @@ The `bloom_filter` message is optional. Omitting it streams all transactions. Wh
 :::{versionadded} 4.1.0
 `from_block_height` must be at least 1 and `from_block_hash` must be exactly 32 bytes; other values are rejected with `INVALID_ARGUMENT`. Omitting both is also rejected.
 
+An interrupted mempool snapshot has no equivalent cursor because the request specifies only a
+starting block. A reconnecting client therefore requests the snapshot in full and should reconcile
+mempool state rather than assume the interrupted snapshot completed.
+
 A node accepts at most 64 concurrent streams on this endpoint. A subscribe attempt beyond that returns `RESOURCE_EXHAUSTED` — back off and retry, or connect to a different node. An established stream can also be terminated with `RESOURCE_EXHAUSTED`; see [stream termination and backpressure](dapi-endpoints-grpc-overview.md#stream-termination-and-backpressure).
 :::
 

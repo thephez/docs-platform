@@ -49,7 +49,8 @@ Dash's decentralized API for interacting with the core blockchain (layer 1) and 
 ## DAPI Client  
 
 A client that connects to DAPI to read and write Platform data or access Core chain information.
-DAPI exposes gRPC services for Platform and Core, plus JSON-RPC for selected Core information.
+DAPI exposes gRPC services for Platform and Core, plus JSON-RPC for selected Core information and
+Platform status.
 
 ## DashPay
 

@@ -38,11 +38,11 @@ A state transition represents a change made by a user to the application and pla
 
 * A header (version and payload type)
 * A payload
-* The user's signature
+* Authorization data
 
 The payload varies by type and covers a range of operations including document and token updates, data contract creation, identity management, credit transfers, masternode voting, [Platform address](../protocol-ref/address-system.md) funding and transfers, and [shielded pool](../explanations/shielded-pool.md) operations.
 
-How a transition is authorized depends on its family. Identity-owned transitions carry a signature made for the binary representation of the state transition using a private key associated with an [identity](../explanations/identity.md). Platform address transitions are instead authorized by a witness signature on each input, and shielded pool transitions by a zero-knowledge proof rather than any signature at all. A state transition is constructed by a client-side library when the user creates documents and submits them to the platform API.
+How a transition is authorized depends on its family. Identity-owned transitions carry a signature made for the binary representation of the state transition using a private key associated with an [identity](../explanations/identity.md). Platform address transitions are instead authorized by a witness signature on each input. Shielded pool transitions omit the generic identity transition signature but retain Orchard `spendAuthSig` and `bindingSignature` authorization; applicable transitions also carry address witnesses or an asset-lock signature. A state transition is constructed by a client-side library when the user creates documents and submits them to the platform API.
 
 For additional detail, see the [State Transition](../explanations/platform-protocol-state-transition.md) explanation.
 

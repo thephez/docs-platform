@@ -51,12 +51,13 @@ verification](#address-tree-sync-verification), respectively.
 
 ## Verifying proofs
 
-Clients do not parse proofs manually. Verification is performed by the
-`rs-drive-proof-verifier` crate, which checks the quorum's BLS threshold signature (the
-Tenderdash consensus half) and decodes the unified `grovedbProof` to recover the requested data
-and the state root hash. Dash Platform SDKs verify requested proofs automatically. Applications
-performing verification directly can use `rs-drive-proof-verifier`; JavaScript and browser
-applications can use the available WebAssembly bindings.
+Dash Platform SDKs parse and verify standard requested proofs automatically. Verification is
+performed by the `rs-drive-proof-verifier` crate, which checks the quorum's BLS threshold
+signature (the Tenderdash consensus half) and decodes the unified `grovedbProof` to recover the
+requested data and the state root hash. Direct clients must also handle the protocol-specific
+compacted proof envelope and bare `merkProof` paths described below. Applications performing
+verification directly can use `rs-drive-proof-verifier`; JavaScript and browser applications can
+use the available WebAssembly bindings.
 
 See the [Proofs](../explanations/proofs.md) explanation for the step-by-step verification flow.
 

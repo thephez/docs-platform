@@ -16,11 +16,16 @@ The [Identities Dash Improvement Proposal (DIP)](https://github.com/dashpay/dips
 
 ## Identity Management
 
-In order to [create an identity](#identity-create-process), a user pays the network to store their public key(s) on the platform chain. This is done by locking Dash on the Core chain in an asset lock transaction and then submitting an identity create state transition that references a proof of that lock.
+In order to [create an identity](#identity-create-process), a user pays the network to store their public key(s) on the platform chain. On the Core-chain path, this is done by locking Dash in an asset lock transaction and then submitting an identity create state transition that references a proof of that lock.
 
 Once an identity is created, its credit balance is used to pay for activity (e.g. use of applications). The [topup process](#identity-balance-topup-process) provides a way to add additional funds to the balance when necessary.
 
 Locking Dash on layer 1 is the primary funding route, but it is not the only one. An identity can also be created or topped up from credits already held at a [Platform address](../protocol-ref/address-system.md), or created directly from the [shielded pool](./shielded-pool.md) by spending shielded notes. Both routes fund the identity entirely on layer 2, without a Core chain asset lock.
+
+The processes below describe the Core-chain asset-lock path. For the layer 2 paths, see
+[Identity Create From Addresses](../protocol-ref/address-system.md#identity-create-from-addresses),
+[Identity Top Up From Addresses](../protocol-ref/address-system.md#identity-top-up-from-addresses),
+and [Identity Create From Shielded Pool](../protocol-ref/shielded-pool.md#identity-create-from-shielded-pool).
 
 ### Identity Create Process
 

@@ -30,9 +30,9 @@ To support the various data types used on the platform and enable future updates
 
 1. Header - version and payload type
 2. Payload - contents vary depending on payload type
-3. Signature - authorization for the header/payload
+3. Authorization - authorization data for the header/payload
 
-Authorization varies by transition family. Transitions submitted by an identity carry a signature made with one of that identity's keys. Transitions that spend from [Platform addresses](../protocol-ref/address-system.md) are instead authorized by a witness signature on each address input, since the funds belong to the addresses rather than to an identity. [Shielded pool](../explanations/shielded-pool.md) spends carry no signature at all - a zero-knowledge proof authorizes them without revealing who made them.
+Authorization varies by transition family. Transitions submitted by an identity carry a signature made with one of that identity's keys. Transitions that spend from [Platform addresses](../protocol-ref/address-system.md) are instead authorized by a witness signature on each address input, since the funds belong to the addresses rather than to an identity. [Shielded pool](../explanations/shielded-pool.md) transitions omit the generic identity transition signature but retain Orchard `spendAuthSig` and `bindingSignature` authorization. Applicable shielded transitions also carry address witnesses or an asset-lock signature.
 
 The following table contains a list of currently defined payload types:
 

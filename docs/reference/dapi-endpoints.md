@@ -155,6 +155,9 @@ The following endpoints provide information about the Core chain.
 
 ### JSON-RPC Endpoints
 
+These endpoints historically expose Core information; `getStatus` is the exception and returns
+Platform status.
+
 | Endpoint | Description |
 | -------- | ----------- |
 | [`getBestBlockHash`](../reference/dapi-endpoints-json-rpc-endpoints.md#getbestblockhash) | Returns block hash of the chaintip |

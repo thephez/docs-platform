@@ -4846,7 +4846,7 @@ Returns the commitment tree anchors currently retained by the node for the shiel
 The response covers the [node's retention window](../protocol-ref/shielded-pool.md#anchors) rather than the full history of the pool: older anchors are pruned, so the retained set is bounded by the retention and pruning policy.
 
 :::{versionadded} 4.1.0
-If the retained anchor set exceeds what this unpaginated response can enumerate, the call returns `RESOURCE_EXHAUSTED` instead of doing unbounded work. Treat it as retryable rather than fatal.
+If the retained anchor set exceeds what this unpaginated response can enumerate, the call returns `RESOURCE_EXHAUSTED` instead of doing unbounded work. Retry with backoff; if the condition persists, try another node rather than repeatedly retrying the same one.
 :::
 
 **Example Request and Response**
