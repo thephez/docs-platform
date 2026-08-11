@@ -159,7 +159,10 @@ identity and votes to lock the name, the identity receives the name.
 
 :::{dropdown} Can usernames be transferred?
 
-Currently, usernames are non-transferrable. Future updates may enable transfers.
+Yes. Since Dash Platform v4.1, a username can be transferred to another identity, or listed for sale
+and purchased by another identity. After a transfer or sale, the name resolves to its new owner. The
+name record itself remains immutable and permanent - it cannot be edited or deleted, only transferred
+or sold. See [Name transfers and sales](../explanations/dpns.md#name-transfers-and-sales) for details.
 
 :::
 

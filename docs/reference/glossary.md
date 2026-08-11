@@ -38,7 +38,9 @@ Layer 1 blockchain used for payments, governance, and providing the foundation f
 
 ## Credits
 
-Means of paying fees on the layer 2 platform
+Means of paying fees on the layer 2 platform. Credits are the smallest unit of account on Platform:
+1 duff = 1,000 credits, and 1 Dash = 100,000,000,000 credits. See [Protocol
+constants](../protocol-ref/protocol-constants.md#credit-system) for the full conversion table.
 
 ## DAPI  
 
@@ -46,7 +48,9 @@ Dash's decentralized API for interacting with the core blockchain (layer 1) and 
 
 ## DAPI Client  
 
-An HTTP Client that connects to DAPI to enable users to read and write data to the Dash platform
+A client that connects to DAPI to read and write Platform data or access Core chain information.
+DAPI exposes gRPC services for Platform and Core, plus JSON-RPC for selected Core information and
+Platform status.
 
 ## DashPay
 
@@ -118,6 +122,26 @@ An epoch is a fixed time period used to organize and manage blockchain operation
 
 An era consists of 40 [epochs](#epoch) and equals approximately one year. At the end of an era, Dash Platform may optionally do additional accounting or reconfiguration.
 
+## Evonode
+
+An evolution masternode: a [masternode](#masternode) that meets the additional collateral and hardware requirements to run Dash Platform services alongside Dash Core. Only evonodes participate in the [validator set](#validator-set) that produces Platform blocks, and evonode operators receive Platform block rewards for that participation.
+
+## Group (data contract)
+
+A set of identities defined in a [data contract](#data-contract) that jointly authorize actions on that contract, such as token minting or configuration changes. Each member is assigned a voting power, and an action executes once the members approving it reach the group's required power threshold. Distinct from a [quorum](#quorum), which is a set of masternodes selected by the network to sign protocol-level actions.
+
+## History (contract revision)
+
+The record of successive revisions of a [data contract](#data-contract), retained when the contract sets `keepsHistory` at creation. Retrieved with [`getDataContractHistory`](../reference/dapi-endpoints-platform-endpoints.md#getdatacontracthistory). This tracks changes to the contract definition itself, not to the documents stored under it. See [Retrieve data contract history](../tutorials/contracts-and-documents/retrieve-data-contract-history.md).
+
+## History (document revision)
+
+The record of successive revisions of an individual [document](#document), retained when its document type sets `documentsKeepHistory`. Retrieved with [`getDocumentHistory`](../reference/dapi-endpoints-platform-endpoints.md#getdocumenthistory). This tracks edits to a document's own fields, not its transfers or sales.
+
+## History (document ownership and pricing)
+
+The record of transfers, purchases and price updates for documents, written to the [document history system contract](../protocol-ref/data-contract.md#document-history-system-contract). Document types opt in with the [document history flags](../protocol-ref/data-contract-document.md#document-history-flags) `keepsTransferHistory`, `keepsPurchaseHistory` and `keepsPricingHistory`. This is separate from both revision histories above: it records ownership and pricing events rather than changes to contract or document content.
+
 ## Layer (1, 2, 3)  
 
 - Layer 1: Core blockchain and [Dash Core](#dash-core)
@@ -146,7 +170,7 @@ Layer 2 blockchain that propagates platform data among masternodes, propagates p
 
 ## Platform State
 
-All layer 2 data including contracts, documents (user data), tokens, groups, credit balance, identity (username), and masternode voting/contested resource state
+All layer 2 data including contracts, documents (user data), tokens, groups, credit balance, identity (username), address balances, shielded pool state, and masternode voting/contested resource state
 
 ## practical Byzantine Fault Tolerance (pBFT)
 
@@ -186,7 +210,7 @@ The application that validates state transitions and updates state in Drive
 
 ## State Transition
 
-A signed change to platform state submitted by an identity. State transitions cover a range of operations, including data contract creation and updates, document and token changes (batched), identity lifecycle operations (create, top-up, update), credit transfers and withdrawals, and masternode voting (cast by masternode and evonode operators)
+A signed change to platform state. Most state transitions are submitted by an identity, but some are not owned by one - the address-system and shielded-pool transitions carry no owner identity. State transitions cover a range of operations, including data contract creation and updates, document and token changes (batched), identity lifecycle operations (create, top-up, update), credit transfers and withdrawals, address-system and shielded-pool operations, and masternode voting (cast by masternode and evonode operators)
 
 ## Tenderdash
 

@@ -42,8 +42,8 @@ Since some names may be popular, the registration process includes a voting mech
 :::{note}
 This process only applies to valid names that meet the following conditions:
 
-* Less than 20 characters long (i.e. "alice", "quantumexplorer") AND
-* Contain no numbers or only contain the number(s) 0 and/or 1 (i.e. "bob", "carol01")
+* Between 3 and 19 characters long (i.e. "alice", "quantumexplorer") AND
+* Contain no numbers other than 0 and/or 1, and no characters besides letters and hyphens (i.e. "bob", "carol01", "quantum-explorer")
 
 All other available names can be registered immediately.
 :::
@@ -70,14 +70,20 @@ Assuming masternodes do not vote to lock, the identity receiving the most votes 
 Locked names cannot currently be re-requested or awarded. This policy may be revisited in future Platform releases.
 :::
 
+### Name transfers and sales
+
+Registering a name is not necessarily the end of its lifecycle. A registered name can be transferred to another identity or offered for sale and bought by another identity. The DPNS contract has always declared names transferable and available for direct purchase, but Platform's validation rules rejected those operations until protocol version 13 (introduced in Dash Platform v4.1) lifted the restriction. Once ownership changes, the name resolves to its new owner, and that identity's private keys are what prove ownership from then on.
+
+The name record itself remains immutable and permanent: it cannot be edited or deleted, only transferred or sold. A name's transfer, purchase, and listing history is recorded, so the chain of ownership and the prices it was offered at can be retrieved and verified.
+
 ### Implementation
 
-DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
+DPNS names have several constraints as defined in the [DPNS data contract](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json). The constraints provide compatibility with DNS and protection from homograph attacks:
 
 1. Minimum length - 3 characters
 1. Maximum length - 63 characters
 1. Usable characters - `0-9`, `-` (hyphen), `a-z`, and `A-Z` (case sensitive)
-    * Note: Use of `-` as a prefix/suffix to a name is _not_ allowed (e.g. `-name` or `name-`). This constraint is defined by this JSON-Schema [pattern](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json#L44) in the DPNS data contract: `"^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$"`
+    * Note: Use of `-` as a prefix/suffix to a name is _not_ allowed (e.g. `-name` or `name-`). This constraint is defined by this JSON-Schema [pattern](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json#L47) in the DPNS data contract: `"^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$"`
 1. Domain labels are converted to lowercase for case-insensitive uniqueness validation.
 1. To mitigate [homograph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack), `o` is replaced with `0` and `i`/`l` are replaced with `1`. For example, "Alice" is normalized to "a11ce".
 

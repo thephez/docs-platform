@@ -42,13 +42,13 @@ Refer to the [Identity explanation](../explanations/identity.md) section for inf
 
 ## Fee Multiplier
 
-Given fluctuations of the Dash price, a variable *Fee Multiplier* provides a way to balance the cost of fees with network hosting requirements. All fees are multiplied by the Fee Multiplier:
+The *Fee Multiplier* provides a mechanism to balance the cost of fees against network hosting requirements as the Dash price fluctuates. It is recorded per epoch and used when distributing collected fees from the credit pools, along with epoch accounting.
 
-```text
-    feePaid = initialFee * feeMultiplier
-```
+The multiplier does not scale the fee a user is charged. The active fee version fixes it at 1.0x,
+and the final fee charged for a state transition is calculated using the complete formula below,
+including any user fee increase and storage refund.
 
-The Fee Multiplier is subject to change at any time via network governance and protocol updates.
+Fee parameters, including the multiplier, are fixed by the active fee version. They change only when the network activates a new protocol version, which happens once enough evonodes signal the newer version and the threshold is met at an epoch change.
 
 <!-- Uncomment once link available
 An in-depth look at the Fee Multiplier can be found at **link**

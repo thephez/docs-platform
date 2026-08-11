@@ -39,7 +39,7 @@ The timestamp and block height fields will only be present in documents that add
 
 ### Data Contract Fields
 
-Each application defines its own fields via document definitions in its data contract. Details of the [DPNS data contract documents](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v1/dpns-contract-documents.json) are described below as an example. This contract defines two document types (`preorder` and `domain`) and provides the functionality described in the [Name Service explanation](../explanations/dpns.md).
+Each application defines its own fields via document definitions in its data contract. Details of the [DPNS data contract documents](https://github.com/dashpay/platform/blob/master/packages/dpns-contract/schema/v2/dpns-contract-documents.json) are described below as an example. This contract defines two document types (`preorder` and `domain`) and provides the functionality described in the [Name Service explanation](../explanations/dpns.md).
 
 | Document Type | Field Name | Data Type |
 | - | - | - |
@@ -68,6 +68,7 @@ The following example shows the structure of a DPNS `domain` document as output 
   "$revision": 1,
   "$createdAt": 1712872800000,
   "$updatedAt": 1712872800000,
+  "$transferredAt": 1712872800000,
   "label": "DQ-Jasen-82083",
   "normalizedLabel": "dq-jasen-82083",
   "normalizedParentDomainName": "dash",
@@ -91,6 +92,7 @@ Once a document has been created, it must be encapsulated in a Batch state trans
 | type | State transition type (`1` for a Batch) |
 | ownerId | Identity submitting the batch |
 | transitions | Document and token transitions bundled in the batch (e.g. document `create`, `replace`, `delete`, `transfer`, `purchase`, `updatePrice`) |
+| userFeeIncrease | Optional amount the submitter adds to the fee to raise the priority of the batch and improve its chance of timely inclusion |
 | signaturePublicKeyId | The `id` of the identity public key that signed the state transition |
 | signature | Signature of state transition data |
 
@@ -103,8 +105,11 @@ The document create transition is used to create a new document on Dash Platform
 | Field | Type | Description|
 | - | - | - |
 | $entropy | array (32 bytes) | Entropy used in creating the document ID |
-| $createdAt | integer | (Optional) Time (in milliseconds) the document was created |
-| $updatedAt | integer | (Optional) Time (in milliseconds) the document was last updated |
+| prefundedVotingBalance | object | (Optional) Credits set aside to fund masternode voting when the document contests a unique index |
+
+The transition does not carry timestamp or block height fields. Platform assigns those from the block in which the transition is processed, and they appear on the resulting document only when the data contract sets them as required for the document type.
+
+Creating a document on a contested unique index requires setting aside a prefunded voting balance. Those credits fund the masternode vote that decides which of the competing identities receives the resource. This is the mechanism behind contested DPNS names - see the [Name Service explanation](../explanations/dpns.md) for how it applies to username registration.
 
 ### Document Replace
 
@@ -113,7 +118,8 @@ The document replace transition is used to update the data in an existing Dash P
 | Field | Type | Description|
 | - | - | - |
 | $revision | integer | Document revision (=> 1) |
-| $updatedAt | integer | (Optional) Time (in milliseconds) the document was last updated |
+
+If the data contract sets the updated at timestamp as required for the document type, Platform assigns the updated timestamp and block height from block info rather than accepting them from the caller.
 
 ### Document Delete
 
@@ -148,7 +154,7 @@ The document update price transition is used by the current owner to list a docu
 | Field | Type | Description |
 | - | - | - |
 | $revision | integer | Document revision (=> 1) |
-| price | integer | New price (in credits) at which the document is offered for sale |
+| $price | integer | New price (in credits) at which the document is offered for sale |
 
 :::{note}
 For more detailed information, see the [Platform Protocol Reference - Document](../protocol-ref/document.md) page.

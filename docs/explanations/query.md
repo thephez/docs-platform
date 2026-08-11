@@ -11,7 +11,7 @@ similar to traditional databases while retaining decentralized trust benefits.
 ## Querying the State
 
 Queries operate on the finalized data stored within Platform’s state tree. Responses reflect the
-most recently committed block and do not include pending or historical intermediate changes.
+most recently committed block and do not include pending changes.
 
 This means:
 
@@ -20,7 +20,7 @@ This means:
 - Data retrieval is deterministic and efficient
 
 :::{note}
-Queries return the *current finalized state*, not the sequence of events that created it.
+By default, queries return the *current finalized state* rather than the sequence of events that created it. Data contracts and document types configured to retain history are the exception: dedicated history queries return their successive revisions, and those responses support proofs like any other query.
 :::
 
 ## Deterministic Results
@@ -63,3 +63,14 @@ Benefits of indexed querying include:
 Indexes should be planned during contract design since there are [limited index update
 options](./platform-protocol-data-contract.md#updates) for already registered contracts.
 :::
+
+## Aggregate Queries
+
+Beyond returning whole documents, Dash Platform can compute a value over the set of documents a query
+matches - how many there are, their total, or their average - and return that instead of the documents
+themselves. Results can optionally be grouped, so a single query returns one value per group.
+
+Aggregates are not available on every document type. The contract must opt in for the document type
+being queried, which means this is another decision to make during contract design. See the
+[query syntax reference](../reference/query-syntax.md#aggregate-queries) for the supported aggregates
+and how to request them.

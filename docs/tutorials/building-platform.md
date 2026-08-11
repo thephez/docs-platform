@@ -35,7 +35,7 @@ nvm install 20.18
 ### Docker
 
 :::{warning}
-Only complete the following steps if you do not already have Docker installed. Otherwise, just make sure you have a version that meets the requirements in the [Platform repository README](https://github.com/dashpay/platform?tab=readme-ov-file#how-to-build-and-set-up-a-node-from-the-code-in-this-repo).
+Only complete the following steps if you do not already have Docker installed. Otherwise, just make sure you have a version that meets the requirements in the [Platform book's Getting Started section](https://github.com/dashpay/platform/blob/master/book/src/getting-started.md).
 :::
 
 ``` shell
@@ -54,7 +54,7 @@ newgrp docker
 ### Protocol buffers
 
 ``` shell
-wget https://github.com/protocolbuffers/protobuf/releases/download/v27.3/protoc-27.3-linux-x86_64.zip
+wget https://github.com/protocolbuffers/protobuf/releases/download/v32.0/protoc-32.0-linux-x86_64.zip
 sudo unzip protoc-*-linux-x86_64.zip -d /usr/local
 ```
 
@@ -65,14 +65,18 @@ Execute the following script to install Rust. Use the default options during the
 ``` shell
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"
-rustup default 1.85.0
+rustup default 1.92
 ```
 
 ### WASM CLI
 
 ``` shell
-cargo install wasm-bindgen-cli@0.2.100
+cargo install wasm-bindgen-cli@0.2.108
 ```
+
+:::{note}
+The `wasm-bindgen-cli` version must match the `wasm-bindgen` version in the platform repository's `Cargo.lock`, or the build will stop at a version check. Confirm the required version with `grep 'name = "wasm-bindgen"' -A1 Cargo.lock`.
+:::
 
 ### Check versions
 

@@ -26,7 +26,7 @@ The following sections describe the features and options available for NFT creat
 
 ### Transfer and Trade
 
-NFTs can be directly transferred or traded without the need for a marketplace:
+NFTs can be directly transferred or traded without the need for a marketplace, provided the contract author enabled those options on the document type. Trading is off by default.
 
 * Transferring allows the owner to assign a new owner without making the NFT available for purchase.
 * Trading involves a two-step process where the seller sets the NFT's price, and the first buyer that matches this price receives the NFT automatically. Once the transaction is complete, the price is reset to prevent further immediate purchases, ensuring a non-interactive and seamless trading experience.
@@ -49,7 +49,7 @@ To preserve the authenticity of NFTs, Dash Platform includes creation restrictio
 
 ### Mutate
 
-NFTs can be immutable or mutable, depending on their intended use. Immutable NFTs cannot be altered after creation. This is crucial for items like digital artwork, where authenticity and originality are necessary. Mutable NFTs can be helpful in scenarios like updating a character in a game or altering a digital asset.
+NFTs can be immutable or mutable, depending on their intended use. Immutable NFTs cannot be altered after creation. This is crucial for items like digital artwork, where authenticity and originality are necessary. Mutable NFTs can be helpful in scenarios like updating a character in a game or altering a digital asset. Mutability is fixed when the document type is defined in the data contract.
 
 ```{eval-rst}
 .. _explanations-nft-delete:
@@ -57,7 +57,7 @@ NFTs can be immutable or mutable, depending on their intended use. Immutable NFT
 
 ### Delete
 
-Since some NFTs may represent transient or consumable things, Dash Platform allows NFTs to be deleted. This is more efficient than the "burn" mechanism many projects use to make an NFT unusable and provides flexibility in managing assets that may no longer be needed or valid.
+Since some NFTs may represent transient or consumable things, Dash Platform allows NFTs to be deleted. This is more efficient than the "burn" mechanism many projects use to make an NFT unusable and provides flexibility in managing assets that may no longer be needed or valid. Whether deletion is permitted is fixed when the document type is defined in the data contract.
 
 ```{eval-rst}
 .. _explanations-nft-create:

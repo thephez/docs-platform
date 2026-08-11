@@ -30,14 +30,16 @@ To support the various data types used on the platform and enable future updates
 
 1. Header - version and payload type
 2. Payload - contents vary depending on payload type
-3. Signature - signature of the header/payload by the identity submitting to state transition
+3. Authorization - authorization data for the header/payload
+
+Authorization varies by transition family. Transitions submitted by an identity carry a signature made with one of that identity's keys. Transitions that spend from [Platform addresses](../protocol-ref/address-system.md) are instead authorized by a witness signature on each address input, since the funds belong to the addresses rather than to an identity. [Shielded pool](../explanations/shielded-pool.md) transitions omit the generic identity transition signature but retain Orchard `spendAuthSig` and `bindingSignature` authorization. Applicable shielded transitions also carry address witnesses or an asset-lock signature.
 
 The following table contains a list of currently defined payload types:
 
 | Payload Type | Payload Description |
 | - | - |
 | [Data Contract Create](../protocol-ref/data-contract.md#data-contract-create) (`0`) | [Database schema](../explanations/platform-protocol-data-contract.md) for a single application |
-| [Batch](../protocol-ref/document.md#document-overview) (`1`) | An array of 1 or more [document](../explanations/platform-protocol-document.md) (`create`, `replace`, `delete`, `transfer`, `purchase`, `updatePrice`) or [token](../explanations/tokens.md) (e.g. mint, burn, transfer, freeze/unfreeze, claim, direct purchase, set price) transition objects |
+| [Batch](../protocol-ref/document.md#document-overview) (`1`) | An array of 1 or more [document](../explanations/platform-protocol-document.md) (`create`, `replace`, `delete`, `transfer`, `purchase`, `updatePrice`) or [token](../explanations/tokens.md) (mint, burn, transfer, freeze/unfreeze, claim, direct purchase, set price, plus the administrative actions destroy frozen funds, emergency action, and config update) transition objects |
 | [Identity Create](../protocol-ref/identity.md#identity-create) (`2`) | Information including the public keys required to create a new [Identity](../explanations/identity.md) |
 | [Identity Topup](../protocol-ref/identity.md#identity-topup) (`3`) | Information including proof of a transaction containing an amount to add to the provided identity's balance |
 | [Data Contract Update](../protocol-ref/data-contract.md#data-contract-update) (`4`) | An updated [database schema](../explanations/platform-protocol-data-contract.md) to modify an existing application |

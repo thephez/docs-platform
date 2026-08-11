@@ -89,7 +89,7 @@ The DAPI endpoint reference is split between an overview page (`docs/reference/d
 When you add or materially update an entry on a detail page, also update the matching row on `dapi-endpoints.md`:
 
 - Keep the description in sync between the two pages.
-- Prefix the overview row's description with `**Added in Dash Platform vX.Y.Z**` (new endpoints) or `**Updated in Dash Platform vX.Y.Z**` (modified endpoints), followed by `<br>` and the description. Use **bold** for the current release's annotations; older releases use *italics*.
+- Prefix the overview row's description with `**Added in Dash Platform vX.Y.Z**` (new endpoints) or `**Updated in Dash Platform vX.Y.Z**` (modified endpoints), followed by `<br>` and the description. Use **bold** for the current major release's annotations; older major releases use *italics*.
 - For a whole new endpoint group, wrap the new section in a `:::{versionadded} X.Y.Z` admonition above its table — see Security Groups, Tokens, Address System, and Shielded Transactions for the pattern.
 
 For the full per-release endpoint review process (proto diff, example refresh, demoting annotations to italics), see [RELEASE.md](RELEASE.md).

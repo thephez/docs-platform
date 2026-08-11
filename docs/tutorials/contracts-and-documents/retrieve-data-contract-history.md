@@ -9,6 +9,13 @@ Contract tutorial](../../tutorials/contracts-and-documents/register-a-data-contr
 contracts that have enabled the `keepsHistory` option during contract creation will store revision
 information.
 
+:::{note}
+This retrieves revisions of the contract definition. It does not return the revision history of
+individual documents (see [`getDocumentHistory`](../../reference/dapi-endpoints-platform-endpoints.md#getdocumenthistory))
+or records of document transfers and sales (see [document ownership and pricing
+history](../../reference/glossary.md#history-document-ownership-and-pricing)).
+:::
+
 ## Prerequisites
 
 * [General prerequisites](../../tutorials/introduction.md#prerequisites) (Node.js / Dash SDK installed)
