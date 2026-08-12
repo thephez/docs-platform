@@ -18,8 +18,15 @@ contracts-and-documents/submit-documents
 contracts-and-documents/retrieve-documents
 contracts-and-documents/update-documents
 contracts-and-documents/delete-documents
+contracts-and-documents/transfer-documents
+contracts-and-documents/set-a-document-price
+contracts-and-documents/purchase-documents
 ```
 
+The final three tutorials cover Platform's built-in document marketplace. A direct transfer sends
+a transferable document to a chosen identity, while a sale is a two-step flow in which the owner
+sets a price and another identity purchases the document.
+
 :::{tip}
-You can clone a repository containing the code for all tutorials from <a href="https://github.com/dashpay/platform-readme-tutorials#readme" target="_blank">GitHub</a> or download it as a [zip file](https://github.com/dashpay/platform-readme-tutorials/archive/refs/heads/main.zip).
+You can clone a repository containing the code for all tutorials from <a href="https://github.com/dashpay/platform-tutorials#readme" target="_blank">GitHub</a> or download it as a [zip file](https://github.com/dashpay/platform-tutorials/archive/refs/heads/main.zip).
 :::

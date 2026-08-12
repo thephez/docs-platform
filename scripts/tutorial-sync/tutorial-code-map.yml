@@ -188,6 +188,21 @@ mappings:
     block_id:
       caption: document-delete.mjs
 
+  - source: 2-Contracts-and-Documents/document-transfer.mjs
+    doc: contracts-and-documents/transfer-documents.md
+    block_id:
+      caption: document-transfer.mjs
+
+  - source: 2-Contracts-and-Documents/document-set-price.mjs
+    doc: contracts-and-documents/set-a-document-price.md
+    block_id:
+      caption: document-set-price.mjs
+
+  - source: 2-Contracts-and-Documents/document-purchase.mjs
+    doc: contracts-and-documents/purchase-documents.md
+    block_id:
+      caption: document-purchase.mjs
+
   # -- Tokens --
 
   - source: 3-Tokens/token-register.mjs
