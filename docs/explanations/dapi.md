@@ -31,4 +31,11 @@ retrieval.
 
 ## Endpoint Overview
 
-DAPI currently provides 2 types of endpoints: [JSON-RPC](https://www.jsonrpc.org/) and [gRPC](https://grpc.io/docs/guides/). The JSON-RPC endpoints expose some layer 1 information while the gRPC endpoints support layer 2. The layer 1 Core gRPC service additionally provides streaming of events related to blocks, transactions, and masternode-list updates; the layer 2 Platform endpoints are request/response only. For a list of all endpoints and usage details, please see the [DAPI endpoint reference section](../reference/dapi-endpoints.md).
+DAPI currently provides 2 types of endpoints: [JSON-RPC](https://www.jsonrpc.org/) and [gRPC](https://grpc.io/docs/guides/).
+
+- JSON-RPC endpoints are a small surface that mostly exposes layer 1 information, with the exception of a Platform status method
+- gRPC endpoints cover both Core and Platform:
+  - Core endpoints are mostly request/response, plus streaming subscriptions for block headers, transactions, and masternode-list updates
+  - Platform endpoints are request/response only.
+
+For a list of all endpoints and usage details, please see the [DAPI endpoint reference section](../reference/dapi-endpoints.md).

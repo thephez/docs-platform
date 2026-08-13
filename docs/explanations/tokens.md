@@ -89,7 +89,7 @@ Update token configuration parameters, including:
 - Marketplace trade mode
 - Which group acts as the main control group
 
-A configuration update can point the token at a different [group](#groups), but it cannot change any group's members or their powers. Groups are fixed when the data contract is registered.
+A configuration update can point the token at a different [group](#groups), but it cannot change any group's members or their powers. Existing groups are immutable once the data contract is registered, although a data contract update can add groups at new positions.
 
 #### Set Purchase Price
 
@@ -226,7 +226,7 @@ distribution options are summarized below:
 | ------ | ----------- | -------- | ------ |
 | Manual Minting      | Authorized users/groups can create new tokens until `maxSupply` is reached | On-demand minting | - Requires proper configuration to enable<br>- Minting actions may be logged or controlled via permissions |
 | Programmed Distribution | A fixed number of tokens are allocated to designated identities at explicit timestamps, and the recipients must [claim](#claim) them to receive the tokens | *On Jan 1, 2047, allocate `X` tokens to the provided identity* | - Schedules token release at known times<br>- Each entry is a one-time allocation at a fixed timestamp; there is no recurrence option |
-| [Perpetual Distribution](../protocol-ref/data-contract-token.md#perpetual-distribution-options) | Scheduled release of tokens based on blocks or time intervals | *Emit 100 tokens every 20 blocks*, or *Halve the emission every year* | - Offers ongoing, dynamic token emission patterns.<br>- Supports variable rates (e.g., linear, steps).<br>- Emissions accrue on schedule and are always collected by the recipient via a [claim](#claim). |
+| [Perpetual Distribution](../protocol-ref/data-contract-token.md#perpetual-distribution-options) | Scheduled release of tokens based on block, time, or epoch intervals | *Emit 100 tokens every 20 blocks*, or *Halve the emission every year* | - Offers ongoing, dynamic token emission patterns.<br>- Supports variable rates (e.g., linear, steps).<br>- Emissions accrue on schedule and are always collected by the recipient via a [claim](#claim). |
 
 Dash Platform also supports three options to control the destination for newly minted tokens:
 
@@ -278,7 +278,7 @@ This allows for:
 - Shared-currency ecosystems, by pricing document actions in a token that belongs to another contract. Such external-token payments transfer to the contract owner; burning is only permitted for a contract's own token.
 - A gasless user experience, by having the contract owner rather than the document owner pay the Platform credit cost of the action
 
-Alongside the amount and its effect, each cost specifies who pays the Platform gas fees and may set minimum and maximum bounds. Clients should generally set a maximum: without one, a contract whose rules allow the price to change could charge more than the user expected between signing and execution.
+Alongside the amount and its effect, each cost in the contract specifies who pays the Platform gas fees and may set minimum and maximum bounds. Separately, the client submitting the action can attach its own minimum and maximum bounds on what it is willing to pay. Clients should generally set a maximum: without one, a contract whose rules allow the price to change could charge more than the user expected between signing and execution.
 
 ## Token Creation
 
@@ -286,11 +286,13 @@ Creating a token on Dash Platform consists of creating a data contract, register
 
 When a contract that declares a token is registered, Platform automatically mints the token's configured base supply to the contract owner (or to the destination configured for new tokens). A single contract may declare more than one token; each token is identified by its position within the contract and configured independently. Ongoing changes to token balances - including further minting, burning, transfers, freezes, and claims - are performed through the [token state transitions](#actions).
 
+A token can also be added to a contract that is already registered, by updating the contract to declare a token at a previously unused position. Token positions that already exist cannot be altered, and their configuration cannot be modified by a contract update. All post-registration changes to an existing token must use the [token config update](#configuration-updates) action.
+
 ### Contract Setup
 
 Structurally, there is no difference between contracts incorporating tokens and non-token contracts. While token contracts have a large set of token-specific options, there is no other difference.
 
-Once the data contract design is completed, the contract can be registered on the network in preparation for token minting and use. See the [contract registration tutorial](../tutorials/contracts-and-documents/register-a-data-contract.md) for examples of how to register a contract.
+Once the data contract design is completed, the contract can be registered on the network in preparation for token minting and use. See the [contract registration tutorial](../tutorials/contracts-and-documents/register-a-data-contract.md) for examples of how to register a contract. For step-by-step examples covering token contract registration, minting, burning, transferring, and querying token information, see the [token tutorials](../tutorials/tokens.md).
 
 ## Token Trading
 

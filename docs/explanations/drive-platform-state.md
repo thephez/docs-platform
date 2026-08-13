@@ -27,3 +27,5 @@ Under the [Tenderdash](../explanations/platform-consensus.md) same-block executi
 ## Proofs
 
 Because state is stored in GroveDB, [DAPI](../explanations/dapi.md) queries can return GroveDB proofs alongside the requested data. Clients verify these proofs against the block header's `AppHash` (which itself is signed by the validator quorum), allowing light clients to trustlessly confirm the returned data without re-executing the chain.
+
+For additional detail on the two-layer verification model, see the [Proofs](../explanations/proofs.md) explanation.

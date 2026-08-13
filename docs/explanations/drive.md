@@ -17,7 +17,7 @@ There are a number of components working together to facilitate Drive's overall 
 - [Platform chain](../explanations/drive-platform-chain.md) (orders state transitions; creates and propagates blocks of state transitions)
 - Platform state machine (validates data against the [Dash platform protocol](../explanations/platform-protocol.md); applies data to state and storage)
 - [Platform state](../explanations/drive-platform-state.md) (represents current data)
-- Storage (record of state transitions)
+- Storage (persists the current state - identities, data contracts, documents, etc.)
 - GroveDB (authenticated hierarchical storage backend enabling cryptographic proofs returned via [DAPI](../explanations/dapi.md))
 
 ### Data Update Process
@@ -25,10 +25,9 @@ There are a number of components working together to facilitate Drive's overall 
 The process of adding or updating data in Drive consists of several steps to ensure data is validated, propagated, and stored properly. This description provides a simplified overview of the process:
 
 1. [State transitions](../explanations/platform-protocol-state-transition.md) are submitted to the platform via [DAPI](../explanations/dapi.md)
-2. DAPI broadcasts state transitions to Tenderdash, which validates them and includes them in block proposals
-3. Valid state transitions are applied to the platform state
-4. The platform chain propagates a block containing the state transitions
-5. Receiving nodes update Drive data based on the valid state transitions in the block
+2. DAPI relays state transitions to the platform chain's consensus engine (Tenderdash), which asks the platform state machine to validate them  and speculatively execute them when building or verifying a block proposal
+3. The block is propagated and voted on by validators
+4. Once the block is committed, each node finalizes it — persisting the speculative state changes to Drive, or executing the block if it was received via sync
 
 ```{eval-rst}
 .. figure:: ../../img/drive.svg

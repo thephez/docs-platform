@@ -31,6 +31,8 @@ NFTs can be directly transferred or traded without the need for a marketplace, p
 * Transferring allows the owner to assign a new owner without making the NFT available for purchase.
 * Trading involves a two-step process where the seller sets the NFT's price, and the first buyer that matches this price receives the NFT automatically. Once the transaction is complete, the price is reset to prevent further immediate purchases, ensuring a non-interactive and seamless trading experience.
 
+A document type can also be configured so that each transfer, purchase, and price update is recorded on chain in Platform's document history system contract, giving an NFT a queryable provenance and sale history. Recording is off by default and, like the other document type options, is fixed when the document type is defined in the data contract. See [Document History Flags](../protocol-ref/data-contract-document.md#document-history-flags) in the protocol reference.
+
 ```{eval-rst}
 .. _explanations-nft-create-restrict:
 ```
@@ -77,7 +79,7 @@ Once the data contract design is completed, the contract can be registered on th
 
 ### Minting NFTs
 
-NFTs are minted by creating new documents under the data contract. Each NFT is an instance of one of the document types defined in the contract.
+NFTs are minted by creating new documents under the data contract. Each NFT is an instance of one of the document types defined in the contract. See the [submit documents tutorial](../tutorials/contracts-and-documents/submit-documents.md) for example code.
 
 ```{eval-rst}
 .. _explanations-nft-trade:
@@ -90,3 +92,5 @@ The trading process for Dash Platform NFTs is designed to be user-friendly and e
 Once an NFT is created, the owner can set a sale price to indicate the NFT is available for purchase. Interested buyers can then initiate a purchase by matching this set price. Upon completion of the transaction, the ownership of the NFT is automatically transferred to the buyer, and the sale price is reset to indicate the NFT is no longer available for purchase.
 
 Since the functionality needed to set a price, buy, and transfer ownership of NFTs is part of the protocol, the system handles all necessary trading operations directly. This provides an efficient trading experience that is integrated with the indexing and proof capabilities of Dash Platform.
+
+For example code, see the [set a document price](../tutorials/contracts-and-documents/set-a-document-price.md), [purchase documents](../tutorials/contracts-and-documents/purchase-documents.md), and [transfer documents](../tutorials/contracts-and-documents/transfer-documents.md) tutorials.

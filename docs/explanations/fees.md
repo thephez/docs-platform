@@ -42,7 +42,7 @@ Refer to the [Identity explanation](../explanations/identity.md) section for inf
 
 ## Fee Multiplier
 
-The *Fee Multiplier* provides a mechanism to balance the cost of fees against network hosting requirements as the Dash price fluctuates. It is recorded per epoch and used when distributing collected fees from the credit pools, along with epoch accounting.
+The *Fee Multiplier* provides a mechanism to balance the cost of fees against network hosting requirements as the Dash price fluctuates. It is recorded per epoch and reported alongside epoch accounting information. At the active fee version it is a reserved parameter: it is not applied when distributing collected fees from the credit pools.
 
 The multiplier does not scale the fee a user is charged. The active fee version fixes it at 1.0x,
 and the final fee charged for a state transition is calculated using the complete formula below,
@@ -58,6 +58,8 @@ An in-depth look at the Fee Multiplier can be found at **link**
 
 In an attempt to minimize Dash Platform's storage requirements, users are incentivized to remove data that they no longer want to be stored in the Dash Platform state for a refund. Data storage fees are distributed to masternodes over the data's lifetime which is 50 years for permanent storage. Therefore, at any time before the data's fees are entirely distributed, there will be fees remaining which can be refunded to the user if they decide to delete the data.
 
+Distribution is front-loaded rather than spread evenly across those 50 years, so the refundable remainder falls fastest in the early years. Removals below a small minimum byte threshold are not refunded at all. See the [protocol constants reference](../protocol-ref/protocol-constants.md) for the distribution schedule and the refund threshold.
+
 ## User Fee Increase
 
 Platform supports a user fee increase that can be used to incentivize inclusion of a state
@@ -71,6 +73,8 @@ The high level formula for a state transition's fee is:
 ```text
     fee = storageFee + processingFee + (processingFee * userFeeIncrease / 100) - storageRefund
 ```
+
+The storage refund is netted against the total rather than clamped at zero. A state transition that frees more storage than it consumes produces a net credit to the identity instead of a charge.
 
 <!-- Uncomment once DIP available
 See *DIPXX: Dash Platform Fee System* for a detailed breakdown of each component.

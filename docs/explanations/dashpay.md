@@ -78,7 +78,8 @@ DashPay has many constraints as defined in the [DashPay data
 contract](https://github.com/dashpay/platform/blob/master/packages/dashpay-contract/schema/v1/dashpay.schema.json).
 Additionally, the DashPay data triggers defined in
 [rs-drive-abci](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dashpay)
-enforce additional validation rules related to the `contactRequest` document.
+enforce additional validation rules related to the `contactRequest` document. Note: as a system data
+contract, the version active on a network is determined by that network's active protocol version.
 
 :::{tip}
 See the [DashPay Dash Improvement Proposal

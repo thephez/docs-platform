@@ -58,6 +58,7 @@ As with Tendermint, Tenderdash provides Byzantine Fault Tolerant (BFT) State Mac
 - The members of a quorum operate somewhat like validators but do so more efficiently due to the pre-existing BLS threshold signature.
 - BLS threshold signing results in more compact block headers since only a single BLS threshold signature is required instead of individual signatures from each validator. Notably, this means that any client can easily verify the block signatures using the deterministic masternode list.
 - The validators' signature is produced by an LLMQ, which is secured by the core blockchain’s Proof-of-Work (PoW).
+- Validators can attach signatures over additional data to their votes in the same consensus round. Dash Platform uses this to have the quorum collectively sign withdrawal transactions, so funds leaving Platform carry a signature the core chain can verify.
 
 This allows Dash Platform to leverage the best of both worlds - the speed and finality of Tendermint and the security of PoW.
 
