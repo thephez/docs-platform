@@ -16,7 +16,7 @@ Given a number of technical considerations (security, masternode processing capa
 
 ## Details
 
-Since all application data is submitted in the form of documents, data triggers are defined in the context of documents. To provide even more granularity, they also incorporate the document `action` so separate triggers can be created for the `CREATE`, `REPLACE`, or `DELETE` actions.
+Since all application data is submitted in the form of documents, data triggers are defined in the context of documents. To provide even more granularity, they also incorporate the document `action`, so a separate trigger can be created for any [document transition action](../explanations/platform-protocol-document.md#document-submission): `create`, `replace`, `delete`, `transfer`, `purchase`, and `updatePrice`.
 
 Which trigger runs for a given contract, document type, and action is defined in the data trigger [binding list](https://github.com/dashpay/platform/blob/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/bindings/list/v1/mod.rs). The trigger implementations linked in the tables below (for example the shared `reject` trigger) are generic and do not name the contracts that use them - the binding list is what associates each action with its trigger.
 
@@ -31,6 +31,8 @@ As an example, DPP contains several [data triggers for DPNS](https://github.com/
 
 :::{note}
 The `REPLACE` and `DELETE` rows for DPNS both link to the same shared `reject` trigger, which DPNS reuses to disallow those actions on `domain` documents. The DPNS `preorder` document type has no data triggers at all - its immutability comes from the contract schema rather than from trigger logic.
+
+The absence of a trigger matters too: DPNS `domain` documents deliberately have no trigger bound to the `transfer`, `purchase`, or `updatePrice` actions, so those actions fall through to generic document validation. That is what makes [username transfers and sales](../explanations/dpns.md#name-transfers-and-sales) possible, while `REPLACE` and `DELETE` remain rejected so name records stay immutable and permanent.
 :::
 
 In addition to DPNS, DPP ships data triggers for a small set of other system contracts:

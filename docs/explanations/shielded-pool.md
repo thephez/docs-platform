@@ -6,7 +6,7 @@
 
 ## Overview
 
-The shielded pool is an optional privacy layer on Dash Platform that lets users hold and move credits without revealing balances, sender, or recipient on-chain. Funds move *into* the pool through a shield transition, move *within* the pool privately, and exit through an unshield, a shielded withdrawal, or by funding a newly created identity. While funds remain inside the pool, only their owner can see them.
+The shielded pool is an optional privacy layer on Dash Platform that lets users hold and move credits without revealing balances, sender, or recipient on-chain. Funds move *into* the pool through a shield transition, move *within* the pool privately, and exit through an unshield, a shielded withdrawal, or by funding a newly created identity. While funds remain inside the pool, only their owner can see them. The shielded pool became available at protocol version 12.
 
 The pool uses the [Orchard](https://zips.z.cash/protocol/protocol.pdf) shielded protocol — the same zero-knowledge design (Halo 2 proofs, with no trusted setup) used by Zcash for its current shielded pool. Transactions inside the pool prove their own validity without disclosing the amounts or parties involved.
 
@@ -75,6 +75,8 @@ Moves credits *out of* the pool back to Dash Core (L1) via the platform's withdr
 Creates a new identity funded directly from the pool by spending one or more notes. Like an unshield, this moves credits *out of* the pool — here into a freshly created identity rather than a Platform address. The new identity's ID is derived from the sorted set of spend nullifiers, making it unique and single-use.
 
 The funding amount cannot be chosen freely: it must be one of a small fixed set of allowed denominations, and any other amount is rejected. Restricting the exit to standard sizes means every identity created at a given denomination looks identical on-chain, so the new identity cannot be linked back to a particular shielded balance by its amount. The permitted denominations are listed in the [Shielded Pool protocol reference](../protocol-ref/shielded-pool.md).
+
+The notes being spent do not have to add up to the chosen denomination exactly - any excess is returned to the pool as a new note, so change stays shielded. If identity creation then fails a stateful check, the denomination still leaves the pool: it lands, less a penalty, at a fallback Platform address named in the transition.
 
 ## What the pool does not provide
 

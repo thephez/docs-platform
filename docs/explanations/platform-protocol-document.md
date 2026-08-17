@@ -32,6 +32,7 @@ Dash Platform Protocol (DPP) defines a set of base fields that must be present i
 | $createdAtCoreBlockHeight | Core block height when the document was created |
 | $updatedAtCoreBlockHeight | Core block height when the document was last updated |
 | $transferredAtCoreBlockHeight | Core block height when the document was last transferred |
+| $creatorId | [Identity](../explanations/identity.md) that originally created the document (32 bytes). Present on document types that are transferable or have a trade mode set, and preserved when ownership changes |
 
 :::{attention}
 The timestamp and block height fields will only be present in documents that add them to the list of [required properties](../reference/data-contracts.md#required-properties).
@@ -98,14 +99,23 @@ Once a document has been created, it must be encapsulated in a Batch state trans
 
 State transitions are versioned through their serialized enum representation rather than a top-level `protocolVersion` field.
 
+### Document Transition Base
+
+Every document transition in a batch shares a common base, regardless of the action it performs. The base identifies which document the transition targets - the document ID, its type, and the data contract that defines it - and adds two further elements:
+
+- A per-identity, per-contract nonce that orders an identity's transitions against a given contract and prevents a transition from being replayed.
+- Optional token payment information, used when the contract charges one of its tokens for the action rather than charging the submitter in credits. See the [Tokens](../explanations/tokens.md#token-based-fees) explanation for how token-based document fees are configured.
+
+The sections below describe the fields each action adds on top of this shared base.
+
 ### Document Create
 
-The document create transition is used to create a new document on Dash Platform. The document create transition extends the [base schema](#base-fields) to include the following additional fields:
+The document create transition is used to create a new document on Dash Platform. The document create transition extends the [transition base](#document-transition-base) to include the following additional fields:
 
 | Field | Type | Description|
 | - | - | - |
 | $entropy | array (32 bytes) | Entropy used in creating the document ID |
-| prefundedVotingBalance | object | (Optional) Credits set aside to fund masternode voting when the document contests a unique index |
+| $prefundedVotingBalance | object | (Optional) Credits set aside to fund masternode voting when the document contests a unique index |
 
 The transition does not carry timestamp or block height fields. Platform assigns those from the block in which the transition is processed, and they appear on the resulting document only when the data contract sets them as required for the document type.
 
@@ -113,7 +123,7 @@ Creating a document on a contested unique index requires setting aside a prefund
 
 ### Document Replace
 
-The document replace transition is used to update the data in an existing Dash Platform document. The document replace transition extends the [base schema](#base-fields) to include the following additional fields:
+The document replace transition is used to update the data in an existing Dash Platform document. The document replace transition extends the [transition base](#document-transition-base) to include the following additional fields:
 
 | Field | Type | Description|
 | - | - | - |
@@ -123,11 +133,11 @@ If the data contract sets the updated at timestamp as required for the document 
 
 ### Document Delete
 
-The document delete transition is used to delete an existing Dash Platform document. It only requires the fields found in the base document transition.
+The document delete transition is used to delete an existing Dash Platform document. It only requires the fields found in the [transition base](#document-transition-base).
 
 ### Document Transfer
 
-The document transfer transition is used to transfer ownership of an existing document to another identity. It extends the [base schema](#base-fields) with the recipient identifier:
+The document transfer transition is used to transfer ownership of an existing document to another identity. It extends the [transition base](#document-transition-base) with the recipient identifier:
 
 | Field | Type | Description |
 | - | - | - |
@@ -138,7 +148,7 @@ Document transfers are only allowed for document types that are marked transfera
 
 ### Document Purchase
 
-The document purchase transition is used to buy a document that the current owner has listed for sale. It extends the [base schema](#base-fields) with the agreed price:
+The document purchase transition is used to buy a document that the current owner has listed for sale. It extends the [transition base](#document-transition-base) with the agreed price:
 
 | Field | Type | Description |
 | - | - | - |
@@ -149,7 +159,7 @@ Document purchases are only allowed for document types whose trade mode permits 
 
 ### Document Update Price
 
-The document update price transition is used by the current owner to list a document for sale (or change its listed price). It extends the [base schema](#base-fields) with the new price:
+The document update price transition is used by the current owner to list a document for sale (or change its listed price). It extends the [transition base](#document-transition-base) with the new price:
 
 | Field | Type | Description |
 | - | - | - |
