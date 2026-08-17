@@ -34,6 +34,31 @@ try {
 }
 ```
 
+```{raw} html
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="name-resolve" data-network="testnet" data-renderer="name">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
+  </div>
+  <label class="interactive-tutorial__label" for="resolve-name">Fully-qualified name</label>
+  <div class="interactive-tutorial__controls">
+    <input id="resolve-name" class="interactive-tutorial__input"
+      data-param="name" data-label="a fully-qualified name"
+      data-default-value="quantumexplorer.dash"
+      type="text" spellcheck="false" autocomplete="off" required>
+    <button class="interactive-tutorial__button" data-role="run" type="button">Resolve name</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>View browser code</summary>
+    <pre><code data-role="source"></code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Resolve the name to inspect its identity ID.</div>
+  </div>
+</div>
+```
+
 **Example Response**
 
 ```text
@@ -120,35 +145,6 @@ Tutorial-Test-000000-backup.dash (ID: 98bruK9TdJki5xP8BYpmNXqdH9ZHzBD9phwDRzhaJs
 
 :::
 ::::
-
-## Try it
-
-Resolve a fully-qualified DPNS name to its identity ID.
-
-```{raw} html
-<div class="interactive-tutorial" data-operation="name-resolve" data-network="testnet" data-renderer="name">
-  <div class="interactive-tutorial__header">
-    <strong>Resolve a name on testnet</strong>
-    <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
-  </div>
-  <label class="interactive-tutorial__label" for="resolve-name">Fully-qualified name</label>
-  <div class="interactive-tutorial__controls">
-    <input id="resolve-name" class="interactive-tutorial__input"
-      data-param="name" data-label="a fully-qualified name"
-      data-default-value="quantumexplorer.dash"
-      type="text" spellcheck="false" autocomplete="off" required>
-    <button class="interactive-tutorial__button" data-role="run" type="button">Resolve name</button>
-    <button class="interactive-tutorial__button interactive-tutorial__button--secondary" data-role="reset" type="button">Reset</button>
-  </div>
-  <details class="interactive-tutorial__source">
-    <summary>Code being run</summary>
-    <pre><code data-role="source"></code></pre>
-  </details>
-  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
-    <div class="interactive-tutorial__empty">Resolve the name to inspect its identity ID.</div>
-  </div>
-</div>
-```
 
 ## What's Happening
 

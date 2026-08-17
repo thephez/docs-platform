@@ -34,15 +34,11 @@ try {
 }
 ```
 
-## Try it
-
-Retrieve a contract from testnet without configuring a wallet or identity.
-
 ```{raw} html
-<div class="interactive-tutorial" data-operation="contract-fetch" data-network="testnet" data-renderer="contract">
-  <div class="interactive-tutorial__header">
-    <strong>Retrieve a data contract from testnet</strong>
-    <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="contract-fetch" data-network="testnet" data-renderer="contract">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
   </div>
   <label class="interactive-tutorial__label" for="contract-lookup-id">Data contract ID</label>
   <div class="interactive-tutorial__controls">
@@ -51,10 +47,10 @@ Retrieve a contract from testnet without configuring a wallet or identity.
       data-default-value="FW3DHrQiG24VqzPY4ARenMgjEPpBNuEQTZckV8hbVCG4"
       type="text" spellcheck="false" autocomplete="off" required>
     <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
-    <button class="interactive-tutorial__button interactive-tutorial__button--secondary" data-role="reset" type="button">Reset</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
   </div>
   <details class="interactive-tutorial__source">
-    <summary>Code being run</summary>
+    <summary>View browser code</summary>
     <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">

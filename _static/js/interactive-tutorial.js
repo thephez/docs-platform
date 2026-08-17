@@ -49,6 +49,12 @@ const operations = {
 
 const text = (value) => String(value ?? '—');
 
+function integer(value) {
+  if (value == null || value === '') return '—';
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString() : text(value);
+}
+
 function metric(label, value) {
   const wrapper = document.createElement('div');
   wrapper.className = 'interactive-tutorial__metric';
@@ -95,7 +101,15 @@ function renderResult(container, rawValue, renderer) {
   } else if (renderer === 'documents') {
     summary.append(metric('Documents returned', value.length));
   } else if (renderer === 'status') {
-    summary.append(metric('Connection', 'Successful'));
+    summary.append(
+      metric('Network', value.network?.chainId),
+      metric('Latest block', integer(value.chain?.latestBlockHeight)),
+      metric('Sync status', value.chain?.isCatchingUp ? 'Catching up' : 'Synced'),
+      metric('Peers', integer(value.network?.peersCount)),
+      metric('DAPI', value.version?.software?.dapi),
+      metric('Drive', value.version?.software?.drive),
+      metric('Tenderdash', value.version?.software?.tenderdash),
+    );
   }
 
   const details = document.createElement('details');

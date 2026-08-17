@@ -47,22 +47,18 @@ try {
 }
 ```
 
-### Try it
-
-Run the connection and status check directly from this page.
-
 ```{raw} html
-<div class="interactive-tutorial" data-operation="network-status" data-network="testnet" data-renderer="status">
-  <div class="interactive-tutorial__header">
-    <strong>Connect to Dash Platform testnet</strong>
-    <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="network-status" data-network="testnet" data-renderer="status">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
   </div>
   <div class="interactive-tutorial__actions">
     <button class="interactive-tutorial__button" data-role="run" type="button">Connect</button>
-    <button class="interactive-tutorial__button interactive-tutorial__button--secondary" data-role="reset" type="button">Reset</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
   </div>
   <details class="interactive-tutorial__source">
-    <summary>Code being run</summary>
+    <summary>View browser code</summary>
     <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">

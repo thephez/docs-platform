@@ -38,22 +38,16 @@ try {
 }
 ```
 
-## Try it
-
-This read-only example connects directly to testnet from your browser. Enter any identity ID, or
-use the example ID, and run the same `sdk.identities.fetch()` call used above. No wallet, mnemonic,
-or signing key is required.
-
 ```{raw} html
 <div
-  class="interactive-tutorial"
+  class="interactive-tutorial interactive-tutorial--integrated"
   data-operation="identity-fetch"
   data-network="testnet"
   data-renderer="identity"
 >
-  <div class="interactive-tutorial__header">
-    <strong>Retrieve an identity from testnet</strong>
-    <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
   </div>
   <label class="interactive-tutorial__label" for="identity-lookup-id">Identity ID</label>
   <div class="interactive-tutorial__controls">
@@ -67,16 +61,12 @@ or signing key is required.
       required
       spellcheck="false"
       autocomplete="off"
-      aria-describedby="identity-lookup-help"
     >
     <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
-    <button class="interactive-tutorial__button interactive-tutorial__button--secondary" data-role="reset" type="button">Reset</button>
-  </div>
-  <div id="identity-lookup-help" class="interactive-tutorial__help">
-    Runs <code>sdk.identities.fetch(identityId)</code> against Dash Platform testnet.
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
   </div>
   <details class="interactive-tutorial__source">
-    <summary>Code being run</summary>
+    <summary>View browser code</summary>
     <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
