@@ -192,3 +192,143 @@ sphinx search extension interface.
   max-height: 60rem;
   overflow: auto;
 }
+/* Reusable, browser-executed blocks for safe tutorial operations. */
+.interactive-tutorial {
+  margin: 1rem 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.5rem;
+  background: var(--pst-color-surface);
+}
+
+.interactive-tutorial__header,
+.interactive-tutorial__controls,
+.interactive-tutorial__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.interactive-tutorial__header {
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.interactive-tutorial__help,
+.interactive-tutorial__connection,
+.interactive-tutorial__empty {
+  color: var(--pst-color-text-muted);
+  font-size: 0.85rem;
+}
+
+.interactive-tutorial__connection[data-state="connected"] {
+  color: #16834a;
+}
+
+.interactive-tutorial__connection[data-state="error"] {
+  color: var(--pst-color-danger);
+}
+
+.interactive-tutorial__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.interactive-tutorial__input {
+  flex: 1 1 28rem;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.3rem;
+  background: var(--pst-color-background);
+  color: var(--pst-color-text-base);
+  font-family: var(--pst-font-family-monospace);
+}
+
+.interactive-tutorial__button {
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--pst-color-primary);
+  border-radius: 0.3rem;
+  background: var(--pst-color-primary);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.interactive-tutorial__button--secondary {
+  background: transparent;
+  color: var(--pst-color-primary);
+}
+
+.interactive-tutorial__button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.interactive-tutorial__help {
+  margin-top: 0.45rem;
+}
+
+.interactive-tutorial__source {
+  margin-top: 1rem;
+}
+
+.interactive-tutorial__source summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.interactive-tutorial__source pre {
+  margin: 0.5rem 0 0;
+  padding: 0.85rem;
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.3rem;
+  background: var(--pst-color-on-background);
+  overflow: auto;
+}
+
+.interactive-tutorial__result {
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border-radius: 0.3rem;
+  background: var(--pst-color-on-background);
+}
+
+.interactive-tutorial__summary {
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.interactive-tutorial__metric {
+  padding-right: 1rem;
+}
+
+.interactive-tutorial__metric strong,
+.interactive-tutorial__metric span {
+  display: block;
+}
+
+.interactive-tutorial__metric span {
+  color: var(--pst-color-text-muted);
+  font-size: 0.75rem;
+}
+
+.interactive-tutorial__json {
+  max-height: 28rem;
+  margin: 0;
+  overflow: auto;
+  white-space: pre;
+  font-size: 0.82rem;
+}
+
+.interactive-tutorial__error {
+  color: var(--pst-color-danger);
+}
+
+@media (max-width: 767.98px) {
+  .interactive-tutorial__controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

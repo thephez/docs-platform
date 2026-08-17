@@ -142,3 +142,7 @@ googleanalytics_enabled = True
 
 def setup(app):
     app.add_js_file('js/pydata-search-close.js')
+    # Keep this a classic script so locally built docs also work when opened
+    # directly via file://. Module scripts loaded from file:// are blocked by
+    # browser CORS rules; the SDK itself is still loaded lazily over HTTPS.
+    app.add_js_file('js/interactive-tutorial.js', defer='defer')

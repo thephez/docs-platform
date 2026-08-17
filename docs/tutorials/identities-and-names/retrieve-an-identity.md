@@ -38,6 +38,54 @@ try {
 }
 ```
 
+## Try it
+
+This read-only example connects directly to testnet from your browser. Enter any identity ID, or
+use the example ID, and run the same `sdk.identities.fetch()` call used above. No wallet, mnemonic,
+or signing key is required.
+
+```{raw} html
+<div
+  class="interactive-tutorial"
+  data-tutorial-operation="identity-fetch"
+  data-network="testnet"
+  data-default-value="FKZZFDTfGdSWUmL2g7H9e46pMJMPQp9DHQcvjrsS6884"
+>
+  <div class="interactive-tutorial__header">
+    <strong>Retrieve an identity from testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
+  </div>
+  <label class="interactive-tutorial__label" for="identity-lookup-id">Identity ID</label>
+  <div class="interactive-tutorial__controls">
+    <input
+      id="identity-lookup-id"
+      class="interactive-tutorial__input"
+      data-role="input"
+      type="text"
+      spellcheck="false"
+      autocomplete="off"
+      aria-describedby="identity-lookup-help"
+    >
+    <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--secondary" data-role="reset" type="button">Reset</button>
+  </div>
+  <div id="identity-lookup-help" class="interactive-tutorial__help">
+    Runs <code>sdk.identities.fetch(identityId)</code> against Dash Platform testnet.
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>Code being run</summary>
+    <pre><code data-role="source">const sdk = EvoSDK.testnetTrusted();
+await sdk.connect();
+
+const identity = await sdk.identities.fetch(identityId);
+return identity?.toJSON() ?? null;</code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Run the query to inspect the identity.</div>
+  </div>
+</div>
+```
+
 ## Example Identity
 
 The following example response shows a retrieved identity:
