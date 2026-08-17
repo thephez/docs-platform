@@ -235,6 +235,29 @@ sphinx search extension interface.
   font-weight: 600;
 }
 
+.interactive-tutorial__field {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.interactive-tutorial__field--wide {
+  flex-basis: 28rem;
+}
+
+.interactive-tutorial__field--small {
+  flex: 0 1 6rem;
+}
+
+.interactive-tutorial__field .interactive-tutorial__input {
+  width: 100%;
+}
+
+.interactive-tutorial__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
 .interactive-tutorial__input {
   flex: 1 1 28rem;
   min-width: 0;

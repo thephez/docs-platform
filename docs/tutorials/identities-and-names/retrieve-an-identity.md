@@ -47,9 +47,8 @@ or signing key is required.
 ```{raw} html
 <div
   class="interactive-tutorial"
-  data-tutorial-operation="identity-fetch"
   data-network="testnet"
-  data-default-value="FKZZFDTfGdSWUmL2g7H9e46pMJMPQp9DHQcvjrsS6884"
+  data-renderer="identity"
 >
   <div class="interactive-tutorial__header">
     <strong>Retrieve an identity from testnet</strong>
@@ -60,8 +59,11 @@ or signing key is required.
     <input
       id="identity-lookup-id"
       class="interactive-tutorial__input"
-      data-role="input"
+      data-param="identityId"
+      data-label="an identity ID"
+      data-default-value="FKZZFDTfGdSWUmL2g7H9e46pMJMPQp9DHQcvjrsS6884"
       type="text"
+      required
       spellcheck="false"
       autocomplete="off"
       aria-describedby="identity-lookup-help"
