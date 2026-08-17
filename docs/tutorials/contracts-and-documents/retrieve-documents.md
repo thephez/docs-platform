@@ -47,7 +47,7 @@ Query documents on testnet. The limit is converted to a number by the displayed 
 passed to the SDK.
 
 ```{raw} html
-<div class="interactive-tutorial" data-network="testnet" data-renderer="documents">
+<div class="interactive-tutorial" data-operation="documents-query" data-network="testnet" data-renderer="documents">
   <div class="interactive-tutorial__header">
     <strong>Retrieve documents from testnet</strong>
     <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
@@ -79,16 +79,7 @@ passed to the SDK.
   </div>
   <details class="interactive-tutorial__source">
     <summary>Code being run</summary>
-    <pre><code data-role="source">const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const results = await sdk.documents.query({
-  dataContractId,
-  documentTypeName,
-  limit: Number(limit),
-});
-
-return results;</code></pre>
+    <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
     <div class="interactive-tutorial__empty">Run the query to inspect matching documents.</div>

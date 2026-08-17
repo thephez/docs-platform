@@ -126,7 +126,7 @@ Tutorial-Test-000000-backup.dash (ID: 98bruK9TdJki5xP8BYpmNXqdH9ZHzBD9phwDRzhaJs
 Resolve a fully-qualified DPNS name to its identity ID.
 
 ```{raw} html
-<div class="interactive-tutorial" data-network="testnet" data-renderer="name">
+<div class="interactive-tutorial" data-operation="name-resolve" data-network="testnet" data-renderer="name">
   <div class="interactive-tutorial__header">
     <strong>Resolve a name on testnet</strong>
     <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
@@ -142,10 +142,7 @@ Resolve a fully-qualified DPNS name to its identity ID.
   </div>
   <details class="interactive-tutorial__source">
     <summary>Code being run</summary>
-    <pre><code data-role="source">const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-return sdk.dpns.resolveName(name);</code></pre>
+    <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
     <div class="interactive-tutorial__empty">Resolve the name to inspect its identity ID.</div>

@@ -39,7 +39,7 @@ try {
 Retrieve a contract from testnet without configuring a wallet or identity.
 
 ```{raw} html
-<div class="interactive-tutorial" data-network="testnet" data-renderer="contract">
+<div class="interactive-tutorial" data-operation="contract-fetch" data-network="testnet" data-renderer="contract">
   <div class="interactive-tutorial__header">
     <strong>Retrieve a data contract from testnet</strong>
     <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
@@ -55,11 +55,7 @@ Retrieve a contract from testnet without configuring a wallet or identity.
   </div>
   <details class="interactive-tutorial__source">
     <summary>Code being run</summary>
-    <pre><code data-role="source">const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const contract = await sdk.contracts.fetch(dataContractId);
-return contract?.toJSON() ?? null;</code></pre>
+    <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
     <div class="interactive-tutorial__empty">Run the query to inspect the contract.</div>

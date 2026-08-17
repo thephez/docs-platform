@@ -47,6 +47,7 @@ or signing key is required.
 ```{raw} html
 <div
   class="interactive-tutorial"
+  data-operation="identity-fetch"
   data-network="testnet"
   data-renderer="identity"
 >
@@ -76,11 +77,7 @@ or signing key is required.
   </div>
   <details class="interactive-tutorial__source">
     <summary>Code being run</summary>
-    <pre><code data-role="source">const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const identity = await sdk.identities.fetch(identityId);
-return identity?.toJSON() ?? null;</code></pre>
+    <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
     <div class="interactive-tutorial__empty">Run the query to inspect the identity.</div>

@@ -52,7 +52,7 @@ try {
 Run the connection and status check directly from this page.
 
 ```{raw} html
-<div class="interactive-tutorial" data-network="testnet" data-renderer="status">
+<div class="interactive-tutorial" data-operation="network-status" data-network="testnet" data-renderer="status">
   <div class="interactive-tutorial__header">
     <strong>Connect to Dash Platform testnet</strong>
     <span class="interactive-tutorial__connection" data-role="connection">Not connected</span>
@@ -63,11 +63,7 @@ Run the connection and status check directly from this page.
   </div>
   <details class="interactive-tutorial__source">
     <summary>Code being run</summary>
-    <pre><code data-role="source">const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const status = await sdk.system.status();
-return status.toJSON();</code></pre>
+    <pre><code data-role="source"></code></pre>
   </details>
   <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
     <div class="interactive-tutorial__empty">Connect to inspect the current system status.</div>

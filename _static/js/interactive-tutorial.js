@@ -1,5 +1,52 @@
 const SDK_URL = 'https://esm.sh/@dashevo/evo-sdk@4.1.0';
 
+// Explicit allow-list of safe, read-only tutorial operations. The UI obtains
+// its displayed source directly from these functions, preventing code drift.
+async function getNetworkStatus({ EvoSDK }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  const status = await sdk.system.status();
+  return status.toJSON();
+}
+
+async function fetchIdentity({ EvoSDK, identityId }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  const identity = await sdk.identities.fetch(identityId);
+  return identity?.toJSON() ?? null;
+}
+
+async function fetchContract({ EvoSDK, dataContractId }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  const contract = await sdk.contracts.fetch(dataContractId);
+  return contract?.toJSON() ?? null;
+}
+
+async function queryDocuments({ EvoSDK, dataContractId, documentTypeName, limit }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  return sdk.documents.query({
+    dataContractId,
+    documentTypeName,
+    limit: Number(limit),
+  });
+}
+
+async function resolveName({ EvoSDK, name }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  return sdk.dpns.resolveName(name);
+}
+
+const operations = {
+  'network-status': getNetworkStatus,
+  'identity-fetch': fetchIdentity,
+  'contract-fetch': fetchContract,
+  'documents-query': queryDocuments,
+  'name-resolve': resolveName,
+};
+
 const text = (value) => String(value ?? '—');
 
 function metric(label, value) {
@@ -75,32 +122,41 @@ function renderMessage(container, message, isError = false) {
 }
 
 async function initialize(block) {
+  const operationName = block.dataset.operation;
+  const operation = operations[operationName];
   const network = block.dataset.network ?? 'testnet';
   const renderer = block.dataset.renderer ?? 'status';
   const inputs = [...block.querySelectorAll('[data-param]')];
   const sourceElement = block.querySelector('[data-role="source"]');
-  const sourceBody = sourceElement?.textContent?.trim();
   const runButton = block.querySelector('[data-role="run"]');
   const resetButton = block.querySelector('[data-role="reset"]');
   const result = block.querySelector('[data-role="result"]');
   const connection = block.querySelector('[data-role="connection"]');
 
-  if (!sourceElement || !sourceBody || !runButton || !resetButton || !result || !connection) return;
+  if (!sourceElement || !runButton || !resetButton || !result || !connection) return;
+  if (!operation) {
+    renderMessage(result, `Interactive tutorial is not configured correctly: ${operationName ?? 'missing operation'}.`, true);
+    return;
+  }
   inputs.forEach((input) => { input.value = input.dataset.defaultValue ?? ''; });
 
-  // Materialize current form values as JavaScript declarations above the
-  // authored snippet. The complete visible snippet is then executed as-is.
+  // Derive the display from the same function object invoked by run(). The DOM
+  // remains non-executable, while current parameter values make the call clear.
   function updateDisplayedSource() {
     const declarations = inputs.map(
       (input) => `const ${input.dataset.param} = ${JSON.stringify(input.value)};`,
     );
-    sourceElement.textContent = [...declarations, declarations.length ? '' : null, sourceBody]
-      .filter((line) => line !== null)
-      .join('\n');
+    const argumentNames = inputs.map((input) => input.dataset.param);
+    const invocationArguments = ['EvoSDK', ...argumentNames].join(', ');
+    sourceElement.textContent = [
+      operation.toString(),
+      '',
+      ...declarations,
+      declarations.length ? '' : null,
+      `const result = await ${operation.name}({ ${invocationArguments} });`,
+    ].filter((line) => line !== null).join('\n');
   }
   updateDisplayedSource();
-
-  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 
   let EvoSDK;
   async function loadSdk() {
@@ -127,8 +183,10 @@ async function initialize(block) {
     try {
       const sdkClass = await loadSdk();
       connection.textContent = `Connecting to ${network}…`;
-      const execute = new AsyncFunction('EvoSDK', sourceElement.textContent);
-      const output = await execute(sdkClass);
+      const parameters = Object.fromEntries(
+        inputs.map((input) => [input.dataset.param, input.value]),
+      );
+      const output = await operation({ ...parameters, EvoSDK: sdkClass });
       connection.textContent = `Connected to ${network}`;
       if (output == null) {
         renderMessage(result, 'No result was found.', true);

@@ -350,7 +350,8 @@ sphinx search extension interface.
 }
 
 @media (max-width: 767.98px) {
-  .interactive-tutorial__controls {
+  .interactive-tutorial__controls,
+  .interactive-tutorial__actions {
     align-items: stretch;
     flex-direction: column;
   }
