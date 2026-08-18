@@ -45,6 +45,7 @@ exclude_patterns = [
     '.devcontainer',
     '.codex',
     '.local',
+    'node_modules',
     'scripts',
     'img/dev/gifs/README.md',
     'docs/other',

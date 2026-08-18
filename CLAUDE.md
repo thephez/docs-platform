@@ -14,7 +14,12 @@ python -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 
-# Build documentation
+# Install JavaScript build dependencies (once, on a fresh checkout; needed to
+# bundle the Evo SDK for the interactive tutorial runners)
+make sdk-install
+
+# Build documentation (also regenerates the gitignored SDK bundle via the
+# `sdk` target)
 make html
 
 # Clean build
@@ -64,6 +69,7 @@ The site uses a hierarchical structure with:
 - GitHub integration for edit links and source references
 - Google Analytics tracking configured
 - Uses pydata-sphinx-theme with custom CSS overrides
+- Interactive tutorial runners (`_static/js/interactive-tutorial.js`) import the Evo SDK from `_static/vendor/evo-sdk.js`, a gitignored bundle produced by `npm run build:sdk` (esbuild, pinned via `package-lock.json`). Read the Docs builds it in a `pre_build` job; locally `make html` rebuilds it automatically (run `make sdk-install` once first). To change the SDK version, update `package.json`/`package-lock.json` and rebuild.
 
 ## Editing Guidelines
 
