@@ -280,6 +280,10 @@ sphinx search extension interface.
   margin-top: 0.75rem;
 }
 
+.interactive-tutorial__controls--secondary {
+  margin-top: 0.75rem;
+}
+
 .interactive-tutorial__input {
   flex: 1 1 28rem;
   min-width: 0;

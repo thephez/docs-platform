@@ -49,6 +49,31 @@ try {
 }
 ```
 
+```{raw} html
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="contract-history" data-network="testnet" data-renderer="history">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
+  </div>
+  <label class="interactive-tutorial__label" for="contract-history-id">Data contract ID</label>
+  <div class="interactive-tutorial__controls">
+    <input id="contract-history-id" class="interactive-tutorial__input"
+      data-param="dataContractId" data-label="a data contract ID"
+      data-default-value="5J4VPym1Bnc2Ap9bbo9wNw6fZLGsCzDM7ZScdzcggN1r"
+      type="text" spellcheck="false" autocomplete="off" required>
+    <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>View browser code</summary>
+    <pre><code data-role="source"></code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Run the query to inspect contract revisions.</div>
+  </div>
+</div>
+```
+
 ## Example data contract history
 
 The following example response shows a retrieved contract history:

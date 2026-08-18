@@ -91,6 +91,31 @@ try {
 }
 ```
 
+```{raw} html
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="identity-names" data-network="testnet" data-renderer="names">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
+  </div>
+  <label class="interactive-tutorial__label" for="identity-names-id">Identity ID</label>
+  <div class="interactive-tutorial__controls">
+    <input id="identity-names-id" class="interactive-tutorial__input"
+      data-param="identityId" data-label="an identity ID"
+      data-default-value="GgZekwh38XcWQTyWWWvmw6CEYFnLU7yiZFPWZEjqKHit"
+      type="text" spellcheck="false" autocomplete="off" required>
+    <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>View browser code</summary>
+    <pre><code data-role="source"></code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Run the query to inspect names owned by this identity.</div>
+  </div>
+</div>
+```
+
 **Example Response**
 
 ```text
@@ -134,6 +159,31 @@ try {
 } catch (e) {
   console.error('Something went wrong:\n', e.message);
 }
+```
+
+```{raw} html
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="name-search" data-network="testnet" data-renderer="name-search">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
+  </div>
+  <label class="interactive-tutorial__label" for="name-search-prefix">Name prefix</label>
+  <div class="interactive-tutorial__controls">
+    <input id="name-search-prefix" class="interactive-tutorial__input"
+      data-param="prefix" data-label="a name prefix"
+      data-default-value="Tutorial-Test-00"
+      type="text" spellcheck="false" autocomplete="off" required>
+    <button class="interactive-tutorial__button" data-role="run" type="button">Search names</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>View browser code</summary>
+    <pre><code data-role="source"></code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Run the query to inspect matching names.</div>
+  </div>
+</div>
 ```
 
 **Example Response**

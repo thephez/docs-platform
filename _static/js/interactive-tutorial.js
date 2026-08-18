@@ -1,4 +1,5 @@
 const SDK_URL = 'https://esm.sh/@dashevo/evo-sdk@4.1.0';
+const DPNS_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec';
 
 // Explicit allow-list of safe, read-only tutorial operations. The UI obtains
 // its displayed source directly from these functions, preventing code drift.
@@ -23,6 +24,12 @@ async function fetchContract({ EvoSDK, dataContractId }) {
   return contract?.toJSON() ?? null;
 }
 
+async function getContractHistory({ EvoSDK, dataContractId }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  return sdk.contracts.getHistory({ dataContractId });
+}
+
 async function queryDocuments({ EvoSDK, dataContractId, documentTypeName, limit }) {
   const sdk = EvoSDK.testnetTrusted();
   await sdk.connect();
@@ -39,12 +46,62 @@ async function resolveName({ EvoSDK, name }) {
   return sdk.dpns.resolveName(name);
 }
 
+async function getIdentityNames({ EvoSDK, identityId }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  return sdk.dpns.usernames({ identityId });
+}
+
+async function searchNames({ EvoSDK, prefix }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  const normalizedPrefix = await sdk.dpns.convertToHomographSafe(prefix);
+  return sdk.documents.query({
+    dataContractId: DPNS_CONTRACT_ID,
+    documentTypeName: 'domain',
+    where: [
+      ['normalizedParentDomainName', '==', 'dash'],
+      ['normalizedLabel', 'startsWith', normalizedPrefix],
+    ],
+    orderBy: [['normalizedLabel', 'asc']],
+  });
+}
+
+async function getTokenInfo({ EvoSDK, dataContractId, tokenPosition, identityId, recipientId }) {
+  const sdk = EvoSDK.testnetTrusted();
+  await sdk.connect();
+  const tokenId = await sdk.tokens.calculateId(dataContractId, Number(tokenPosition));
+  const contractInfo = await sdk.tokens.contractInfo(tokenId);
+  const totalSupply = await sdk.tokens.totalSupply(tokenId);
+  const statuses = await sdk.tokens.statuses([tokenId]);
+  const identityBalances = await sdk.tokens.identityBalances(identityId, [tokenId]);
+  const recipientBalances = await sdk.tokens.identityBalances(recipientId, [tokenId]);
+  const status = statuses.get(tokenId);
+
+  return {
+    tokenId: tokenId.toString(),
+    contractInfo: contractInfo?.toJSON() ?? null,
+    totalSupply: totalSupply?.totalSupply ?? 0n,
+    isPaused: status?.isPaused ?? null,
+    identityBalance: identityBalances.get(tokenId) ?? 0n,
+    recipientBalance: recipientBalances.get(tokenId) ?? 0n,
+  };
+}
+
 const operations = {
   'network-status': getNetworkStatus,
   'identity-fetch': fetchIdentity,
   'contract-fetch': fetchContract,
+  'contract-history': getContractHistory,
   'documents-query': queryDocuments,
   'name-resolve': resolveName,
+  'identity-names': getIdentityNames,
+  'name-search': searchNames,
+  'token-info': getTokenInfo,
+};
+
+const operationConstants = {
+  'name-search': { DPNS_CONTRACT_ID },
 };
 
 const text = (value) => String(value ?? '—');
@@ -69,7 +126,7 @@ function metric(label, value) {
 function normalize(value) {
   if (value && typeof value.toJSON === 'function') return normalize(value.toJSON());
   if (value instanceof Map) {
-    return [...value.entries()].map(([id, item]) => ({ id: text(id), ...normalize(item) }));
+    return [...value.entries()].map(([key, item]) => ({ mapKey: text(key), ...normalize(item) }));
   }
   if (Array.isArray(value)) return value.map(normalize);
   if (value && typeof value === 'object') {
@@ -96,8 +153,45 @@ function renderResult(container, rawValue, renderer) {
       metric('Version', value.version),
       metric('Document types', Object.keys(value.documentSchemas ?? {}).length),
     );
+  } else if (renderer === 'history') {
+    const timestamps = value
+      .map((entry) => Number(entry.mapKey))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+    const versions = value
+      .map((entry) => Number(entry.version))
+      .filter(Number.isFinite);
+    summary.append(
+      metric('Revisions', value.length),
+      metric('Latest version', versions.length ? Math.max(...versions) : '—'),
+      metric('First revision', timestamps.length ? new Date(timestamps[0]).toLocaleString() : '—'),
+      metric('Latest revision', timestamps.length ? new Date(timestamps.at(-1)).toLocaleString() : '—'),
+    );
   } else if (renderer === 'name') {
     summary.append(metric('Resolved identity ID', value));
+  } else if (renderer === 'names') {
+    summary.append(
+      metric('Names returned', value.length),
+      metric('Names', value.length ? value.join(', ') : '(none)'),
+    );
+  } else if (renderer === 'name-search') {
+    const names = value.map((entry) => {
+      const label = entry.label ?? entry.normalizedLabel;
+      const parent = entry.parentDomainName ?? entry.normalizedParentDomainName;
+      return [label, parent].filter(Boolean).join('.');
+    });
+    summary.append(
+      metric('Matches', value.length),
+      metric('Names', names.length ? names.join(', ') : '(none)'),
+    );
+  } else if (renderer === 'token') {
+    summary.append(
+      metric('Token ID', value.tokenId),
+      metric('Total supply', integer(value.totalSupply)),
+      metric('Status', value.isPaused == null ? 'No status published' : value.isPaused ? 'Paused' : 'Active'),
+      metric('Identity balance', integer(value.identityBalance)),
+      metric('Recipient balance', integer(value.recipientBalance)),
+    );
   } else if (renderer === 'documents') {
     summary.append(metric('Documents returned', value.length));
   } else if (renderer === 'status') {
@@ -157,12 +251,17 @@ async function initialize(block) {
   // Derive the display from the same function object invoked by run(). The DOM
   // remains non-executable, while current parameter values make the call clear.
   function updateDisplayedSource() {
+    const constants = Object.entries(operationConstants[operationName] ?? {}).map(
+      ([name, value]) => `const ${name} = ${JSON.stringify(value)};`,
+    );
     const declarations = inputs.map(
       (input) => `const ${input.dataset.param} = ${JSON.stringify(input.value)};`,
     );
     const argumentNames = inputs.map((input) => input.dataset.param);
     const invocationArguments = ['EvoSDK', ...argumentNames].join(', ');
     sourceElement.textContent = [
+      ...constants,
+      constants.length ? '' : null,
       operation.toString(),
       '',
       ...declarations,

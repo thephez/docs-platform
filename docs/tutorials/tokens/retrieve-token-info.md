@@ -72,6 +72,57 @@ try {
 }
 ```
 
+```{raw} html
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="token-info" data-network="testnet" data-renderer="token">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
+  </div>
+  <div class="interactive-tutorial__controls">
+    <div class="interactive-tutorial__field interactive-tutorial__field--wide">
+      <label class="interactive-tutorial__label" for="token-contract-id">Token contract ID</label>
+      <input id="token-contract-id" class="interactive-tutorial__input"
+        data-param="dataContractId" data-label="a token contract ID"
+        data-default-value="CWmut7sha5Eweckmr7ouiXWCm3x2H5a2cXRFG7yJzjFw"
+        type="text" spellcheck="false" autocomplete="off" required>
+    </div>
+    <div class="interactive-tutorial__field interactive-tutorial__field--small">
+      <label class="interactive-tutorial__label" for="token-position">Position</label>
+      <input id="token-position" class="interactive-tutorial__input"
+        data-param="tokenPosition" data-label="a token position" data-default-value="0"
+        type="number" min="0" required>
+    </div>
+  </div>
+  <div class="interactive-tutorial__controls interactive-tutorial__controls--secondary">
+    <div class="interactive-tutorial__field">
+      <label class="interactive-tutorial__label" for="token-identity-id">Identity ID</label>
+      <input id="token-identity-id" class="interactive-tutorial__input"
+        data-param="identityId" data-label="an identity ID"
+        data-default-value="FKZZFDTfGdSWUmL2g7H9e46pMJMPQp9DHQcvjrsS6884"
+        type="text" spellcheck="false" autocomplete="off" required>
+    </div>
+    <div class="interactive-tutorial__field">
+      <label class="interactive-tutorial__label" for="token-recipient-id">Recipient ID</label>
+      <input id="token-recipient-id" class="interactive-tutorial__input"
+        data-param="recipientId" data-label="a recipient identity ID"
+        data-default-value="7XcruVSsGQVSgTcmPewaE4tXLutnW1F6PXxwMbo8GYQC"
+        type="text" spellcheck="false" autocomplete="off" required>
+    </div>
+  </div>
+  <div class="interactive-tutorial__actions">
+    <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>View browser code</summary>
+    <pre><code data-role="source"></code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Run the query to inspect token information and balances.</div>
+  </div>
+</div>
+```
+
 ## What's Happening
 
 After connecting to the client, we derive the token ID from the contract ID and token position with `sdk.tokens.calculateId()`. We then query several pieces of information:
