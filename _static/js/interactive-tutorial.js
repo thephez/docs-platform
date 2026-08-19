@@ -111,8 +111,14 @@ const text = (value) => String(value ?? '—');
 
 function integer(value) {
   if (value == null || value === '') return '—';
-  const number = Number(value);
-  return Number.isFinite(number) ? number.toLocaleString() : text(value);
+  if (typeof value === 'bigint') return value.toLocaleString();
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) ? value.toLocaleString() : text(value);
+  }
+  if (typeof value === 'string' && /^[+-]?\d+$/.test(value)) {
+    return BigInt(value).toLocaleString();
+  }
+  return text(value);
 }
 
 function metric(label, value) {
@@ -145,7 +151,7 @@ function renderResult(container, rawValue, renderer) {
   if (renderer === 'identity') {
     summary.append(
       metric('Identity ID', value.id),
-      metric('Balance (credits)', Number(value.balance ?? 0).toLocaleString()),
+      metric('Balance (credits)', integer(value.balance ?? 0)),
       metric('Revision', value.revision),
       metric('Public keys', value.publicKeys?.length ?? 0),
     );
@@ -274,17 +280,19 @@ async function initialize(block) {
   }
   updateDisplayedSource();
 
-  let EvoSDK;
+  let sdkPromise;
   async function loadSdk() {
-    if (EvoSDK) return EvoSDK;
-    connection.textContent = 'Loading SDK…';
-    connection.dataset.state = 'connecting';
-    ({ EvoSDK } = await import(SDK_URL));
-    connection.textContent = `SDK loaded · ${network}`;
-    connection.dataset.state = 'connected';
-    return EvoSDK;
+    sdkPromise ??= import(SDK_URL).then(
+      ({ EvoSDK }) => EvoSDK,
+      (error) => {
+        sdkPromise = undefined;
+        throw error;
+      },
+    );
+    return sdkPromise;
   }
 
+  let runGeneration = 0;
   async function run() {
     const missing = inputs.find((input) => input.required && !input.value.trim());
     if (missing) {
@@ -293,29 +301,63 @@ async function initialize(block) {
       return;
     }
 
+    const invalidNumber = inputs.find((input) => {
+      if (input.type !== 'number') return false;
+      const value = Number(input.value);
+      const minimum = input.min === '' ? -Infinity : Number(input.min);
+      const maximum = input.max === '' ? Infinity : Number(input.max);
+      return !Number.isFinite(value)
+        || !Number.isInteger(value)
+        || value < minimum
+        || value > maximum;
+    });
+    if (invalidNumber) {
+      const bounds = [
+        invalidNumber.min === '' ? null : `at least ${invalidNumber.min}`,
+        invalidNumber.max === '' ? null : `at most ${invalidNumber.max}`,
+      ].filter(Boolean).join(' and ');
+      renderMessage(
+        result,
+        `Enter ${invalidNumber.dataset.label ?? 'a value'} as a whole number${bounds ? ` ${bounds}` : ''}.`,
+        true,
+      );
+      invalidNumber.focus();
+      return;
+    }
+
+    const parameters = Object.fromEntries(
+      inputs.map((input) => [input.dataset.param, input.value]),
+    );
+    const generation = ++runGeneration;
+    const isCurrent = () => generation === runGeneration;
     runButton.disabled = true;
     inputs.forEach((input) => { input.disabled = true; });
     renderMessage(result, 'Running query…');
     try {
+      connection.textContent = 'Loading SDK…';
+      connection.dataset.state = 'connecting';
       const sdkClass = await loadSdk();
+      if (!isCurrent()) return;
       connection.textContent = `Connecting to ${network}…`;
-      const parameters = Object.fromEntries(
-        inputs.map((input) => [input.dataset.param, input.value]),
-      );
       const output = await operation({ ...parameters, EvoSDK: sdkClass });
+      if (!isCurrent()) return;
       connection.textContent = `Connected to ${network}`;
+      connection.dataset.state = 'connected';
       if (output == null) {
         renderMessage(result, 'No result was found.', true);
         return;
       }
       renderResult(result, output, renderer);
     } catch (error) {
+      if (!isCurrent()) return;
       connection.textContent = 'Run failed';
       connection.dataset.state = 'error';
       renderMessage(result, `Query failed: ${error?.message ?? error}`, true);
     } finally {
-      runButton.disabled = false;
-      inputs.forEach((input) => { input.disabled = false; });
+      if (isCurrent()) {
+        runButton.disabled = false;
+        inputs.forEach((input) => { input.disabled = false; });
+      }
     }
   }
 
@@ -327,7 +369,12 @@ async function initialize(block) {
     });
   });
   resetButton.addEventListener('click', () => {
+    runGeneration += 1;
     inputs.forEach((input) => { input.value = input.dataset.defaultValue ?? ''; });
+    runButton.disabled = false;
+    inputs.forEach((input) => { input.disabled = false; });
+    connection.textContent = '';
+    delete connection.dataset.state;
     updateDisplayedSource();
     renderMessage(result, 'Run the query to inspect the result.');
     inputs[0]?.focus();

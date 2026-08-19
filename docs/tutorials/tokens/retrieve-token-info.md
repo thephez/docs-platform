@@ -90,7 +90,7 @@ try {
       <label class="interactive-tutorial__label" for="token-position">Position</label>
       <input id="token-position" class="interactive-tutorial__input"
         data-param="tokenPosition" data-label="a token position" data-default-value="0"
-        type="number" min="0" required>
+        type="number" min="0" max="65535" required>
     </div>
   </div>
   <div class="interactive-tutorial__controls interactive-tutorial__controls--secondary">

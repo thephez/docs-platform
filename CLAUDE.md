@@ -35,7 +35,12 @@ python3 scripts/tutorial-sync/sync_tutorial_code.py --source /path/to/platform-t
 python3 scripts/tutorial-sync/sync_tutorial_code.py --check --source /path/to/platform-tutorials
 
 # View built documentation
-# Open _build/html/index.html in browser
+# Most pages can be opened directly in a browser
+# Open _build/html/index.html
+
+# To use interactive tutorial widgets, serve the build over HTTP because
+# browsers block their SDK module import from file:// pages
+python -m http.server 8000 -d _build/html
 ```
 
 ## Architecture
