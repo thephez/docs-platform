@@ -1,4 +1,6 @@
-#/!bin/sh
+#!/bin/sh
+
+set -e
 
 # Command to run during postCreateCommand
 # Done in script because when done via object the commands are run in parallel
@@ -7,4 +9,5 @@
 # https://containers.dev/implementors/json_reference/#formatting-string-vs-array-properties
 
 pip install -r requirements.txt
+make sdk-install
 make html

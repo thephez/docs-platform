@@ -45,6 +45,7 @@ exclude_patterns = [
     '.devcontainer',
     '.codex',
     '.local',
+    'node_modules',
     'scripts',
     'img/dev/gifs/README.md',
     'docs/other',
@@ -142,3 +143,7 @@ googleanalytics_enabled = True
 
 def setup(app):
     app.add_js_file('js/pydata-search-close.js')
+    # Keep this a classic script so it can resolve the generated SDK bundle
+    # relative to its own URL. Local previews must serve _build/html over HTTP;
+    # browsers block the bundle's module import from file:// pages.
+    app.add_js_file('js/interactive-tutorial.js', defer='defer')

@@ -41,6 +41,47 @@ try {
 }
 ```
 
+```{raw} html
+<div class="interactive-tutorial interactive-tutorial--integrated" data-operation="documents-query" data-network="testnet" data-renderer="documents">
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
+  </div>
+  <div class="interactive-tutorial__controls">
+    <div class="interactive-tutorial__field interactive-tutorial__field--wide">
+      <label class="interactive-tutorial__label" for="documents-contract-id">Data contract ID</label>
+      <input id="documents-contract-id" class="interactive-tutorial__input"
+        data-param="dataContractId" data-label="a data contract ID"
+        data-default-value="FW3DHrQiG24VqzPY4ARenMgjEPpBNuEQTZckV8hbVCG4"
+        type="text" spellcheck="false" autocomplete="off" required>
+    </div>
+    <div class="interactive-tutorial__field">
+      <label class="interactive-tutorial__label" for="documents-type">Document type</label>
+      <input id="documents-type" class="interactive-tutorial__input"
+        data-param="documentTypeName" data-label="a document type"
+        data-default-value="note" type="text" spellcheck="false" required>
+    </div>
+    <div class="interactive-tutorial__field interactive-tutorial__field--small">
+      <label class="interactive-tutorial__label" for="documents-limit">Limit</label>
+      <input id="documents-limit" class="interactive-tutorial__input"
+        data-param="limit" data-label="a limit" data-default-value="2"
+        type="number" min="1" max="100" required>
+    </div>
+  </div>
+  <div class="interactive-tutorial__actions">
+    <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>View browser code</summary>
+    <pre><code data-role="source"></code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Run the query to inspect matching documents.</div>
+  </div>
+</div>
+```
+
 ### Queries
 
 The example code uses a very basic query to return only two results. More extensive querying capabilities are covered in the [query syntax reference](../../reference/query-syntax.md).

@@ -38,6 +38,43 @@ try {
 }
 ```
 
+```{raw} html
+<div
+  class="interactive-tutorial interactive-tutorial--integrated"
+  data-operation="identity-fetch"
+  data-network="testnet"
+  data-renderer="identity"
+>
+  <div class="interactive-tutorial__toolbar">
+    <strong>Run this example on testnet</strong>
+    <span class="interactive-tutorial__connection" data-role="connection"></span>
+  </div>
+  <label class="interactive-tutorial__label" for="identity-lookup-id">Identity ID</label>
+  <div class="interactive-tutorial__controls">
+    <input
+      id="identity-lookup-id"
+      class="interactive-tutorial__input"
+      data-param="identityId"
+      data-label="an identity ID"
+      data-default-value="FKZZFDTfGdSWUmL2g7H9e46pMJMPQp9DHQcvjrsS6884"
+      type="text"
+      required
+      spellcheck="false"
+      autocomplete="off"
+    >
+    <button class="interactive-tutorial__button" data-role="run" type="button">Run query</button>
+    <button class="interactive-tutorial__button interactive-tutorial__button--text" data-role="reset" type="button">Reset</button>
+  </div>
+  <details class="interactive-tutorial__source">
+    <summary>View browser code</summary>
+    <pre><code data-role="source"></code></pre>
+  </details>
+  <div class="interactive-tutorial__result" data-role="result" aria-live="polite">
+    <div class="interactive-tutorial__empty">Run the query to inspect the identity.</div>
+  </div>
+</div>
+```
+
 ## Example Identity
 
 The following example response shows a retrieved identity:
