@@ -125,7 +125,8 @@ When creating a token, you define its configuration using the following paramete
 #### Display Conventions
 
 - The token name in multiple languages, how to capitalize it, singular vs. plural form, etc.
-- How many decimal places the token uses
+- An English (`en`) localization is required and serves as the fallback for languages the token does not define. Singular and plural names must be 3-25 characters.
+- How many decimal places the token uses (limited to 16)
 
 #### Token Supply
 
@@ -246,6 +247,8 @@ Groups can be used to distribute token configuration and update authorization ac
 - The group itself has a required power threshold to authorize an action.
 - A group must have at least two members.
 - No member's power may exceed the group's required threshold, so no single member can be given more weight than the threshold itself.
+- The required threshold must be between 1 and 65535, and the members' combined power must be able to reach it.
+- If some members have power equal to the threshold (and so can act alone), the remaining members must still be able to reach the threshold together.
 - Groups can currently have up to 256 members, each with a maximum power of 65535 (2^16 - 1).
 - Changes to a token (e.g., mint, burn, freeze) can be configured so they require group authorization. This is done by assigning the group under the [token rule configuration](#rules).
 

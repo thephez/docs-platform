@@ -12,7 +12,7 @@ The pool uses the [Orchard](https://zips.z.cash/protocol/protocol.pdf) shielded 
 
 ## When to use the shielded pool
 
-Shielded transitions cost more than transparent ones — they carry a zero-knowledge proof and produce permanent on-chain artifacts (note commitments, nullifiers, and encrypted note ciphertexts). Use the pool when you need confidentiality for a specific payment, transfer, or balance. Use transparent transitions for everyday activity where privacy is not a requirement.
+Shielded transitions cost more than transparent ones — they carry a zero-knowledge proof and produce permanent on-chain artifacts (note commitments, nullifiers, and encrypted note ciphertexts). The fee includes a fixed proof-verification component plus a per-action component, so transitions that consume more notes cost more. Use the pool when you need confidentiality for a specific payment, transfer, or balance. Use transparent transitions for everyday activity where privacy is not a requirement.
 
 The pool is well-suited to:
 
@@ -56,7 +56,7 @@ Moves credits *into* the pool from one or more [Platform addresses](../protocol-
 
 ### Shield from asset lock
 
-Moves credits *into* the pool directly from a Dash Core (L1) asset-lock transaction. This avoids first funding a Platform address and lets users enter the pool in a single Platform transition tied to an L1 lock proof.
+Moves credits *into* the pool directly from a Dash Core (L1) asset-lock transaction. This avoids first funding a Platform address and lets users enter the pool in a single Platform transition tied to an L1 lock proof. Any asset-lock value beyond the shielded amount and fee is credited to a Platform address the sender designates. If no surplus address is given, the remainder is donated to the fee pools, but only up to a small cap; a transition that would forfeit more than the cap is rejected so users cannot donate a large remainder by accident.
 
 ### Shielded transfer
 

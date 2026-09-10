@@ -27,7 +27,7 @@ The process of adding or updating data in Drive consists of several steps to ens
 1. [State transitions](../explanations/platform-protocol-state-transition.md) are submitted to the platform via [DAPI](../explanations/dapi.md)
 2. DAPI relays state transitions to the platform chain's consensus engine (Tenderdash), which asks the platform state machine to validate them  and speculatively execute them when building or verifying a block proposal
 3. The block is propagated and voted on by validators
-4. Once the block is committed, each node finalizes it — persisting the speculative state changes to Drive, or executing the block if it was received via sync
+4. Once the block is committed, each node finalizes it, persisting to Drive the state changes it computed while processing the proposal. Nodes catching up on the chain execute each block the same way before finalizing it
 
 ```{eval-rst}
 .. figure:: ../../img/drive.svg

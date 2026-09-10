@@ -22,7 +22,7 @@ To overcome these obstacles, the Dash decentralized API (DAPI) uses Dash's robus
 
 ## Security
 
-DAPI protects connections by using TLS to encrypt communication between clients and the masternodes. This encryption safeguards transmitted data from unauthorized access, interception, or tampering. [Platform gRPC endpoints](../reference/dapi-endpoints-platform-endpoints.md) provide an additional level of security by optionally returning cryptographic proofs. Successful proof verification guarantees that the server responded without modifying the requested data.
+DAPI protects connections by using TLS to encrypt communication between clients and the masternodes. TLS is terminated by a gateway that runs in front of the DAPI service on each masternode; the gateway also applies rate limiting. This encryption safeguards transmitted data from unauthorized access, interception, or tampering. [Platform gRPC endpoints](../reference/dapi-endpoints-platform-endpoints.md) provide an additional level of security by optionally returning cryptographic proofs. Successful proof verification guarantees that the server responded without modifying the requested data.
 
 :::{note}
 See the [Query Capabilities page](./query.md) for more detailed information regarding Platform data
@@ -34,7 +34,7 @@ retrieval.
 DAPI currently provides 2 types of endpoints: [JSON-RPC](https://www.jsonrpc.org/) and [gRPC](https://grpc.io/docs/guides/).
 
 - JSON-RPC endpoints are a small surface that mostly exposes layer 1 information, with the exception of a Platform status method
-- gRPC endpoints cover both Core and Platform:
+- gRPC endpoints cover both Core and Platform.  They are also served over gRPC-Web on the same port, so browser clients can call masternodes without a separate proxy (subject to the node presenting a browser-trusted TLS certificate):
   - Core endpoints are mostly request/response, plus streaming subscriptions for block headers, transactions, and masternode-list updates
   - Platform endpoints are request/response only.
 

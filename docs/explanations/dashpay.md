@@ -38,10 +38,14 @@ The DashPay contract enables an improved Dash wallet experience with features in
 ## Details
 
 The contract defines three document types: `contactRequest`, `profile` and `contactInfo`.
-ContactRequest documents are the most important. They are used to establish relationships and
-payment channels between Dash identities. Profile documents are used to store public facing
-information about Dash identities including avatars and display names. ContactInfo documents can be
-used to store private information about other Dash identities.
+
+* ContactRequest documents are the most important. They are used to establish relationships and
+payment channels between Dash identities.
+* Profile documents are used to store public facing information about Dash identities including
+avatars and display names. Since Dash Platform v4.2, a profile can also publish optional public
+payment addresses (a Core chain address and/or a Platform address). Unlike contact-based payments,
+payments to these addresses are publicly linkable to the profile. 
+* ContactInfo documents can be used to store private information about other Dash identities.
 
 ### Establishing a Contact
 
@@ -75,10 +79,11 @@ used to store private information about other Dash identities.
 ### Implementation
 
 DashPay has many constraints as defined in the [DashPay data
-contract](https://github.com/dashpay/platform/blob/master/packages/dashpay-contract/schema/v1/dashpay.schema.json).
+contract](https://github.com/dashpay/platform/blob/master/packages/dashpay-contract/schema/v2/dashpay.schema.json).
 Additionally, the DashPay data triggers defined in
 [rs-drive-abci](https://github.com/dashpay/platform/tree/master/packages/rs-drive-abci/src/execution/validation/state_transition/state_transitions/batch/data_triggers/triggers/dashpay)
-enforce additional validation rules related to the `contactRequest` document. Note: as a system data
+enforce additional validation rules related to the `contactRequest` document and, since Dash Platform
+v4.2, the payment address fields of the `profile` document. Note: as a system data
 contract, the version active on a network is determined by that network's active protocol version.
 
 :::{tip}
@@ -156,6 +161,22 @@ information and complete details about the data contract.
         "minLength": 1,
         "maxLength": 25,
         "position": 4
+      },
+      "corePaymentAddress": {
+        "type": "array",
+        "byteArray": true,
+        "minItems": 21,
+        "maxItems": 21,
+        "description": "Core chain address in storage form (type byte 0x00 P2PKH / 0x01 P2SH followed by the 20-byte HASH160, i.e. RIPEMD160 of SHA256, of the public key or redeem script) for public payments. The type byte is consensus-enforced by a data trigger; clients render the address as Base58Check for the network they are on. Payments to it are publicly linkable to this profile.",
+        "position": 5
+      },
+      "platformPaymentAddress": {
+        "type": "array",
+        "byteArray": true,
+        "minItems": 21,
+        "maxItems": 21,
+        "description": "Platform address in storage form (type byte 0x00 P2PKH / 0x01 P2SH followed by the 20-byte HASH160, i.e. RIPEMD160 of SHA256, of the public key or redeem script) for public payments. The type byte is consensus-enforced by a data trigger.",
+        "position": 6
       }
     },
     "minProperties": 1,

@@ -60,6 +60,12 @@ In an attempt to minimize Dash Platform's storage requirements, users are incent
 
 Distribution is front-loaded rather than spread evenly across those 50 years, so the refundable remainder falls fastest in the early years. Removals below a small minimum byte threshold are not refunded at all. See the [protocol constants reference](../protocol-ref/protocol-constants.md) for the distribution schedule and the refund threshold.
 
+## Minimum and Fixed Fees
+
+In addition to the usage-based costs above, most identity- and address-funded transitions require a protocol-defined minimum balance before processing. This is a balance floor rather than a flat charge; the fee actually deducted is still the storage and processing total.
+
+[Shielded pool](../explanations/shielded-pool.md) transitions that pay from the pool (shielded transfers, unshields, and shielded withdrawals) are the exception. Their costs cannot be charged to an address balance, so they pay a fixed schedule from the pool: a proof verification fee, a per-action fee, and a per-action storage allowance. Transitions that shield funds are charged for storage normally and add only the proof verification and per-action components. These constants are versioned protocol parameters and were rebalanced at protocol version 14. See the [protocol constants reference](../protocol-ref/protocol-constants.md) for the current values.
+
 ## User Fee Increase
 
 Platform supports a user fee increase that can be used to incentivize inclusion of a state

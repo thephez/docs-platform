@@ -29,7 +29,7 @@ To prevent [front-running](https://en.wikipedia.org/wiki/Domain_name_front_runni
 
 #### Domain pre-order
 
-In the pre-order phase, the domain name is salted to obscure the actual domain name being registered (e.g. `hash('alice.dash' + salt)`) and submitted to platform. This is done to prevent masternodes from seeing the names being registered and "stealing" them for later resale. Once the pre-order receives a sufficient number of confirmations, the registration can proceed.
+In the pre-order phase, the domain name is salted to obscure the actual domain name being registered (e.g. `hash('alice.dash' + salt)`) and submitted to platform. This is done to prevent masternodes from seeing the names being registered and "stealing" them for later resale. Once the pre-order document has been accepted by Platform, the registration can proceed.
 
 #### Domain registration
 
@@ -50,7 +50,7 @@ All other available names can be registered immediately.
 
 #### Timeline
 
-A two-week voting window begins when a name matching the criteria above is requested. Additional identities can request the same name during the first week of the voting window.
+On mainnet, a two-week voting window begins when a name matching the criteria above is requested. Additional identities can request the same name during the first week of the voting window. Test networks use much shorter windows (currently 90 minutes, with a 45-minute join period). Both durations are versioned protocol parameters.
 
 #### Voting details
 
@@ -64,7 +64,7 @@ As with governance voting, evonode votes are worth four, and regular masternode 
 
 After voting ends, the name is either awarded to one of the identities or locked. The outcome is based on which item receives the most votes.
 
-Assuming masternodes do not vote to lock, the identity receiving the most votes takes ownership of the name. However, if the vote locks the name, no identity receives it. If only one identity requests the name, they will receive it even if no masternodes vote.
+Assuming masternodes do not vote to lock, the identity receiving the most votes takes ownership of the name. However, if the vote locks the name, no identity receives it. If only one identity requests the name, they will receive it even if no masternodes vote. If lock votes tie with the leading identity, the identity wins; ties between identities are resolved deterministically by the protocol.
 
 :::{note}
 Locked names cannot currently be re-requested or awarded. This policy may be revisited in future Platform releases.
