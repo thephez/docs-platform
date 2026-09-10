@@ -120,7 +120,7 @@ An epoch is a fixed time period used to organize and manage blockchain operation
 
 ## Era
 
-An era consists of 40 [epochs](#epoch) and equals approximately one year. At the end of an era, Dash Platform may optionally do additional accounting or reconfiguration.
+An era consists of 40 [epochs](#epoch) and equals approximately one year. At the end of an era, Dash Platform may optionally do additional accounting or reconfiguration. Document storage is prepaid for 50 eras.
 
 ## Evonode
 
@@ -142,10 +142,18 @@ The record of successive revisions of an individual [document](#document), retai
 
 The record of transfers, purchases and price updates for documents, written to the [document history system contract](../protocol-ref/data-contract.md#document-history-system-contract). Document types opt in with the [document history flags](../protocol-ref/data-contract-document.md#document-history-flags) `keepsTransferHistory`, `keepsPurchaseHistory` and `keepsPricingHistory`. This is separate from both revision histories above: it records ownership and pricing events rather than changes to contract or document content.
 
+## Identity
+
+A Platform entity identified by a 32-byte identifier. An identity holds a set of public keys and a [credit](#credits) balance, and signs most [state transitions](#state-transition). Documents, tokens, and contracts are all created and updated on behalf of one. See [Identity](../explanations/identity.md).
+
+## Index-Only Document Type
+
+A [document](#document) type whose documents are never written to primary storage - its index entries are the rows. Only what the indices hold exists and is recoverable, which makes the type cheaper to store but queryable only along its declared indices. Introduced at protocol version 14. See [indexOnly document types](../reference/data-contracts.md#indexonly-document-types).
+
 ## Layer (1, 2, 3)  
 
 - Layer 1: Core blockchain and [Dash Core](#dash-core)
-- Layer2: Drive and DAPI
+- Layer 2: Drive and DAPI
 - Layer 3: DAPI clients
 
 ## Local network
@@ -158,11 +166,15 @@ Deterministic subset of the global deterministic masternode list used to perform
 
 ## Mainnet
 
-The original and main network for Dash transactions, where transaction have real economic value.
+The original and main network for Dash transactions, where transactions have real economic value.
 
 ## Masternode  
 
 2nd-tier collateralized Node in the Dash P2P network, performing additional functions and forming a provision layer
+
+## Platform Address
+
+An account in Platform's address system, holding a credit balance that is not tied to an [identity](#identity). Address-system [state transitions](#state-transition) carry no owner identity. See [Address system](../protocol-ref/address-system.md).
 
 ## Platform Chain
 
@@ -170,7 +182,7 @@ Layer 2 blockchain that propagates platform data among masternodes, propagates p
 
 ## Platform State
 
-All layer 2 data including contracts, documents (user data), tokens, groups, credit balance, identity (username), address balances, shielded pool state, and masternode voting/contested resource state
+All Platform data including contracts, documents (user data), [tokens](#token), groups, credit balance, [identity](#identity) (username), [address](#platform-address) balances, [shielded pool](#shielded-pool) state, and masternode voting/contested resource state. Platform state also includes protocol bookkeeping such as fee and epoch pools, pre-funded specialized balances, spent asset lock transactions, saved block transactions, withdrawal transactions, and proposer-desired protocol versions.
 
 ## practical Byzantine Fault Tolerance (pBFT)
 
@@ -186,15 +198,23 @@ Ability to trustlessly prove that a node completed a certain amount of work duri
 
 ## Quorum  
 
-Group of masternodes signing some action, formation of the group determined by via some determination algorithm
+Group of masternodes signing some action, formation of the group determined by some determination algorithm
 
 ## Quorum Signature  
 
 BLS signature resulting from some agreement within a masternode quorum
 
+## Ranked Index
+
+An [index](../reference/data-contracts.md#document-indices) carrying a ranking axis, letting Platform answer "top or bottom K groups by aggregate value" queries with proofs. Each axis - count, sum, or average - adds its own ordered secondary tree and is opted into separately. Introduced at protocol version 14. See [Ranked index flags](../reference/data-contracts.md#ranked-index-flags) and [Ranked aggregate queries](../reference/query-syntax.md#ranked-aggregate-queries).
+
 ## Regtest
 
 A local regression testing environment in which developers can almost instantly generate blocks on demand for testing events, and can create private Dash with no real-world value. See the <a href="https://docs.dash.org/en/stable/docs/core/examples/testing-applications.html" target="_blank">Testing Applications page</a> for a more detailed description of network types.
+
+## Shielded Pool
+
+Platform's privacy pool, holding value whose ownership and amounts are hidden from public state. Shielded-pool [state transitions](#state-transition) carry no owner identity. See [Shielded pool](../explanations/shielded-pool.md).
 
 ## Simple Payment Verification
 
@@ -221,6 +241,14 @@ Dash fork of [Tendermint](https://tendermint.com/core) modified for use in Dash 
 A global testing environment in which developers can obtain and spend Dash that has no real-world value on a network that is very similar to the Dash [mainnet](#mainnet). See the <a href="https://docs.dash.org/en/stable/docs/core/examples/testing-applications.html" target="_blank">Testing Applications page</a> for a more detailed description of network types.
 
 See: [Intro to Testnet](../intro/testnet.md) for more information
+
+## Time-Range Index
+
+An [index](../reference/data-contracts.md#document-indices) that buckets a timestamp property into fixed-length, regularly spaced windows, enabling trending and leaderboard queries scoped to a time window. Introduced at protocol version 14. See [Ranked index flags](../reference/data-contracts.md#ranked-index-flags) and [Time-range selection](../reference/query-syntax.md#time-range-selection).
+
+## Token
+
+A fungible asset defined by a [data contract](#data-contract) and tracked in [platform state](#platform-state). A contract may define multiple tokens, each with its own supply rules, distribution schedule, and authorization - which may be delegated to a [group](#group-data-contract). See [Tokens](../explanations/tokens.md).
 
 ## Validator Set
 

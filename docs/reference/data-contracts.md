@@ -111,6 +111,7 @@ Documents support the following configuration options to provide flexibility in 
 | `keepsTransferHistory`               | boolean  | If true, transfers of these documents are recorded in the document history system contract. Default: false. |
 | `keepsPurchaseHistory`               | boolean  | If true, purchases of these documents are recorded in the document history system contract. Default: false. |
 | `keepsPricingHistory`                | boolean  | If true, price updates on these documents are recorded in the document history system contract. Default: false. |
+| `indexOnly`                          | boolean  | If true, documents are never written to primary storage - the index entries are the rows. Requires protocol version 14; see [indexOnly document types](#indexonly-document-types). Default: false. |
 
 | Security option | Type | Description |
 |-----------------|------|-------------|
@@ -126,7 +127,7 @@ Document types can opt into aggregate queries with the flags `documentsCountable
 
 :::{dropdown} List of all usable document properties
 
-  This list of properties is defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/mod.rs#L31) and the [document meta-schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json).
+  This list of properties is defined in the [Rust DPP implementation](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/mod.rs#L48) and the [document meta-schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json).
 
   | Property Name | Type | Description |
   |---------------|------|-------------|
@@ -177,11 +178,52 @@ The following example (from the [DPNS contract's `domain` document](https://gith
 }
 ```
 
+#### indexOnly document types
+
+:::{versionadded} 4.2.0
+Requires protocol version 14.
+:::
+
+An `indexOnly` document type is never written to primary storage. Its index entries *are* the rows: each terminates in a value keyed by the index's [`terminal`](#indexonly-index-keywords) property rather than a reference keyed by a document ID. Only what the indices hold exists and is recoverable, which makes the type cheaper to store at the cost of being queryable only along its declared indices.
+
+Declaring `indexOnly: true` carries co-requirements:
+
+* Every property must be required and appear in at least one index. The single exception is the optional first property of a [`skipIfAbsent`](#indexonly-index-keywords) index.
+* Every index must include `$ownerId`, either as one of its properties or as its `terminal`.
+* `documentsMutable` must be false.
+* Transfers, trading, history, and transient properties are not allowed.
+* Document-type-level aggregate keywords are not allowed; use the [index-level flags](#aggregate-index-flags) instead.
+* Indices cannot be `unique`, contested, or `nullSearchable: false`, and only the `$ownerId` and `$createdAt` system properties may be indexed.
+* At least one index must be free of `$createdAt` and not `skipIfAbsent` - the index the executed-transition proof relies on.
+
+`indexOnly` types are the inner half of a [chained query](../reference/query-syntax.md#chained-queries).
+
 ### Document Properties
 
 The `properties` object defines each field that a document will use. Each field consists of an object that, at a minimum, must define its data `type` (`string`, `number`, `integer`, `boolean`, `array`, `object`) and a [`position`](#assigning-property-position).
 
 Fields may also apply a variety of optional JSON Schema constraints related to the format, range, length, etc. of the data. A full explanation of JSON Schema capabilities is beyond the scope of this document. For more information regarding its data types and the constraints that can be applied, please refer to the [JSON Schema reference](https://json-schema.org/understanding-json-schema/reference/index.html) documentation.
+
+#### Platform-specific property keywords
+
+:::{versionadded} 4.2.0
+Requires protocol version 14.
+:::
+
+Beyond the standard JSON Schema constraints, two Dash Platform keywords may be applied to a property.
+
+**`refersTo`** declares that an identifier-typed property points at another Platform object, so consensus can enforce that the target exists and stays consistent. It is an object whose required `type` names what is referenced - `identity`, `contract`, `token`, `permanentDocument`, or `identityPublicKey` - alongside these type-dependent members:
+
+| Member | Type | Applies to | Description |
+|-|-|-|-|
+| contractId | string or array | `permanentDocument` only | The contract the referenced document lives in, as a base58 string or 32-byte array. When absent, the reference targets the declaring contract. Forbidden on every other type. |
+| documentType | string | `permanentDocument` (required) | The referenced document type. It must forbid deletion (`canBeDeleted: false`). Forbidden on every other type. |
+| keyIdProperty | string | `identityPublicKey` (required) | The property of the same document type carrying the referenced key ID; the reference property's own value then carries the identity ID. Forbidden on every other type. |
+| propertyAgreement | object | `permanentDocument` only | 1 to 10 `{referring property: referenced property}` pairs, each of which must hold as an equality between the two documents, enforced by consensus at write time. Both properties must exist and share a type, validated at contract registration. |
+
+A `permanentDocument` `refersTo` is what makes a property usable as the join property of a [chained query](../reference/query-syntax.md#chained-queries) or the by-ID binding of a [composite query](../reference/query-syntax.md#composite-queries).
+
+**`requiredSince`** is an integer naming the contract version from which the property is required, letting a later contract version add a required property without invalidating documents written under earlier versions. On a contract update, a newly required property must carry a `requiredSince` equal to the new contract version; an existing property cannot become required.
 
 #### Property Constraints
 
@@ -189,10 +231,10 @@ There are a variety of constraints currently defined for performance and securit
 
 | Description | Value |
 | ----------- | ----- |
-| Minimum number of properties | [1](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L23) |
-| Maximum number of properties | [100](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L24) |
-| Minimum property name length | [1](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L21) |
-| Maximum property name length | [64](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L21) |
+| Minimum number of properties | [1](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L23) |
+| Maximum number of properties | [100](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L24) |
+| Minimum property name length | [1](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L21) |
+| Maximum property name length | [64](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L21) |
 | Property name characters     | Alphanumeric (`A-Z`, `a-z`, `0-9`)<br>Hyphen (`-`) <br>Underscore (`_`) |
 
 #### Assigning property `position`
@@ -234,7 +276,7 @@ const contractDocuments = {
 Each document may have some fields that are required for the document to be valid and other optional fields. Required fields are defined via the `required` array, which contains a list of the field names that must be present in the document. The `required` object should only be included for documents with at least one required property.
 
 **Example**  
-The following example (excerpt from the DPNS contract's `domain` document) demonstrates a document that has 6 required fields:
+The following example (excerpt from the DPNS contract's `domain` document) demonstrates a document that has defined required fields:
 
 ```json
 "required": [
@@ -280,6 +322,8 @@ The `indices` array consists of one or more objects that each contain:
 * An optional `unique` element that determines if duplicate values are allowed for the document
 * An optional `nullSearchable` element that indicates whether the index allows searching for NULL values. If nullSearchable is false (default: true) and all properties of the index are null then no reference is added.
 * An optional `contested` element that configures a masternode-voting contest over documents whose field values match a defined pattern (see [Contested indices](#contested-indices)). It is an object composed of `fieldMatches` (field and `regexPattern` conditions) and a `resolution` method.
+* Optional aggregate flags that let the index answer `COUNT` / `SUM` / `AVG` queries without walking every document (see [Aggregate index flags](#aggregate-index-flags)).
+* Optional ranked, time-range, and `indexOnly` keywords added at protocol version 14 (see [Ranked index flags](#ranked-index-flags) and [indexOnly index keywords](#indexonly-index-keywords)).
 
 :::{code-block} json
 :force:
@@ -293,6 +337,19 @@ The `indices` array consists of one or more objects that each contain:
     ],
     "unique": true|false,
     "nullSearchable": true|false,
+    "countable": "countable"|"countableAllowingOffset",
+    "rangeCountable": true|false,
+    "summable": "<integer field name>",
+    "rangeSummable": true|false,
+    "averageable": "<integer field name>",
+    "rangeAverageable": true|false,
+    "rankedCountable": true|false|{ "at": "<property>" },
+    "rankedSummable": true|false,
+    "rankedAverageable": true|false,
+    "timeRange": { "on": "<$createdAt|$updatedAt|$transferredAt>", "range": <seconds>, "step": <seconds>, "phase": <seconds> },
+    "terminal": "$ownerId"|"<identifier property>",
+    "preallocated": true|false,
+    "skipIfAbsent": true|false,
     "contested": {
       "fieldMatches": [
         {
@@ -344,16 +401,68 @@ This example (from the [DPNS contract's `domain` document](https://github.com/da
 }
 ```
 
+#### Aggregate index flags
+
+An index can carry aggregate flags so the node answers `COUNT`, `SUM`, and `AVG` queries from the index itself rather than by walking every matching document. See [Aggregate Queries](../reference/query-syntax.md#aggregate-queries) for the query side.
+
+| Keyword | Type | Description |
+|-|-|-|
+| countable | string or boolean | Whether and how the index supports count fast paths - `notCountable`, `countable`, or `countableAllowingOffset`. Legacy booleans are accepted (`true` means `countable`). Adds storage cost for non-default values. |
+| rangeCountable | boolean | Makes range-count queries on the indexed property O(log n). Requires `countable`. |
+| summable | string | Names an integer document property whose values are aggregated into a sum at the index. The property must exist on the document type, be listed in `required`, and have a signed-or-unsigned integer type other than `u64` - values above `i64::MAX` cannot be represented in the sum tree. Every `summable` declaration on a document type must name the same property. |
+| rangeSummable | boolean | Makes range-sum queries on the indexed property O(log n). Requires `summable`. |
+| averageable | string | Shorthand for `countable: "countable"` plus `summable: "<property>"`, enabling average queries. If both `averageable` and `summable` are set they must name the same property. |
+| rangeAverageable | boolean | Shorthand for `rangeCountable: true` plus `rangeSummable: true`. Requires `averageable`. |
+
+#### Ranked index flags
+
+:::{versionadded} 4.2.0
+Requires protocol version 14.
+:::
+
+Ranking axes let an index answer "top / bottom K groups by aggregate" queries with proofs. Each axis adds its own ordered secondary tree keyed by the group's aggregate, and each is opted into separately - none implies another. See [Ranked aggregate queries](../reference/query-syntax.md#ranked-aggregate-queries).
+
+| Keyword | Type | Description |
+|-|-|-|
+| rankedCountable | boolean or object | Adds the Count ranking axis. Requires `rangeCountable: true`. The level-addressed form, `{"at": "<property>"}` or `{"at": ["<property>", ...]}`, places rankings at the named properties' levels instead of the terminal one; it cannot combine with `rankedSummable` or `rankedAverageable` when a non-terminal level is named. |
+| rankedSummable | boolean | Adds the Sum ranking axis. Requires `rangeSummable: true`. |
+| rankedAverageable | boolean | Adds the Avg ranking axis. Requires `rangeAverageable: true`. |
+
+An index may also declare a `timeRange` transform, which buckets the first index property's timestamp into fixed-length, regularly spaced (possibly overlapping) windows:
+
+| Property | Type | Required | Description |
+|-|-|-|-|
+| on | string | Yes | The timestamp property to bucket. Must be the index's first property and name one of `$createdAt`, `$updatedAt`, or `$transferredAt`. |
+| range | integer | Yes | Window length in seconds. Must be an exact multiple of `step`. |
+| step | integer | Yes | Spacing between consecutive window starts, in seconds. When `range` is greater than `step` the windows overlap. |
+| phase | integer | No | Offset of the grid's origin, in seconds. Must be less than `step` and less than one year. Defaults to 0. |
+
+The stored key is each window's start as a millisecond timestamp. Several indices may bucket the same timestamp with different grids; each grid gets its own subtree. At most 24 windows may overlap a single timestamp at protocol version 14. A time-range index may be unique only when `range` equals `step` and `on` is `$createdAt`, and it cannot be contested. A single-property time-range index cannot be ranked, because its only level is the bucketed one, and a time-range index cannot declare `preallocated`. Query these windows with the [`inTimeRange` operator](../reference/query-syntax.md#time-range-selection).
+
+#### indexOnly index keywords
+
+:::{versionadded} 4.2.0
+Requires protocol version 14.
+:::
+
+These keywords apply only to [`indexOnly` document types](#document-configuration).
+
+| Keyword | Type | Description |
+|-|-|-|
+| terminal | string | Names the property supplying this index entry's member key, the analog of a document ID under the index's storage marker. Either `$ownerId` (the default) or an identifier property carrying a `refersTo` declaration targeting an identity, contract, token, or permanent document - `identityPublicKey` references are not admitted. Must not repeat one of the index's listed properties. |
+| preallocated | boolean | When true, creating a referenced document also creates this index's dynamic trees for entries referencing it, paid by the referenced document's creator, so every entry insert costs the same as the first. Only valid when the index path is fully determined by a same-contract `permanentDocument` `refersTo` declaration. |
+| skipIfAbsent | boolean | When true, a document omitting this index's first property writes no entry, so the index holds only documents carrying it. The first property is the skip trigger and must be a top-level property not listed in `required` - the only way an `indexOnly` property may be optional. An absent trigger is distinct from an empty value: absence skips the index, while any present value indexes normally. |
+
 #### Index Constraints
 
 For performance and security reasons, indices have the following constraints. These constraints are subject to change over time.
 
 | Description | Value |
 | ----------- | ----- |
-| Minimum / maximum length of index `name` | [1](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L358) / [32](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L359) |
-| Maximum number of indices | [10](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L482) |
+| Minimum / maximum length of index `name` | [1](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L489) / [32](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L490) |
+| Maximum number of indices | [10](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L730) |
 | Maximum number of unique indices | [10](https://github.com/dashpay/platform/blob/master/packages/rs-platform-version/src/version/v1.rs#L989) |
-| Maximum number of properties in a single index | [10](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L378) |
+| Maximum number of properties in a single index | [10](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L509) |
 | Maximum length of indexed string property | [63](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/v0/mod.rs#L72) |
 | Maximum length of indexed byte array property | [255](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/v0/mod.rs#L73) |
 | Maximum number of indexed array items | [1024](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/data_contract/document_type/class_methods/try_from_schema/v0/mod.rs#L74) |
@@ -365,6 +474,7 @@ The following example (excerpt from the DPNS contract's `preorder` document) cre
 ```json
 "indices": [
   {
+    "name": "saltedHash",
     "properties": [
       { "saltedDomainHash": "asc" }
     ],
@@ -375,7 +485,9 @@ The following example (excerpt from the DPNS contract's `preorder` document) cre
 
 ### Full Document Syntax
 
-This example syntax shows the structure of a document object including all optional properties.
+This example syntax shows the structure of a document object including the most commonly used optional properties.
+
+It is not exhaustive. The [aggregate index flags](#aggregate-index-flags), and the keywords added at protocol version 14 - [`indexOnly`](#indexonly-document-types), the [ranked and time-range index flags](#ranked-index-flags), the [`indexOnly` index keywords](#indexonly-index-keywords), and the [`refersTo` and `requiredSince`](#platform-specific-property-keywords) property keywords - are documented in their own sections above. For the authoritative set, see the [document meta-schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json).
 
 ::::{dropdown} Document schema
 :open:
@@ -452,7 +564,7 @@ This example syntax shows the structure of a document object including all optio
 
 ## General Constraints
 
-There are a variety of constraints currently defined for performance and security reasons. The following constraints are applicable to all aspects of data contracts. Unless otherwise noted, these constraints are defined in the platform's JSON Schema rules (e.g. [rs-dpp document meta schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json)).
+There are a variety of constraints currently defined for performance and security reasons. The following constraints are applicable to all aspects of data contracts. Unless otherwise noted, these constraints are defined in the platform's JSON Schema rules (e.g. [rs-dpp document meta schema](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json)).
 
 ### Keyword
 
@@ -460,8 +572,8 @@ There are a variety of constraints currently defined for performance and securit
 | ------- | ---------- |
 | `default`             | Restricted - cannot be used (defined in DPP logic) |
 | `propertyNames`       | Restricted - cannot be used (defined in DPP logic) |
-| `pattern: <something>` | `maxLength` must be defined (maximum: [50000](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L188)) |
-| `format: <something>` | `maxLength` must be defined (maximum: [50000](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v2/document-meta.json#L201)) |
+| `pattern: <something>` | `maxLength` must be defined (maximum: [50000](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L292)) |
+| `format: <something>` | `maxLength` must be defined (maximum: [50000](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/schema/meta_schemas/document/v3/document-meta.json#L332)) |
 | `$ref: <something>`   | Internal references only - the value must begin with `#` (e.g. `#/$defs/myType`). External and remote references, and reference cycles, are rejected |
 | `if`, `then`, `else`, `allOf`, `anyOf`, `oneOf`, `not` | Disabled for data contracts |
 | `dependencies`        | Not supported. Use `dependentRequired` instead |
@@ -475,9 +587,9 @@ There are a variety of constraints currently defined for performance and securit
 
 **Note:** These constraints are defined in the Dash Platform Protocol logic (not in JSON Schema).
 
-A state transition is limited to a maximum size of [20 KiB](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs) (`max_state_transition_size`). Oversized transitions are rejected.
+A state transition is limited to a maximum size of [20 KiB](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-platform-version/src/version/system_limits/v4.rs) (`max_state_transition_size`). Oversized transitions are rejected.
 
-An individual document field value is limited to [5 KiB](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-version/src/version/system_limits/v3.rs) (`max_field_value_size`).
+An individual document field value is limited to [5 KiB](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-platform-version/src/version/system_limits/v4.rs) (`max_field_value_size`).
 
 ### Additional Properties
 
