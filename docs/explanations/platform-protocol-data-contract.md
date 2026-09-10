@@ -29,11 +29,13 @@ Data contracts are owned by the [identity](../explanations/identity.md) that reg
 Each data contract must define several fields. When using the [reference implementation](https://github.com/dashpay/platform/tree/master/packages/rs-dpp) of the Dash Platform Protocol, some of these fields are automatically set to a default value and do not have to be explicitly provided. These include:
 
 * The platform protocol schema it uses
-* A contract ID (generated from a hash of the data contract's owner identity plus some entropy)
+* A contract ID (generated from a hash of the data contract's owner identity and the identity nonce)
 * One or more [documents](../explanations/platform-protocol-document.md)
 * Optional [tokens](../explanations/tokens.md) with their own configuration, distribution, and authorization rules
 * Optional groups (sets of identities with assigned power) used to jointly authorize privileged contract actions such as token minting, burning, or configuration changes
 * Optional keywords used to surface the contract through discovery features, plus an optional contract description
+
+Each document type's schema also determines how applications can query and relate its documents. Contracts declare indexes for efficient queries and can opt into capabilities such as aggregation, ranking, time-range selection, and relationships to other Platform objects. They can also define index-only document types for compact, immutable relationship data such as likes, follows, or memberships. Because these choices affect how data is stored and queried, they should be planned during contract design. See [Query Capabilities](./query.md), [Document Indices](../reference/data-contracts.md#document-indices), and [Platform-specific property keywords](../reference/data-contracts.md#platform-specific-property-keywords).
 
 For a practical example, see the [DashPay contract](#example-contract).
 
@@ -59,14 +61,13 @@ Existing data contracts can be updated by their owner in backwards-compatible wa
 
 Permitted changes include:
 
-* Adding new document types
-* Adding new optional properties to existing document types
-* Adding non-unique indices on newly added document types
+* Adding new document types, including their indices
+* Adding new properties to existing document types. New properties are normally optional; from protocol version 14 a new property may be marked as required starting with the contract version that introduces it, without invalidating documents created under earlier versions
 * Adding new tokens to the contract
 * Adding new groups to the contract
 * Updating contract keywords and description
 
-Restricted changes include modifications that would break existing stored documents - for example, removing or renaming existing properties, changing their types, or altering the index definitions of an existing document type. Whether a document type records the history of its transfers, sales, and price changes is also fixed when the document type is created and cannot be turned on or off by a later contract update.
+Restricted changes include modifications that would break existing stored documents - for example, removing or renaming existing properties, changing their types, making an existing property required, or altering the index definitions of an existing document type. Whether a document type records the history of its transfers, sales, and price changes is also fixed when the document type is created and cannot be turned on or off by a later contract update. One narrow exception exists: a document type that keeps revision history cannot allow deletion, and an existing history-keeping type that was registered with deletion allowed may be updated to forbid it.
 
 A contract update cannot remove or modify an existing token or group. Changing an existing token's configuration is done with a [token configuration update transition](../explanations/tokens.md#configuration-updates), governed by that token's own change control rules, and existing groups are immutable once the contract is registered.
 
@@ -78,7 +79,7 @@ For more detailed information, see the [Platform Protocol Reference - Data Contr
 
 ## Example Contract
 
-The [DashPay contract](https://github.com/dashpay/platform/blob/master/packages/dashpay-contract/schema/v1/dashpay.schema.json) is included below for reference. It defines a `contactRequest` document, a `profile` document, and a `contactInfo` document. Each of these documents then defines the properties and indices they require:
+The [DashPay contract](https://github.com/dashpay/platform/blob/master/packages/dashpay-contract/schema/v2/dashpay.schema.json) is included below for reference. It defines a `contactRequest` document, a `profile` document, and a `contactInfo` document. Each of these documents then defines the properties and indices they require:
 
 :::{dropdown} DashPay contract
   ```json
@@ -142,6 +143,22 @@ The [DashPay contract](https://github.com/dashpay/platform/blob/master/packages/
           "minLength": 1,
           "maxLength": 25,
           "position": 4
+        },
+        "corePaymentAddress": {
+          "type": "array",
+          "byteArray": true,
+          "minItems": 21,
+          "maxItems": 21,
+          "description": "Core chain address in storage form (type byte 0x00 P2PKH / 0x01 P2SH followed by the 20-byte HASH160, i.e. RIPEMD160 of SHA256, of the public key or redeem script) for public payments. The type byte is consensus-enforced by a data trigger; clients render the address as Base58Check for the network they are on. Payments to it are publicly linkable to this profile.",
+          "position": 5
+        },
+        "platformPaymentAddress": {
+          "type": "array",
+          "byteArray": true,
+          "minItems": 21,
+          "maxItems": 21,
+          "description": "Platform address in storage form (type byte 0x00 P2PKH / 0x01 P2SH followed by the 20-byte HASH160, i.e. RIPEMD160 of SHA256, of the public key or redeem script) for public payments. The type byte is consensus-enforced by a data trigger.",
+          "position": 6
         }
       },
       "minProperties": 1,

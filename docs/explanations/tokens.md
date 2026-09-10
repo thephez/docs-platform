@@ -72,7 +72,8 @@ The initial token implementation includes all actions required to create, use, a
 
 - Claim tokens that have been allocated to an identity by a [distribution rule](#distribution-rules) but not yet credited to its balance. Claim covers both:
   - **Perpetual distributions** - tokens continuously emitted on a block or time schedule that recipients must pull in order to take ownership.
-  - **Pre-programmed distributions** - tokens scheduled for specific recipients at specific heights or times that recipients must claim to receive.
+  - **Pre-programmed distributions** - tokens scheduled for specific recipients at specific times that recipients must claim to receive.
+- Each claim collects a bounded number of unclaimed perpetual distribution intervals (128 for variable-rate distribution functions), so recipients with a long backlog may need to claim more than once to collect everything owed.
 
 #### Emergency Action
 
@@ -110,9 +111,9 @@ When creating a token, you define its configuration using the following paramete
 | Configuration Parameter | Mutable           | Default |
 |:------------------------|:------------------|:--------|
 | Description                              | **No** | None |
-| [Conventions](#display-conventions)      | Yes | N/A. Depends on implementation |
+| [Conventions](#display-conventions)      | Yes | Required; must include English |
 | [Decimal precision](#display-conventions)| Yes | [8](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/associated_token/token_configuration_convention/v0/mod.rs#L47) |
-| [Base supply](#token-supply)             | **No**  | [100000](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L606) |
+| [Base supply](#token-supply)             | **No**  | [0](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/data_contract/associated_token/token_configuration/v0/mod.rs#L48) |
 | [Maximum supply](#token-supply)          | Yes | None |
 | [Keep history](#history)                 | **No** | True (all history types) |
 | [Start paused](#initial-state)           | **No** | False |
@@ -185,7 +186,7 @@ following table summarizes the configurable rules and their default authorized p
 |:--------------------------------------|:----------------|:-------------------------|
 | Conventions change rules              | Yes             | NoOne                    |
 | Max supply change rules               | Yes             | NoOne                    |
-| Main control group can be modified    | Yes             | NoOne                    |
+| Main control group can be modified    | No              | NoOne                    |
 | Marketplace trade mode change rules   | Yes             | NoOne                    |
 
 ###### Minting and Burning
@@ -281,7 +282,7 @@ This allows for:
 - Shared-currency ecosystems, by pricing document actions in a token that belongs to another contract. Such external-token payments transfer to the contract owner; burning is only permitted for a contract's own token.
 - A gasless user experience, by having the contract owner rather than the document owner pay the Platform credit cost of the action
 
-Alongside the amount and its effect, each cost in the contract specifies who pays the Platform gas fees and may set minimum and maximum bounds. Separately, the client submitting the action can attach its own minimum and maximum bounds on what it is willing to pay. Clients should generally set a maximum: without one, a contract whose rules allow the price to change could charge more than the user expected between signing and execution.
+Alongside the amount and its effect, each cost in the contract specifies who pays the Platform gas fees. Separately, the client submitting the action can attach its own minimum and maximum bounds on what it is willing to pay. Clients should generally set a maximum: without one, a contract whose rules allow the price to change could charge more than the user expected between signing and execution.
 
 ## Token Creation
 

@@ -44,7 +44,7 @@ payment channels between Dash identities.
 * Profile documents are used to store public facing information about Dash identities including
 avatars and display names. Since Dash Platform v4.2, a profile can also publish optional public
 payment addresses (a Core chain address and/or a Platform address). Unlike contact-based payments,
-payments to these addresses are publicly linkable to the profile. 
+payments to these addresses are publicly linkable to the profile.
 * ContactInfo documents can be used to store private information about other Dash identities.
 
 ### Establishing a Contact

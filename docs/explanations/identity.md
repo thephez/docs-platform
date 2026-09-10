@@ -47,6 +47,12 @@ The identity balance topup process works in a similar way to the initial identit
 Since anyone can topup either their own account or any other account, application developers can easily subsidize the cost of using their application by topping up their user's identities.
 :::
 
+### Keys
+
+Each identity key has a purpose, a security level, and a cryptographic key type. Its purpose defines how the key may be used (for example authentication, encryption, decryption, transferring credits, or voting), while its security level indicates how strongly clients should protect it and which signing requirements it can satisfy. A master key controls changes to the identity's keys, while a transfer key controls its credits. More keys can be added later through an identity update.
+
+Data contracts can require a property to refer to an existing identity or, since Dash Platform v4.2, to a specific identity key. See [property references](../reference/data-contracts.md#platform-specific-property-keywords) and the [identity protocol reference](../protocol-ref/identity.md#identity-publickeys) for details.
+
 ### Identity Update Process
 
 Identity owners may find it necessary to update their identity keys periodically for security purposes. The [identity update state transition](https://github.com/dashpay/dips/blob/master/dip-0011.md#identity-update-transition) enables users to add new keys and disable existing ones.
@@ -65,7 +71,7 @@ All masternodes can use their identities to vote on Platform polls for contested
 
 #### Reward distribution
 
-Evonodes receive their Platform-specific block rewards and Platform fees with their masternode identity. The credits paid as state transition fees are distributed to masternode-related identities similar to how rewards are currently distributed to masternodes on the core blockchain. Credits are split between owner and operator in the same ratio as on layer 1, and masternode owners have the flexibility to further split their portion between multiple identities to support reward-sharing use cases.
+Evonodes receive their Platform-specific block rewards and Platform fees with their masternode identity. The credits paid as state transition fees are distributed to masternode-related identities similar to how rewards are currently distributed to masternodes on the core blockchain. Each masternode's share of an epoch's fees and rewards is paid to its owner identity. The protocol also defines a reward-sharing mechanism that lets a masternode owner direct portions of that payout to other identities. See the [data trigger reference](../protocol-ref/data-trigger.md#other-system-contract-triggers) for current restrictions on reward share records.
 
 Note: the payout key is associated with the masternode owner identity, so both the owner and payout keys should be controlled by the same party.
 
@@ -73,4 +79,6 @@ Note: the payout key is associated with the masternode owner identity, so both t
 
 Credits provide the mechanism for paying fees that cover the cost of platform usage. Once a user locks Dash on the core blockchain and proves ownership of the locked value in an identity create or topup state transition, their credit balance increases by that amount. Credits can also reach an identity from a [Platform address](../protocol-ref/address-system.md) or the [shielded pool](./shielded-pool.md) without a layer 1 lock. As they perform platform actions, these credits are deducted to pay the associated fees.
 
-Credits can be converted back to Dash using the identity credit withdrawal state transition, subject to a daily network-wide limit. That limit is a fixed amount defined by the protocol - currently 2000 Dash per day across the whole network. Because it is a versioned protocol parameter, the value can be changed by a protocol upgrade.
+Credits are not locked to the identity that holds them: an identity can transfer credits directly to another identity, or to a [Platform address](../protocol-ref/address-system.md), using the corresponding [state transitions](../explanations/platform-protocol-state-transition.md).
+
+Credits can be converted back to Dash using an identity credit withdrawal state transition. Withdrawals are subject to per-withdrawal and network-wide limits that constrain Platform's net daily outflow. These limits are versioned protocol parameters; see the [protocol constants reference](../protocol-ref/protocol-constants.md#withdrawal-constants) for current values.

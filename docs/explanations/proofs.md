@@ -53,8 +53,8 @@ The complete verification process follows these steps:
 
 1. Client sends a request to [DAPI](../explanations/dapi.md) with `prove: true`
 2. DAPI retrieves the data and generates a proof from [Drive](../explanations/drive.md)
-3. Client receives the response containing data, GroveDB proof, and consensus signature
-4. Client verifies the GroveDB proof to extract the root hash
+3. Client receives the proof envelope (GroveDB proof plus consensus signature and block metadata) in place of the plain data
+4. Client verifies the GroveDB proof, extracting both the requested data and the root hash
 5. Client verifies the BLS signature against the root hash using the quorum's public key
 6. Client checks freshness on two independent axes: the signed response timestamp against its own local clock, and the block height the response is anchored to, rejecting responses whose height has fallen too far behind the most recent one seen and responses that omit this information entirely. The timestamp check matters because the height high-water mark is itself derived from responses, so height alone cannot detect a server replaying an old but internally consistent signed response
 7. If these verifications pass, the data is cryptographically confirmed
@@ -80,7 +80,10 @@ Dash Platform supports proofs for all core data types:
 - Document existence within a contract
 - Document queries with multiple results
 - Proof of document absence (data doesn't exist)
+- Document history (for document types that retain history)
 - Aggregate values over a document set (count, sum, average) — see [Aggregate Proofs](#aggregate-proofs) below
+- Ranked and value-filtered aggregate results (the top groups by an aggregate, or the groups whose aggregate falls within a range)
+- Composed results of dependent queries answered together — see [Composed Proofs](#composed-proofs) below
 
 **Tokens**
 
@@ -118,17 +121,23 @@ Three aggregate primitives are supported:
 - **Sum** — sum of an integer field across matching documents.
 - **Average** — average of an integer field across matching documents.
 
-Some aggregate queries can return either one total or grouped totals, depending on the query shape.
+Some aggregate queries can return either one total or grouped totals, depending on the query shape. Since protocol version 14, grouped results can also be [ranked](../reference/query-syntax.md#ranked-aggregate-queries) (returning only the top or bottom groups by their aggregate) or [filtered by value](../reference/query-syntax.md#having-range-queries) (returning only the groups whose aggregate falls within a range), and each of these results is provable in the same way.
 
 Aggregate queries use the same two-layer verification as any other proof (GroveDB Merkle proof plus Tenderdash consensus signature), so the result carries the same trust model as other proven Platform responses.
 
 For the exact request and response shapes, see the [DAPI Platform endpoints reference](../reference/dapi-endpoints-platform-endpoints.md).
 
+## Composed Proofs
+
+With the query capabilities available in protocol version 14, multiple related reads can be answered with a single merged proof. A [chained query](../reference/query-syntax.md#chained-queries) uses the results of one query to select documents returned by another, while a [composite query](../reference/query-syntax.md#composite-queries) returns a page together with related documents, counts, or independent sibling results.
+
+All result sets are proven against the same quorum-signed state root. For dependent reads, the client reconstructs the derived query from the proven source results and verifies that the complete response matches the requested composition. This enables applications to verify multi-step reads in one round trip instead of requesting and joining separately proven results.
+
 ## Requesting and Verifying Proofs
 
 ### DAPI Integration
 
-The Decentralized API (DAPI) provides the interface for requesting proofs. When making queries, clients can set the `prove` parameter to receive cryptographic proofs alongside the data.
+The Decentralized API (DAPI) provides the interface for requesting proofs. When making queries, clients can set the `prove` parameter to receive a cryptographic proof in place of the unverified data; the data itself is recovered from the proof during verification.
 
 Without proofs, clients must trust that the DAPI node is returning accurate data. With proofs enabled, clients can verify responses independently, treating DAPI nodes as untrusted data carriers rather than trusted authorities.
 
