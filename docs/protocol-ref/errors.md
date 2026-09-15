@@ -6,7 +6,7 @@
 
 ## Platform Error Codes
 
-Dash Platform Protocol implements a comprehensive set of consensus error codes. Refer to the tables below for a list of the codes as specified in [codes.rs](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/errors/consensus/codes.rs) of the consensus source code.
+Dash Platform Protocol implements a comprehensive set of consensus error codes. Refer to the tables below for a list of the codes as specified in [codes.rs](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/errors/consensus/codes.rs) of the consensus source code.
 
 Platform error codes are organized into four categories. Each category may be further divided into sub-categories. The four categories and their error code ranges are:
 
@@ -128,6 +128,7 @@ Code range:  10200-10349
 | 10273 | InvalidTokenDistributionTimeIntervalTooShortError        |         |
 | 10274 | InvalidTokenDistributionTimeIntervalNotMinuteAlignedError |        |
 | 10275 | RedundantDocumentPaidForByTokenWithContractId            |         |
+| 10276 | DataContractInvalidRequiredFieldsUpdateError             |         |
 
 ### Group
 
@@ -354,6 +355,16 @@ Code range:  40100-40199
 | 40115 | RequiredTokenPaymentInfoNotSetError                    |         |
 | 40116 | IdentityHasNotAgreedToPayRequiredTokenAmountError      |         |
 | 40117 | IdentityTryingToPayWithWrongTokenError                 |         |
+| 40118 | DocumentContestIndexMismatchError                      |         |
+| 40119 | DocumentContestNotRequiredError                        |         |
+| 40120 | ReferencedEntityNotFoundError                          |         |
+| 40121 | ReferencedDocumentTypeNotFoundError                    |         |
+| 40122 | ReferencedDocumentTypeDeletableError                   |         |
+| 40123 | ReferencedIdentityKeyNotFoundError                     |         |
+| 40124 | ReferencedIdentityKeyDisabledError                     |         |
+| 40125 | ReferencedKeyIdPropertyInvalidError                    |         |
+| 40126 | ReferencedDocumentPropertyAgreementInvalidError        |         |
+| 40127 | ReferencedDocumentPropertyMismatchError                |         |
 
 ### Token State
 

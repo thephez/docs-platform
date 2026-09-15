@@ -34,8 +34,8 @@ without introducing issues for endpoint consumers.
 | [`getDataContract`](../reference/dapi-endpoints-platform-endpoints.md#getdatacontract) | Returns the requested data contract |
 | [`getDataContracts`](../reference/dapi-endpoints-platform-endpoints.md#getdatacontracts) | Returns the requested data contracts |
 | [`getDataContractHistory`](../reference/dapi-endpoints-platform-endpoints.md#getdatacontracthistory) | Returns the requested data contract history |
-| [`getDocuments`](../reference/dapi-endpoints-platform-endpoints.md#getdocuments) | **Updated in Dash Platform v4.0.0**<br>Returns the requested document(s), or an aggregate count/sum/average over the matched document set. |
-| [`getDocumentHistory`](../reference/dapi-endpoints-platform-endpoints.md#getdocumenthistory) | **Added in Dash Platform v4.0.0**<br>Returns the revision history for a single document on a contract that keeps document history |
+| [`getDocuments`](../reference/dapi-endpoints-platform-endpoints.md#getdocuments) | **Updated in Dash Platform v4.2.0**<br>Returns the requested document(s), or an aggregate count/sum/average over the matched document set. Includes ranked, having-range, chained, and composite query modes and the `IN_TIME_RANGE` operator. |
+| [`getDocumentHistory`](../reference/dapi-endpoints-platform-endpoints.md#getdocumenthistory) | *Added in Dash Platform v4.0.0*<br>Returns the revision history for a single document on a contract that keeps document history |
 
 ### Identities
 
@@ -181,7 +181,7 @@ Platform status.
 
 :::{note}
 The previous version of documentation can be [viewed
-here](https://docs.dash.org/projects/platform/en/4.0.0/docs/reference/dapi-endpoints.html).
+here](https://docs.dash.org/projects/platform/en/4.1.0/docs/reference/dapi-endpoints.html).
 :::
 
 ```{toctree}

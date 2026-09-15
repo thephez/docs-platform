@@ -68,7 +68,9 @@ Rather than having a static validator set, Tenderdash periodically changes to a 
 
 The validator set is assigned to a currently active masternode quorum. Rotation to a new quorum happens when the current quorum completes a proposer cycle (proposer duty reaches the last member), when the current quorum is no longer in the active set, or when the proposer sequence wraps within the current quorum while more than one quorum is active. The last trigger exists so that quorums rotating out do not give a small advantage to proposers that sort earlier in the sequence.
 
-There are many advantages to adopting this dynamic rotation approach:
+When a rotation is triggered, the validator set moves to the next quorum in the ordered list of active quorums (wrapping around, and on large networks skipping the oldest quorums so a set about to expire is not chosen). If only one quorum is active, no rotation occurs.
+
+Advantages to this dynamic rotation approach include:
 
 - The validator set is less predictable, which reduces the window for attacks like DoS.
 - The process balances the performance and security of platform chains like InstantSend and ChainLock quorum changes on the core chain.
@@ -82,4 +84,4 @@ Here are the differences between Tenderdash and Tendermint:
 - **Execution Timing**: Tenderdash facilitates same-block execution, optimizing transaction processing, whereas Tendermint traditionally relies on next-block execution.
 - **Consensus Module Refactoring**: Tenderdash has undergone a complete overhaul of its vote-extensions and consensus module, working diligently to eliminate deadlocks and increase stability.
 - **Dynamic Validator Management**: Tenderdash incorporates logic to actively connect with new validators in a set and disconnect those that are no longer in the validator set, thereby ensuring an adaptable and efficient network.
-- **Maintenance**: Tenderdash is maintained as part of the Dash Platform release process, so consensus-layer changes ship alongside the Platform releases that depend on them.
+- **Maintenance**: Tenderdash is maintained by Dash as a separate project with its own releases; each Dash Platform release pins a compatible Tenderdash version.

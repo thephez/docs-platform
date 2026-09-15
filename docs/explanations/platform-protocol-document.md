@@ -12,9 +12,11 @@ Documents are defined in an application's [Data Contract](../explanations/platfo
 
 ## Details
 
+Most document types store each document as a JSON body with the base fields described below. Since protocol version 14, a data contract can instead declare a document type as index-only: its documents are never stored as a body and exist only as entries in the type's indices, with reads reconstructed from those entries. In exchange, index-only documents are immutable, cannot be transferred or traded, keep no history, and have no revision. See the [data contract explanation](../explanations/platform-protocol-data-contract.md#structure) and [indexOnly document types](../reference/data-contracts.md#indexonly-document-types) in the data contract reference.
+
 ### Base Fields
 
-Dash Platform Protocol (DPP) defines a set of base fields that must be present in all documents. For the [reference implementation](https://github.com/dashpay/platform/tree/master/packages/rs-dpp), the base fields shown below are defined in the [document base fields](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/document/fields.rs).
+Dash Platform Protocol (DPP) defines a set of base fields that may appear on documents. For the [reference implementation](https://github.com/dashpay/platform/tree/master/packages/rs-dpp), the base fields shown below are defined in the [document base fields](https://github.com/dashpay/platform/blob/master/packages/rs-dpp/src/document/fields.rs).
 
 | Field Name | Description |
 | - | - |
@@ -32,11 +34,19 @@ Dash Platform Protocol (DPP) defines a set of base fields that must be present i
 | $createdAtCoreBlockHeight | Core block height when the document was created |
 | $updatedAtCoreBlockHeight | Core block height when the document was last updated |
 | $transferredAtCoreBlockHeight | Core block height when the document was last transferred |
-| $creatorId | [Identity](../explanations/identity.md) that originally created the document (32 bytes). Present on document types that are transferable or have a trade mode set, and preserved when ownership changes |
+| $price | Current listing price in credits |
+| $creatorId | [Identity](../explanations/identity.md) that originally created the document (32 bytes) |
+| $contractVersion | Version of the data contract the document was last written under |
 
-:::{attention}
-The timestamp and block height fields will only be present in documents that add them to the list of [required properties](../reference/data-contracts.md#required-properties).
-:::
+#### Field availability
+
+Timestamp and block height fields are present only when included in the document type's [required properties](../reference/data-contracts.md#required-properties).
+
+`$price` is present only while a document whose trade mode supports seller-set pricing is listed, and is cleared when the document is purchased or transferred. `$creatorId` is present on transferable or tradeable document types and is preserved when ownership changes.
+
+Since protocol version 14, `$contractVersion` records which contract version supplied the document's required properties. This allows contract updates to add required properties without invalidating older documents.
+
+`$type` and `$dataContractId` identify the document rather than being stored with its data. Platform supplies them when the document is fetched.
 
 ### Data Contract Fields
 
@@ -50,7 +60,7 @@ Each application defines its own fields via document definitions in its data con
 | domain | normalizedLabel | string |
 | domain | parentDomainName | string |
 | domain | normalizedParentDomainName | string |
-| domain | preorderSalt | array (bytes) |
+| domain | preorderSalt | array (bytes), [transient](../reference/data-contracts.md#transient-properties) (validated on submission but not stored) |
 | domain | records | object |
 | domain | records.identity | array (32 bytes) |
 | domain | subdomainRules | object |
@@ -58,7 +68,7 @@ Each application defines its own fields via document definitions in its data con
 
 ### Example Document
 
-The following example shows the structure of a DPNS `domain` document as output from `JSON.stringify()`. Note the `$` prefix indicating the base fields.
+The following example shows the structure of a DPNS `domain` document as output from `JSON.stringify()`. Note the `$` prefix indicating the base fields. The `preorderSalt` property is transient, so it is submitted with the document but does not appear when the document is fetched.
 
 ```json
 {
@@ -66,6 +76,7 @@ The following example shows the structure of a DPNS `domain` document as output 
   "$type": "domain",
   "$dataContractId": "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
   "$ownerId": "6TGHW8WBcNzFrWwAueGtqtAah7w98EELFZ7xdTHegnvH",
+  "$creatorId": "6TGHW8WBcNzFrWwAueGtqtAah7w98EELFZ7xdTHegnvH",
   "$revision": 1,
   "$createdAt": 1712872800000,
   "$updatedAt": 1712872800000,
@@ -74,7 +85,6 @@ The following example shows the structure of a DPNS `domain` document as output 
   "normalizedLabel": "dq-jasen-82083",
   "normalizedParentDomainName": "dash",
   "parentDomainName": "dash",
-  "preorderSalt": "bcCSdtGqqZdXBQB4DDBIU2RPAwFDFt9tMr0LX6m5qCQ=",
   "records": {
     "identity": "UQTRY+wqPyL27V7YjJadJdyXVBETj6CfzvqUg5aY5E4="
   },
@@ -86,13 +96,13 @@ The following example shows the structure of a DPNS `domain` document as output 
 
 ## Document Submission
 
-Once a document has been created, it must be encapsulated in a Batch state transition to be sent to the platform. Batch state transitions (type `1`) bundle one or more document and/or token transitions submitted together by the same identity. For additional details, see the [State Transition](../explanations/platform-protocol-state-transition.md) explanation.
+Once a document has been created, it must be encapsulated in a Batch state transition to be sent to the platform. Batch state transitions (type `1`) bundle document and/or token transitions submitted together by the same identity. Although the format allows one or more transitions, Platform currently accepts exactly one transition per batch. For additional details, see the [State Transition](../explanations/platform-protocol-state-transition.md) explanation.
 
 | Field Name | Description |
 | - | - |
 | type | State transition type (`1` for a Batch) |
 | ownerId | Identity submitting the batch |
-| transitions | Document and token transitions bundled in the batch (e.g. document `create`, `replace`, `delete`, `transfer`, `purchase`, `updatePrice`) |
+| transitions | Document and token transitions bundled in the batch (e.g. document `create`, `replace`, `delete`, `transfer`, `purchase`, `updatePrice`, and, from protocol version 14, `indexOnlyDelete`) |
 | userFeeIncrease | Optional amount the submitter adds to the fee to raise the priority of the batch and improve its chance of timely inclusion |
 | signaturePublicKeyId | The `id` of the identity public key that signed the state transition |
 | signature | Signature of state transition data |
@@ -134,6 +144,8 @@ If the data contract sets the updated at timestamp as required for the document 
 ### Document Delete
 
 The document delete transition is used to delete an existing Dash Platform document. It only requires the fields found in the [transition base](#document-transition-base).
+
+Documents of [index-only document types](#details) have no stored body to reference by ID. Since protocol version 14 they are instead removed with an index-only delete transition (`indexOnlyDelete`) that carries the property values identifying the index entry to remove.
 
 ### Document Transfer
 

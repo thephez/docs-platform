@@ -17,7 +17,7 @@ Identities consist of multiple objects that are described in the following secti
 | [balance](#identity-balance) | unsigned integer (64-bit) | Credit balance associated with the identity |
 | revision        | integer        | Identity update revision                    |
 
-See the [identity implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/v0/mod.rs#L38-L44) for more details.
+See the [identity implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/v0/mod.rs#L41-L47) for more details.
 
 **Example Identity**
 
@@ -46,17 +46,17 @@ The identity `id` is a unique identifier created from the double sha256 hash of 
 `id = base58(sha256(sha256(<identity create funding outpoint>)))`
 
 :::{note}
-The identity `id` uses the Dash Platform specific `application/x.dash.dpp.identifier` content media type. For additional information, please refer to the [js-dpp PR 252](https://github.com/dashevo/js-dpp/pull/252) that introduced it and [identifier.rs](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-platform-value/src/types/identifier.rs).
+The identity `id` uses the Dash Platform specific `application/x.dash.dpp.identifier` content media type. For additional information, please refer to the [js-dpp PR 252](https://github.com/dashevo/js-dpp/pull/252) that introduced it and [identifier.rs](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-platform-value/src/types/identifier.rs).
 :::
 
-See rs-dpp for examples of using [InstantSend](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/instant/instant_asset_lock_proof.rs#L142) or [ChainLocks](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/chain/chain_asset_lock_proof.rs#L47) to create the identity id.
+See rs-dpp for examples of using [InstantSend](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/instant/instant_asset_lock_proof.rs#L142) or [ChainLocks](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/chain/chain_asset_lock_proof.rs#L47) to create the identity id.
 
 ### Identity publicKeys
 
 The identity `publicKeys` array stores information regarding each public key associated with the identity. Multiple identities may use the same public key.
 
 :::{note}
-Each identity must have exactly one master key ([security level](#public-key-securitylevel) `0`) used for updating the identity. Having an additional key ([security level](#public-key-securitylevel) `1` or `2`) for signing state transitions is strongly recommended but not enforced by the protocol. The maximum number of keys is 15000 as [defined by rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/fields.rs#L7).
+Each identity must have exactly one master key ([security level](#public-key-securitylevel) `0`) used for updating the identity. Having an additional key ([security level](#public-key-securitylevel) `1` or `2`) for signing state transitions is strongly recommended but not enforced by the protocol. The maximum number of keys is 15000 as [defined by rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/fields.rs#L7).
 :::
 
 Each item in the `publicKeys` array consists of an object containing:
@@ -68,12 +68,12 @@ Each item in the `publicKeys` array consists of an object containing:
 | [securityLevel](#public-key-securitylevel) | integer        | Public key security level (`0` - Master, `1` - Critical, `2` - High, `3` - Medium) |
 | contractBounds | object (optional) | Restricts this key to a specific data contract or document type context |
 | [type](#public-key-type) | integer        | Type of key (default: `0` - ECDSA) |
-| [readonly](#public-key-readonly) | boolean        | Identity public key can’t be modified with `readOnly` set to `true`. This can’t be changed after adding a key. |
+| [readOnly](#public-key-readonly) | boolean        | Identity public key can’t be modified with `readOnly` set to `true`. This can’t be changed after adding a key. |
 | [data](#public-key-data)          | array of bytes | Public key (`0` - ECDSA: 33 bytes, `1` - BLS: 48 bytes, `2` - ECDSA Hash160: 20 bytes, `3` - [BIP13](https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki) Hash160: 20 bytes, `4` - EDDSA_25519_HASH160: 20 bytes) |
 | [disabledAt](#public-key-disabledat) | integer        | Timestamp indicating that the key was disabled at a specified time |
-| signature     | array of bytes | Signature of the signable identity create or topup state transition by the private key associated with this public key |
+| signature     | array of bytes | Signature of the signable state transition adding the key (identity create, identity update, or identity create from addresses) by the private key for this public key. Must be empty for key types `2`, `3`, and `4`. |
 
-See the [public key implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/identity_public_key/v0/mod.rs#L42-L60) for more details.
+See the [public key implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/identity_public_key/v0/mod.rs#L43-L61) for more details.
 
 #### Public Key `id`
 
@@ -81,7 +81,7 @@ Each public key in an identity's `publicKeys` array must be assigned a unique in
 
 #### Public Key `type`
 
-The `type` field indicates the algorithm used to derive the key. Available key types [defined in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/identity_public_key/key_type.rs#L46-L53) include:
+The `type` field indicates the algorithm used to derive the key. Available key types [defined in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/identity_public_key/key_type.rs#L47-L54) include:
 
 | Type | Size (bytes) | Description |
 | :--: | :----------: | ----------- |
@@ -97,7 +97,7 @@ The `data` field contains the compressed public key.
 
 #### Public Key `purpose`
 
-The `purpose` field describes which operations are supported by the key. Please refer to [DIP11 - Identities](https://github.com/dashpay/dips/blob/master/dip-0011.md#keys) for additional information regarding this. Keys for some purposes must meet certain the security level criteria [defined by rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/methods/validate_identity_public_keys_structure/v0/mod.rs#L22-L37) as detailed below:
+The `purpose` field describes which operations are supported by the key. Please refer to [DIP11 - Identities](https://github.com/dashpay/dips/blob/master/dip-0011.md#keys) for additional information regarding this. Keys for some purposes must meet certain the security level criteria [defined by rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/public_key_in_creation/methods/validate_identity_public_keys_structure/v0/mod.rs#L22-L37) as detailed below:
 
 | Type | Description    | Allowed Security Level(s) |
 | :--: | -------------- | ------------------------- |
@@ -151,19 +151,19 @@ The following constants and limits apply to identities:
 | `min_identity_funding_amount` | 200,000 credits | Minimum funding for address-based identity create and top-up transitions |
 | `identity_create_base_cost` | 2,000,000 credits | Base fee for identity creation |
 | `identity_key_in_creation_cost` | 6,500,000 credits | Fee per key during creation |
-| `identity_topup_base_cost` | 500,000 credits | Base fee for identity top-up |
+| `identity_topup_base_cost` | 500,000 credits | Base fee for identity top-up. The minimum top-up fee is this plus the asset lock requirement (50,000,000 credits), so 50,500,000 credits. |
 
 ### Identity Creation Cost Calculation
 
 The total cost to create an identity is:
 
 ```text
-Total = identity_create_base_cost + (number_of_keys × identity_key_in_creation_cost)
+Total = identity_create_base_cost + asset_lock_base_cost + (number_of_keys × identity_key_in_creation_cost)
 ```
 
 **Examples:**
 
-- 1 key: 2,000,000 + 6,500,000 = **8,500,000 credits** (0.000085 Dash)
+- 1 key: 2,000,000 + 200,000,000 + 6,500,000 = **208,500,000 credits** (0.002085 Dash)
 - 2 keys: 2,000,000 + 13,000,000 = **15,000,000 credits** (0.00015 Dash)
 - 6 keys: 2,000,000 + 39,000,000 = **41,000,000 credits** (0.00041 Dash)
 
@@ -181,15 +181,21 @@ For all protocol constants, see [Protocol Constants](protocol-constants.md).
 
 ## Identity State Transition Details
 
-There are five identity-related state transitions: [identity create](#identity-create), [identity topup](#identity-topup), [identity update](#identity-update), [identity credit transfer](#identity-credit-transfer), and [identity credit withdrawal](#identity-credit-withdrawal). Details are provided in this section including information about [asset locking](#asset-lock) and [signing](#identity-state-transition-signing) required for these state transitions.
+The following state transitions create, fund, update, or transfer credits to or from identities. Five are documented on this page; this section also covers the relevant [asset-lock](#asset-lock) and [signing](#identity-state-transition-signing) mechanisms. The remaining transitions are documented with the feature they belong to.
 
-:::{note}
-Protocol Version 11 introduced additional address-based identity operations. See [Address-Based State Transitions](address-system.md) for:
-
-- Identity Credit Transfer to Addresses (type 9)
-- Identity Create from Addresses (type 10)
-- Identity Top-Up from Addresses (type 11)
-:::
+| Type | Name | Supported protocol versions |
+| --- | --- | --- |
+| 2 | [Identity Create](#identity-create) | ≥ 1 |
+| 3 | [Identity Top-Up](#identity-topup) | ≥ 1 |
+| 5 | [Identity Update](#identity-update) | ≥ 1 |
+| 6 | [Identity Credit Withdrawal](#identity-credit-withdrawal) | ≥ 1 |
+| 7 | [Identity Credit Transfer](#identity-credit-transfer) | ≥ 1 |
+| 9 | [Identity Credit Transfer to Addresses](address-system.md#identity-credit-transfer-to-addresses) | ≥ 11 |
+| 10 | [Identity Create from Addresses](address-system.md#identity-create-from-addresses) | ≥ 11 |
+| 11 | [Identity Top-Up from Addresses](address-system.md#identity-top-up-from-addresses) | ≥ 11 |
+| 20 | [Identity Create from Shielded Pool](shielded-pool.md#identity-create-from-shielded-pool) | ≥ 12 |
+| 21 | [Shield from Identity](shielded-pool.md#shield-from-identity) | ≥ 14 |
+| 22 | [Identity Top-Up from Shielded Pool](shielded-pool.md#identity-top-up-from-shielded-pool) | ≥ 14 |
 
 ### Identity Create
 
@@ -197,7 +203,7 @@ Identities are created on the platform by submitting the identity information in
 
 | Field           | Type           | Description |
 | --------------- | -------------- | ----------- |
-| $version        | integer        | The state transition format version (currently `0`) |
+| $formatVersion  | integer        | The state transition format version (currently `0`) |
 | type            | integer        | State transition type (`2` for identity create) |
 | publicKeys | array of [keys](#identity-publickeys) | Public key(s) associated with the identity |
 | assetLockProof  | [proof object](#asset-lock) | Asset lock proof object proving the [asset lock transaction](inv:user:std#ref-txs-assetlocktx) exists on the Core chain and is locked |
@@ -205,7 +211,7 @@ Identities are created on the platform by submitting the identity information in
 | signature       | array of bytes | Signature of state transition data by the single-use key from the asset lock (65 bytes) |
 | identityId      | array of bytes | An [identity id](#identity-id) for the identity being created (32 bytes). Computed from the asset lock proof outpoint and excluded from the serialized payload. |
 
-See the [identity create implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_transition/v0/mod.rs#L43-L54) for more details.
+See the [identity create implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_transition/v0/mod.rs#L43-L54) for more details.
 
 ### Identity TopUp
 
@@ -213,14 +219,14 @@ Identity credit balances are increased by submitting the topup information in an
 
 | Field           | Type           | Description |
 | --------------- | -------------- | ----------- |
-| $version        | integer        | The state transition format version (currently `0`) |
+| $formatVersion  | integer        | The state transition format version (currently `0`) |
 | type            | integer        | State transition type (`3` for identity topup) |
 | assetLockProof  | [proof object](#asset-lock) | Asset lock proof object proving the layer 1 locking transaction exists and is locked  |
 | identityId      | array of bytes | An [identity id](#identity-id) for the identity receiving the topup (can be any identity) (32 bytes) |
 | userFeeIncrease | integer        | Extra fee to prioritize processing if the mempool is full. Typically set to zero. |
 | signature       | array of bytes | Signature of state transition data by the single-use key from the asset lock (65 bytes) |
 
-See the [identity topup implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_transition/v0/mod.rs#L39-L46) for more details.
+See the [identity topup implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_transition/v0/mod.rs#L39-L46) for more details.
 
 ### Identity Update
 
@@ -228,7 +234,7 @@ Identities are updated on the platform by submitting the identity information in
 
 | Field                | Type                 | Description |
 | -------------------- | -------------------- | ----------- |
-| $version             | integer              | The state transition format version (currently `0`) |
+| $formatVersion       | integer              | The state transition format version (currently `0`) |
 | type                 | integer              | State transition type (`5` for identity update) |
 | identityId           | array of bytes       | The [identity id](#identity-id) (32 bytes) |
 | revision             | integer              | Identity update revision |
@@ -239,7 +245,7 @@ Identities are updated on the platform by submitting the identity information in
 | signaturePublicKeyId | integer              | The ID of public key used to sign the state transition |
 | signature            | array of bytes       | Signature of state transition data (65 bytes) |
 
-See the [identity update implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_update_transition/v0/mod.rs#L39-L68) for more details.
+See the [identity update implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_update_transition/v0/mod.rs#L39-L68) for more details.
 
 ### Identity Credit Transfer
 
@@ -247,17 +253,21 @@ Identities can transfer credits on the platform by submitting an identity credit
 
 | Field                | Type           | Description |
 | -------------------- | -------------- | ----------- |
-| $version             | integer        | The state transition format version (currently `0`) |
+| $formatVersion       | integer        | The state transition format version (currently `0`) |
 | type                 | integer        | State transition type (`7` for identity credit transfer) |
 | identityId           | array of bytes | The [identity id](#identity-id) of the sender (32 bytes) |
 | recipientId          | array of bytes | The [identity id](#identity-id) of the recipient (32 bytes) |
-| amount               | integer        | The credit amount to transfer |
+| amount               | integer        | The credit amount to transfer (minimum 100,000 credits) |
 | nonce                | unsigned integer (64 bits) | Identity nonce for this transition to prevent replay attacks |
 | userFeeIncrease      | integer        | Extra fee to prioritize processing if the mempool is full. Typically set to zero. |
 | signaturePublicKeyId | integer        | The ID of public key used to sign the state transition |
 | signature            | array of bytes | Signature of state transition data (65 bytes) |
 
-See the [identity credit transfer implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_transition/v0/mod.rs#L38-L49) for more details.
+:::{note}
+The `recipientId` must differ from `identityId`; transfers to the sending identity are rejected.
+:::
+
+See the [identity credit transfer implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_transition/v0/mod.rs#L42-L53) for more details.
 
 ### Identity Credit Withdrawal
 
@@ -265,7 +275,7 @@ Credits can be withdrawn from an identity to an external Core wallet using an id
 
 | Field                | Type           | Description |
 | -------------------- | -------------- | ----------- |
-| $version             | integer        | The state transition format version (currently `1`) |
+| $formatVersion       | integer        | The state transition format version (currently `1`) |
 | type                 | integer        | State transition type (`6` for identity credit withdrawal) |
 | identityId           | array of bytes | An [identity id](#identity-id) (32 bytes) |
 | amount               | integer        | The amount of credits to withdraw (64 bits) |
@@ -277,17 +287,21 @@ Credits can be withdrawn from an identity to an external Core wallet using an id
 | signaturePublicKeyId | integer        | The ID of public key used to sign the state transition |
 | signature            | array of bytes | Signature of state transition data (65 bytes) |
 
-See the [identity credit withdrawal implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_withdrawal_transition/v1/mod.rs#L31-L48) for more details.
+:::{note}
+**Constraints:** `pooling` must be `0` (Never); `1` (IfAvailable) and `2` (Standard) are not yet implemented. `coreFeePerByte` must be a non-zero [Fibonacci number](https://en.wikipedia.org/wiki/Fibonacci_sequence). `outputScript`, when set, must be P2PKH or P2SH. `amount` must be within the [min and max withdrawal amount](protocol-constants.md) limits.
+:::
+
+See the [identity credit withdrawal implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_withdrawal_transition/v1/mod.rs#L31-L48) for more details.
 
 ### Asset Lock
 
 The [identity create](#identity-create) and [identity topup](#identity-topup) state transitions both include an asset lock proof object. This object references the Core chain [asset lock transaction](inv:user:std#ref-txs-assetlocktx) and includes proof that the transaction is locked.
 
-Currently there are two types of asset lock proofs [defined by rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/mod.rs#L40-L43): InstantSend and ChainLock. Transactions almost always receive InstantSend locks, so the InstantSend asset lock proof is the predominate type. See rs-dpp for examples of using [InstantSend](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/instant/instant_asset_lock_proof.rs) or [ChainLocks](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/chain/chain_asset_lock_proof.rs) as the asset lock proof.
+Currently there are two types of asset lock proofs [defined by rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/mod.rs#L40-L43): InstantSend and ChainLock. Transactions almost always receive InstantSend locks, so the InstantSend asset lock proof is the predominate type. See rs-dpp for examples of using [InstantSend](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/instant/instant_asset_lock_proof.rs) or [ChainLocks](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/chain/chain_asset_lock_proof.rs) as the asset lock proof.
 
 #### InstantSend Asset Lock Proof
 
-The InstantSend asset lock proof is used for transactions that have received an InstantSend lock. Asset locks using an InstantSend lock as proof must comply with this structure established in [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/instant/instant_asset_lock_proof.rs#L38-L45).
+The InstantSend asset lock proof is used for transactions that have received an InstantSend lock. Asset locks using an InstantSend lock as proof must comply with this structure established in [rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/instant/instant_asset_lock_proof.rs#L38-L45).
 
 | Field       | Type           | Description |
 | ----------- | -------------- | ----------- |
@@ -298,7 +312,7 @@ The InstantSend asset lock proof is used for transactions that have received an 
 
 #### ChainLock Asset Lock Proof
 
-The ChainLock asset lock proof is used for transactions that have not received an InstantSend lock, but have been included in a block that has received a ChainLock. Asset locks using a ChainLock as proof must comply with this structure established in [rs-dpp](https://github.com/dashpay/platform/blob/v4.1.0/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/chain/chain_asset_lock_proof.rs#L24-L29).
+The ChainLock asset lock proof is used for transactions that have not received an InstantSend lock, but have been included in a block that has received a ChainLock. Asset locks using a ChainLock as proof must comply with this structure established in [rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/identity/state_transition/asset_lock_proof/chain/chain_asset_lock_proof.rs#L24-L29).
 
 | Field                 | Type           | Description |
 | --------------------- | -------------- | ----------- |
@@ -320,5 +334,5 @@ The process to sign an identity create state transition consists of the followin
    - `signature` for the overall state transition
 2. Calculate the double SHA-256 hash of the encoded signable state transition
 3. Sign the hash from the previous step using the private key associated with the asset lock transaction, then add the result to the state transition's `signature` field
-4. For each public key being added to the identity, sign the hash from step 2 using the respective private key and add the result to the public key's `signature` field
+4. For each public key of type `0` or `1` being added to the identity, sign the hash from step 2 using the respective private key and add the result to the public key's `signature` field. Keys of type `2`, `3`, or `4` must have an empty `signature`.
 5. Use Bincode to re-encode the state transition with all signatures and the identity id included
