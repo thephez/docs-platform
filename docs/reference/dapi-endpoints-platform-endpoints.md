@@ -326,8 +326,8 @@ Retrieves the voters for a specific identity associated with a contested resourc
 | ---------------------- | -------- | -------- | --------------------------------------------------------------------------- |
 | `contract_id`          | Bytes    | Yes      | The ID of the data contract associated with the contested resource          |
 | `document_type_name`   | String   | Yes      | The name of the document type associated with the contested resource        |
-| `index_name`           | String   | Yes      | The name of the index used to query the contested resource                  |
-| `index_values`         | Array    | Yes      | The values used to query the contested resource                             |
+| `index_name`           | String   | Yes      | The name of the document type's contested index. A document type has at most one contested index; naming any other index is rejected with `InvalidArgument` |
+| `index_values`         | Array    | Yes      | The values used to query the contested resource. Must contain exactly one value per contested index property; supplying more returns `InvalidArgument`, and supplying fewer surfaces as an `InvalidParameter` error from Drive. |
 | `contestant_id`        | Bytes    | Yes      | The ID of the identity for which to retrieve voters                         |
 | `start_at_identifier_info` | Object | No      | Start identifier information for pagination                                 |
 | `count`                | Integer  | No       | Number of results to return. See [Result limits and pagination](#result-limits-and-pagination) |
@@ -1064,6 +1064,10 @@ grpcurl -proto protos/platform/v0/platform.proto \
 Adds a typed v1 request surface (`WhereClause` / `OrderClause` / `Select`) and four aggregate modes — `DOCUMENTS`, `COUNT`, `SUM`, `AVG`. The legacy v0 CBOR surface is still supported.
 :::
 
+:::{versionchanged} 4.2.0
+Protocol version 14 adds [ranked](#ranked-documents), [having-range](#having-range-documents), [chained](#chained-documents), and [composite](#composite-documents) query modes, plus the `IN_TIME_RANGE` where operator. `offset` is now consumed in ranked mode, and `having` is served in having-range mode.
+:::
+
 **Returns**: [Document](../explanations/platform-protocol-document.md) information for the requested document(s), or an aggregate count/sum/average over the matched document set.
 
 The request envelope is `oneof version { v0; v1; }`. Pick a version per call:
@@ -1077,11 +1081,11 @@ The request envelope is `oneof version { v0; v1; }`. Pick a version per call:
 | ---- | ---- | -------- | ----------- |
 | `data_contract_id` | Bytes | Yes | A data contract `id`. |
 | `document_type` | String | Yes | A document type defined by the data contract. |
-| `where_clauses` (v1) / `where` (v0) | Typed (v1) or CBOR bytes (v0) | No | Filter clauses. See [Query Syntax](../reference/query-syntax.md). |
+| `where_clauses` (v1) / `where` (v0) | Typed (v1) or CBOR bytes (v0) | No | Filter clauses. A v1 clause carries `field`, `operator`, and exactly one operand: `IN_TIME_RANGE` clauses set `time_range` and leave `value` unset, every other operator sets `value` and leaves `time_range` unset. Either mismatch is rejected. See [Query Syntax](../reference/query-syntax.md) and [Time-range selection](../reference/query-syntax.md#time-range-selection). |
 | `order_by` | Typed (v1) or CBOR bytes (v0) | No | Sort order. See [Query Syntax](../reference/query-syntax.md). |
 | `prove` | Boolean | No | Return a proof instead of data. See [Platform proofs](../reference/platform-proofs.md). |
-| `having` (v1) | Typed | No | Aggregate filters on grouped results. Present on the wire but currently rejected with `Unsupported`. See [Query Syntax](../reference/query-syntax.md). |
-| `offset` (v1) | Integer | No | Row-based pagination offset. Present on the wire but currently rejected with `Unsupported`. Use `start_at` / `start_after` instead. See [Query Syntax](../reference/query-syntax.md). |
+| `having` (v1) | Typed | No | Aggregate filters on grouped results. From protocol version 14, a single clause naming the selected aggregate alongside one `group_by` property is served as a [having-range query](../reference/query-syntax.md#having-range-queries). Other shapes, and every request on protocol version 13 or earlier, are rejected - usually with `Unsupported`, though a bad limit gives `InvalidLimit` and a missing `group_by` gives `InvalidParameter`. See [Query Syntax](../reference/query-syntax.md). |
+| `offset` (v1) | Integer | No | Row-based pagination offset. Consumed only by [ranked queries](../reference/query-syntax.md#ranked-aggregate-queries), where it skips that many ranks before the returned page and the response reports the skip performed. Rejected with `Unsupported` on every other v1 route; use `start_at` / `start_after` instead. See [Query Syntax](../reference/query-syntax.md). |
 
 For v1, see also the [doctype-level aggregate flags](../protocol-ref/data-contract-document.md#aggregate-query-flags), which control whether a document type supports the `COUNT` / `SUM` / `AVG` modes below.
 
@@ -1464,6 +1468,90 @@ grpcurl -proto protos/platform/v0/platform.proto \
 
 Client computes `avg = 215 / 50 = 4.3`.
 
+#### Ranked documents
+
+:::{versionadded} 4.2.0
+Requires protocol version 14.
+:::
+
+Returns the top or bottom groups by their aggregate value. A request routes here when it carries an aggregate `selects` projection, exactly one `group_by` property, and exactly one `order_by` clause naming the selected aggregate - the reserved `$count` sentinel for `COUNT(*)`, otherwise the aggregated field.
+
+**Mode-specific request fields**
+
+| Name | Type | Required | Description |
+| ---- | ---- | -------- | ----------- |
+| `limit` | Integer | Yes | Number of groups to return, between 1 and 100. A larger value is rejected with `InvalidLimit` rather than clamped. |
+| `offset` | Integer | No | Number of ranks to skip before the returned page. Counted rather than walked, so there is no ceiling. Combining a non-zero offset with a multi-element `in` prefix pin is rejected with `InvalidLimit`. |
+
+The covering index must declare the matching ranking axis (`rankedCountable`, `rankedSummable`, or `rankedAverageable`). Cursors are rejected, so `offset` is the only ranked pagination. See [Ranked aggregate queries](../reference/query-syntax.md#ranked-aggregate-queries).
+
+The response is carried in `result.data.ranked`, which reports the entries and the skip actually performed - potentially smaller than the requested offset when the groups run out.
+
+#### Having-range documents
+
+:::{versionadded} 4.2.0
+Requires protocol version 14.
+:::
+
+Returns the groups whose aggregate value falls in a bounded range. A request routes here when it carries an aggregate projection, exactly one `group_by` property, and exactly one `having` clause naming the selected aggregate.
+
+The clause's operator must describe one contiguous range - `EQUAL`, `GREATER_THAN[_OR_EQUALS]`, `LESS_THAN[_OR_EQUALS]`, or a `BETWEEN` variant. `NOT_EQUAL` and `IN` are rejected, as is a multi-clause `having`. `limit` must be between 1 and 100 (`InvalidLimit` otherwise), a missing `group_by` is rejected with `InvalidParameter`, and neither `offset` nor cursors are supported. An `order_by` on the selected aggregate is accepted and flips the walk direction. See [Having-range queries](../reference/query-syntax.md#having-range-queries).
+
+The response is carried in `result.data.ranked`, with no skip reported.
+
+#### Chained documents
+
+:::{versionadded} 4.2.0
+No protocol-version gate of its own, but depends in practice on protocol version 14, which admits the `indexOnly` and `refersTo` keywords it requires.
+:::
+
+Performs a provable semi-join. Presence of the `chained` message selects this mode: the request's own `document_type`, `where_clauses`, `order_by`, and `limit` describe the **inner** query, and the outer half is derived from the proven inner results rather than sent.
+
+**Mode-specific request fields**
+
+| Name | Type | Required | Description |
+| ---- | ---- | -------- | ----------- |
+| `chained.join_property` | String | Yes | The inner property whose proven values become the outer documents' `$id`s. |
+| `chained.outer_document_type` | String | Yes | The joined document type - the `refersTo` target. |
+| `limit` | Integer | Yes | Bounds the derived outer query, so there is no server-default fallback. A value outside 1 to 100 is rejected with `InvalidLimit` rather than clamped. |
+
+The inner document type must be `indexOnly` and resolve to an index carrying the join property; the outer type must not be `indexOnly`. The join property must declare a same-contract `refersTo: permanentDocument` targeting the outer document type, and `selects` must be empty or a single `DOCUMENTS` projection. `group_by`, `having`, time-range clauses, cursors, and `offset` are rejected; paginate with a range clause on the join property. See [Chained queries](../reference/query-syntax.md#chained-queries).
+
+The response is carried in `result.data.chained` as `inner_documents` and `outer_documents`.
+
+A node predating this field ignores it and serves the plain inner query, which fails closed on the client: an inner-only proof cannot satisfy the re-derived merged query.
+
+#### Composite documents
+
+:::{versionadded} 4.2.0
+:::
+
+Returns a page plus sub-queries derived from it, answered as one merged proof over a single state root. Presence of any `sub_queries` selects this mode: the request's own contract, document type, clauses, and `limit` describe the **page**, and each sub-query's `IN` clause is derived by the node from the page's - or an earlier sub-query's - proven documents.
+
+**Sub-query fields**
+
+| Name | Type | Required | Description |
+| ---- | ---- | -------- | ----------- |
+| `data_contract_id` | Bytes | No | The contract targeted. Empty means the page's own contract. |
+| `document_type` | String | Yes | The document type queried. |
+| `where_clauses` | Typed | No | The fixed clauses - everything but the derived `IN`, which must not be named here. |
+| `order_by` | Typed | No | Ordering, documents only. Must agree with the page's direction. |
+| `limit` | Integer | No | Required unless the lookup is already value-bounded. A unique index, an `indexOnly` terminal with every prefix fixed, a by-ID join, and a count must not carry one; every other lookup, siblings included, must. |
+| `kind` | Enum | Yes | `DOCUMENTS` (the matching documents) or `COUNT` (one count per derived value). |
+| `bind` | Typed | No | Where the derived values come from. Absent makes the sub-query a sibling: an independent query proven under the same root. |
+
+**Binding fields**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `source` | Integer | `0` is the page; `n` is `sub_queries[n - 1]`, which must precede this one and be a `DOCUMENTS` sub-query. |
+| `source_property` | String | The property read off each source document - `$id`, `$ownerId`, or an identifier-typed property. Dotted paths reach nested properties. |
+| `field` | String | The sub-query field receiving the `IN` clause. `$id` makes this a by-ID join, requiring the source property to declare `refersTo: permanentDocument` targeting this document type. |
+
+The page's `limit` is required, and a value outside 1 to 100 is rejected with `InvalidLimit` rather than clamped. `group_by`, `having`, time-range clauses, cursors, and `offset` are rejected, `chained` and `sub_queries` are mutually exclusive, and a request may carry at most 10 sub-queries. See [Composite queries](../reference/query-syntax.md#composite-queries).
+
+The response is carried in `result.data.composite` as `page_documents` plus one `sub_results` entry per sub-query, in request order.
+
 ### getDocumentHistory
 
 **Returns**: The revision history for a single document on a contract that keeps document history  
@@ -1474,9 +1562,9 @@ Client computes `avg = 215 / 50 = 4.3`.
 | `data_contract_id` | Bytes | Yes | A data contract `id` |
 | `document_type_name` | String | Yes | A document type defined by the data contract |
 | `document_id` | Bytes | Yes | The `id` of the document whose history is requested |
-| `limit` | Integer | No | The maximum number of history entries to return |
-| `offset` | Integer | No | The offset for pagination through the document history |
-| `start_at_ms` | Integer | No | Only return results starting at this time in milliseconds |
+| `limit` | Integer | No | Maximum number of history entries to return, between 1 and 10. Omitting the field uses the maximum (10); an explicit `0` or a value above 10 is rejected with `InvalidArgument`. |
+| `offset` | Integer | No | Number of history entries to skip. Omitted and explicit `0` both start at the first entry. |
+| `start_at_ms` | Integer | No | Only return results *after* this time in milliseconds; the bound is exclusive. |
 | `prove` | Boolean | No | Set to `true` to receive a proof that contains the requested document history. The data requested will be encoded as part of the proof in the response.|
 
 **Example Request**

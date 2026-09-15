@@ -17,6 +17,9 @@ All valid JSON-RPC requests require the inclusion the parameters listed in the f
 | `method`  | String  | Name of the endpoint                                                                  |
 | `id`      | Integer | Request id (returned in the response to differentiate results from the same endpoint) |
 | `jsonrpc` | String  | JSON-RPC version ("2.0")                                                              |
+| `params`  | Object, array, or string | Endpoint arguments. Optional for endpoints that take none. |
+
+The shape `params` accepts varies by endpoint: [`getBlockHash`](#getblockhash) takes an object, while [`sendRawTransaction`](#sendrawtransaction) takes an array or a bare hex string. See each endpoint's parameters below.
 
 Additional information may be found in the [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification#request_object).
 
@@ -255,11 +258,17 @@ curl -k --request POST \
 
 **Parameters**:
 
-| Name             | Type    | Required | Description                                                        |
-| ---------------- | ------- | -------- | ------------------------------------------------------------------ |
-| `transaction`    | String  | Yes      | The raw transaction, hex-encoded                                    |
-| `allowHighFees`  | Boolean | No       | Set to `true` to bypass the high-fee rejection check (default: `false`) |
-| `bypassLimits`   | Boolean | No       | Set to `true` to bypass mempool rate limits (default: `false`)      |
+This method takes **positional** parameters. `params` must be either an array of the values below or a bare hex string carrying the raw transaction. An object such as `{"transaction": "..."}` is rejected with `-32602`.
+
+Positional parameters have no names on the wire; the names below are for reference only.
+
+| Position | Name | Type | Required | Description |
+|-|-|-|-|-|
+| 0 | `transaction` | String | Yes | The raw transaction, hex-encoded |
+| 1 | `allowHighFees` | Boolean | No | Set to `true` to bypass the high-fee rejection check (default: `false`). Parsed but not forwarded to Core. |
+| 2 | `bypassLimits` | Boolean | No | Set to `true` to bypass mempool rate limits (default: `false`). Parsed but not forwarded to Core. |
+
+The transaction is validated before broadcast: it must be non-empty, must not exceed the standard transaction weight limit as a raw byte count on the wire, and must not exceed that same weight limit once parsed. All three are reported as `-32602` over JSON-RPC; the [gRPC equivalent](../reference/dapi-endpoints-core-grpc-endpoints.md#broadcasttransaction) returns `RESOURCE_EXHAUSTED` for the wire-size check and `INVALID_ARGUMENT` for the other two.
 
 #### Example Request and Response
 

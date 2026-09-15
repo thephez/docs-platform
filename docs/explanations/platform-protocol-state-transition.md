@@ -32,14 +32,14 @@ To support the various data types used on the platform and enable future updates
 2. Payload - contents vary depending on payload type
 3. Authorization - authorization data for the header/payload
 
-Authorization varies by transition family. Transitions submitted by an identity carry a signature made with one of that identity's keys. Transitions that spend from [Platform addresses](../protocol-ref/address-system.md) are instead authorized by a witness signature on each address input, since the funds belong to the addresses rather than to an identity. [Shielded pool](../explanations/shielded-pool.md) transitions omit the generic identity transition signature but retain Orchard `spendAuthSig` and `bindingSignature` authorization. Applicable shielded transitions also carry address witnesses or an asset-lock signature.
+Authorization varies by transition family. Transitions submitted by an identity are signed with one of that identity's keys. Transitions that spend from [Platform addresses](../protocol-ref/address-system.md) instead use a witness signature for each address input. [Shielded pool](../explanations/shielded-pool.md) transitions use the authorization included in their shielded actions and, where applicable, address witnesses or an asset-lock signature. Shield from Identity is also signed by the identity whose balance supplies the credits.
 
 The following table contains a list of currently defined payload types:
 
 | Payload Type | Payload Description |
 | - | - |
 | [Data Contract Create](../protocol-ref/data-contract.md#data-contract-create) (`0`) | [Database schema](../explanations/platform-protocol-data-contract.md) for a single application |
-| [Batch](../protocol-ref/document.md#document-overview) (`1`) | An array of 1 or more [document](../explanations/platform-protocol-document.md) (`create`, `replace`, `delete`, `transfer`, `purchase`, `updatePrice`) or [token](../explanations/tokens.md) (mint, burn, transfer, freeze/unfreeze, claim, direct purchase, set price, plus the administrative actions destroy frozen funds, emergency action, and config update) transition objects |
+| [Batch](../protocol-ref/document.md#document-overview) (`1`) | An array of 1 or more (currently limited to exactly one per batch) transition objects acting on [documents](../explanations/platform-protocol-document.md) or [tokens](../explanations/tokens.md). See [Batch transitions](#batch-transitions) below for the available actions. |
 | [Identity Create](../protocol-ref/identity.md#identity-create) (`2`) | Information including the public keys required to create a new [Identity](../explanations/identity.md) |
 | [Identity Topup](../protocol-ref/identity.md#identity-topup) (`3`) | Information including proof of a transaction containing an amount to add to the provided identity's balance |
 | [Data Contract Update](../protocol-ref/data-contract.md#data-contract-update) (`4`) | An updated [database schema](../explanations/platform-protocol-data-contract.md) to modify an existing application |
@@ -59,6 +59,15 @@ The following table contains a list of currently defined payload types:
 | [Shield From Asset Lock](../protocol-ref/shielded-pool.md#shield-from-asset-lock) (`18`) | Fund the shielded pool directly from an asset lock proof |
 | [Shielded Withdrawal](../protocol-ref/shielded-pool.md#shielded-withdrawal) (`19`) | Withdraw funds from the shielded pool to Dash Core (L1) |
 | [Identity Create From Shielded Pool](../protocol-ref/shielded-pool.md#identity-create-from-shielded-pool) (`20`) | Create a new identity funded from the shielded pool |
+| [Shield from Identity](../protocol-ref/shielded-pool.md#shield-from-identity) (`21`) | Move credits from an identity balance into the [shielded pool](../explanations/shielded-pool.md) |
+| [Identity Top Up From Shielded Pool](../protocol-ref/shielded-pool.md#identity-top-up-from-shielded-pool) (`22`) | Add credits to an existing identity from the shielded pool |
+
+### Batch transitions
+
+Batch transitions (payload type `1`) carry either document or token actions:
+
+- **Document actions** — create, replace, delete, transfer, purchase, update price, and, from protocol version 14, index-only delete for index-only document types. See [Document](../explanations/platform-protocol-document.md) for details.
+- **Token actions** — mint, burn, transfer, freeze/unfreeze, claim, direct purchase, and set price, along with administrative actions. See [Tokens](../explanations/tokens.md) for details.
 
 ### Application Usage
 

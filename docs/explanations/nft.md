@@ -59,7 +59,11 @@ NFTs can be immutable or mutable, depending on their intended use. Immutable NFT
 
 ### Delete
 
-Since some NFTs may represent transient or consumable things, Dash Platform allows NFTs to be deleted. This is more efficient than the "burn" mechanism many projects use to make an NFT unusable and provides flexibility in managing assets that may no longer be needed or valid. Whether deletion is permitted is fixed when the document type is defined in the data contract.
+Since some NFTs may represent transient or consumable things, Dash Platform allows NFTs to be deleted. This is more efficient than the "burn" mechanism many projects use to make an NFT unusable and provides flexibility in managing assets that may no longer be needed or valid.
+
+Whether deletion is permitted is set when the document type is defined in the data contract and cannot be changed afterward. Document types that keep revision history cannot allow deletion. The one exception is a legacy correction: a contract registered before this rule was enforced may update a history-keeping document type to turn deletion off, since it was never actually possible for that type.
+
+Deletable NFTs cannot be the target of consensus-validated references from other documents. See [property references](../reference/data-contracts.md#platform-specific-property-keywords).
 
 ```{eval-rst}
 .. _explanations-nft-create:
@@ -73,7 +77,7 @@ Creating an NFT on Dash Platform consists of creating a data contract, registeri
 
 Structurally, there is no difference between an NFT contract and a non-NFT contract. While an NFT contract may set options that other contracts are unlikely to use, there is no other difference.
 
-NFT contracts will often set document creation restrictions and enable document transfers. Default options for modifying, deleting, and transferring documents can be specified at the contract level and overridden as needed for specific document types.
+NFT contracts will often set document creation restrictions and enable document transfers. Default options for modifying and deleting documents can be specified at the contract level and overridden as needed for specific document types. Transfer and trade options are enabled per document type and are off by default.
 
 Once the data contract design is completed, the contract can be registered on the network in preparation for NFT document creation. See the [contract registration tutorial](../tutorials/contracts-and-documents/register-a-data-contract.md) for example code.
 

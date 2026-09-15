@@ -164,6 +164,8 @@ grpcurl -proto protos/core/v0/core.proto \
 | `hash`                    | String  | No       | Return the block matching the hex-encoded block hash provided |
 | `height`                  | Integer | No       | Return the block matching the block height provided |
 
+One of `hash` or `height` must be provided; the request carries them as a `oneof`, so supplying both is not possible on the wire. Omitting both, or sending a blank `hash`, returns `INVALID_ARGUMENT`. A `height` above the chain tip also returns `INVALID_ARGUMENT`, passing through Core's own message, while a correctly formatted but unknown `hash` returns `NOT_FOUND` ("Block not found").
+
 #### Example Request and Response
 
 ::::{tab-set}
@@ -257,6 +259,8 @@ Note: The gRPCurl response `block` data is Base64 encoded
 
 **Returns**: Blockchain status information from the Core chain  
 **Parameters**: None
+
+The response `status` is one of `NOT_STARTED`, `SYNCING`, `READY`, or `ERROR`, derived from Core: `ERROR` when Core reports any warning, `READY` when verification progress reaches at least 0.9999, and `SYNCING` otherwise. `NOT_STARTED` is defined on the wire but is not currently emitted, and `status` falls back to `ERROR` if the Core query itself fails. `chain.is_synced` is simply `status == READY`.
 
 #### Example Request and Response
 
@@ -390,6 +394,8 @@ Note: The gRPCurl response `bestBlockHash` and `chainWork` data is Base64 encode
 
 **Parameters**: None
 
+The response `status` is one of `UNKNOWN`, `WAITING_FOR_PROTX`, `POSE_BANNED`, `REMOVED`, `OPERATOR_KEY_CHANGED`, `PROTX_IP_CHANGED`, `READY`, or `ERROR`. Note two caveats: `pose_penalty` returns `0` both when there is no penalty and when the lookup fails, and `sync_progress` here is quantized to `0`, `1/3`, `2/3`, or `1`, unlike the continuous [`getBlockchainStatus`](#getblockchainstatus) `sync_progress`.
+
 #### Example Request and Response
 
 ::::{tab-set}
@@ -477,6 +483,8 @@ Note: The gRPCurl response `proTxHash` data is Base64 encoded.
 | Name | Type   | Required | Description             |
 | ---- | ------ | -------- | ----------------------- |
 | `id` | String | Yes      | A transaction id (TXID) |
+
+An empty or whitespace-only `id` returns `INVALID_ARGUMENT` ("id is not specified"). An unknown transaction returns `NOT_FOUND` ("Transaction not found").
 
 #### Example Request and Response
 

@@ -54,15 +54,14 @@ type. If a field is not indexed, it cannot be used for filtering or sorting.
 
 System fields are recognized by the query engine without being declared as normal schema properties. `$id` is implicitly queryable as the primary key. Other system fields like `$ownerId`, `$createdAt`, `$updatedAt`, and `$transferredAt` are built-in field names, but document queries still need to match an appropriate contract index. Querying and sorting on indexed fields also follows compound-index prefix and range/`orderBy` rules - see the [query syntax reference](../reference/query-syntax.md) for details.
 
+A query is served only when its filters line up with a leading, gap-free run of an index's properties. Since protocol version 14, a query that skips a property in the middle of an index is rejected rather than served from a partial match. Set-membership filters can also be applied to more than one adjacent index property in a single query.
+
+Some document types can be declared index-only in the data contract. Their documents are never stored as a body, so queries return documents reconstructed from the index entries themselves. This suits cheap relation-style rows such as likes or follows, and these types are what the chained queries described below are built on. See [indexOnly document types](../reference/data-contracts.md#indexonly-document-types) in the data contract reference.
+
 Benefits of indexed querying include:
 
 - Predictable performance
 - Consistent execution across nodes
-
-:::{important}
-Indexes should be planned during contract design since there are [limited index update
-options](./platform-protocol-data-contract.md#updates) for already registered contracts.
-:::
 
 ## Aggregate Queries
 
@@ -74,3 +73,28 @@ Aggregates are not available on every document type. The contract must opt in fo
 being queried, which means this is another decision to make during contract design. See the
 [query syntax reference](../reference/query-syntax.md#aggregate-queries) for the supported aggregates
 and how to request them.
+
+## Ranked, Windowed, and Composed Queries
+
+Since protocol version 14, Platform can answer several further kinds of question in a single verifiable
+round trip:
+
+- **Which groups rank highest?** [Ranked queries](../reference/query-syntax.md#ranked-aggregate-queries)
+  return the top (or bottom) groups by a count, sum, or average, such as a leaderboard.
+- **Which groups fall in a value band?** [Having-range queries](../reference/query-syntax.md#having-range-queries)
+  return only the groups whose aggregate falls within a given range.
+- **What happened in this time window?** [Time-range selection](../reference/query-syntax.md#time-range-selection)
+  reads documents bucketed into fixed time windows, for trending-style views.
+- **Which documents does this page refer to?** [Chained queries](../reference/query-syntax.md#chained-queries)
+  use the results of one query to select the documents returned by a second, and
+  [composite queries](../reference/query-syntax.md#composite-queries) return a page of documents together
+  with related documents or counts derived from that page.
+
+## Contract Design Considerations
+
+An application's expected queries shape its data contract. Fields used for filtering and sorting need
+suitable indexes, while capabilities such as aggregation, ranking, time-range selection, and composed
+queries require additional contract declarations. These choices should be made before registering the
+contract because [updates are limited](./platform-protocol-data-contract.md#updates). See the
+[data contract reference](../reference/data-contracts.md#document-indices) and
+[query syntax reference](../reference/query-syntax.md) for the exact configuration and query rules.
