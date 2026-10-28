@@ -35,15 +35,37 @@ Each data contract must define several fields. When using the [reference impleme
 * Optional groups (sets of identities with assigned power) used to jointly authorize privileged contract actions such as token minting, burning, or configuration changes
 * Optional keywords used to surface the contract through discovery features, plus an optional contract description
 
-Each document type's schema also determines how applications can query and relate its documents. Contracts declare indexes for efficient queries and can opt into capabilities such as aggregation, ranking, time-range selection, and relationships to other Platform objects. They can also define index-only document types for compact, immutable relationship data such as likes, follows, or memberships. Because these choices affect how data is stored and queried, they should be planned during contract design. See [Query Capabilities](./query.md), [Document Indices](../reference/data-contracts.md#document-indices), and [Platform-specific property keywords](../reference/data-contracts.md#platform-specific-property-keywords).
+Each document type's schema also determines how applications can query and relate its documents. Contracts declare indexes for efficient queries and can opt into capabilities such as aggregation, ranking, time-range selection, and relationships to other Platform objects. They can also define index-only document types for compact, immutable relationship data such as likes, follows, or memberships. Document types also decide who may remove their documents and whether documents expire; see [Document Delete](../explanations/platform-protocol-document.md#document-delete). Because these choices affect how data is stored and queried, they should be planned during contract design. See [Query Capabilities](./query.md), [Document Indices](../reference/data-contracts.md#document-indices), and [Platform-specific property keywords](../reference/data-contracts.md#platform-specific-property-keywords).
 
 For a practical example, see the [DashPay contract](#example-contract).
 
 ### Contract Groups
 
-From protocol version 14, contract groups organize contracts, document types, and tokens into an identity-owned collection. They can scope [authentication keys](../explanations/identity.md#keys) to those members. These are separate from [token groups](../explanations/tokens.md#groups), whose member identities jointly authorize token actions.
+Contract groups organize contracts, document types, and tokens into an identity-owned collection. They can scope [authentication keys](../explanations/identity.md#keys) to those members. These are separate from [token groups](../explanations/tokens.md#groups), whose member identities jointly authorize token actions.
 
 When registering a contract, the creation transition can also register a contract group, optionally with admins, and declare memberships for the new contract, its document types, or its tokens in groups the creating identity owns or administers.
+
+### Contract Moderation
+
+A data contract can declare moderation when it is registered. Moderation gives an application a consensus-enforced way to keep abusive identities out and to take down content, rather than relying on client-side blocklists that bind only the clients that keep them.
+
+A moderated contract can keep any of three lists of identities:
+
+* **Banlist** - a banned identity cannot submit document transitions for the contract until it is unbanned.
+* **Suspension list** - a suspended identity is barred in the same way until a block time set by the moderator.
+* **Warning list** - a warning records a reason without barring anything, giving the identity and its moderators a visible step short of a suspension.
+
+A banned or suspended identity can still delete its own documents under the document type's normal deletion rules. If the document type defines a retracted form (`retractedWhen`), the identity can also replace a document with that form. Token transitions are not affected. Transferring a document to a barred identity, or buying one from a barred seller, is refused.
+
+A contract's moderators are its owner alone, its owner together with up to 16 identities named by the contract, or a team elected by masternodes. To get elected, candidate teams submit charters to the moderation charters system data contract, and masternodes vote on which team takes the contract's seat. Until a team is seated, the contract's declaration determines who moderates in the interim, if anyone. A contract can instead keep its moderated document types unusable until a team is seated. Moderators act individually. They cannot be put on the contract's lists, and other moderators cannot delete their documents. On an elected contract, that protection covers the seated team, and covers the owner only if the contract declares it. Which lists a contract keeps, and whether its moderators are elected, are fixed at registration. A contract update can change the named moderators of a contract that is not elected, including naming some for the first time. Moderation actions are submitted with a dedicated contract user moderation state transition rather than in a batch.
+
+Each document type also controls what moderators may do with its documents through its `moderatorAbilities`:
+
+* **Deletion** - moderators may delete documents of the type, optionally only within a window after each document's last modification. On a contract with an elected team, a type can also let the seated team delete documents past that window by jointly approving the deletion.
+* **Removal records** - by default, a moderator's deletion leaves a permanent removal record showing whose document it was, who removed it, when, and why, plus a hash of the document and any fields the type chooses to keep public. The author is not refunded the document's storage unless the type says otherwise. Within one week, a moderator who still has a copy of the deleted document can restore it exactly as it was, unless the seated team deleted it together.
+* **Moderator-only fields** - a type can list properties that only moderators write, such as the status of a report. Documents record the last such write in the `$moderatedAt` and `$moderatedBy` fields.
+
+These abilities are fixed when the document type is defined. Any document type, moderated or not, can also charge declared action fees, on top of normal processing fees, for actions on its documents. Each fee has an owner part that the contract owner claims and, on a moderated contract, a moderators part that the moderation team shares (see [`getContractFeePots`](../reference/dapi-endpoints-platform-endpoints.md#getcontractfeepots)). Moderation status, list entries, removal records, and the actions of an elected team can be queried and proven; see the [Contract Moderation endpoints](../reference/dapi-endpoints.md#contract-moderation).
 
 ### Registration
 
@@ -68,16 +90,16 @@ Existing data contracts can be updated by their owner in backwards-compatible wa
 Permitted changes include:
 
 * Adding new document types, including their indices
-* Adding new properties to existing document types. New properties are normally optional; from protocol version 14 a new property may be marked as required starting with the contract version that introduces it, without invalidating documents created under earlier versions
+* Adding new properties to existing document types. A new property can be optional, or it can be required from the contract version that introduces it onward. Requiring it does not invalidate documents created under earlier contract versions
 * Adding new tokens to the contract
 * Adding new groups to the contract
 * Updating contract keywords and description
 
-Restricted changes include modifications that would break existing stored documents - for example, removing or renaming existing properties, changing their types, making an existing property required, or altering the index definitions of an existing document type. Whether a document type records the history of its transfers, sales, and price changes is also fixed when the document type is created and cannot be turned on or off by a later contract update. One narrow exception exists: a document type that keeps revision history cannot allow deletion, and an existing history-keeping type that was registered with deletion allowed may be updated to forbid it.
+Restricted changes include modifications that would break existing stored documents - for example, removing or renaming existing properties, changing their types, making an existing property required, or altering the index definitions of an existing document type. Whether a document type records the history of its transfers, sales, and price changes is also fixed when the document type is created and cannot be turned on or off by a later contract update. One narrow exception exists: a document type that keeps revision history cannot allow deletion, and an existing history-keeping type that was registered with deletion allowed may be updated to forbid it. Apart from that exception, the rules for how a document type's documents can be removed are also fixed when the type is defined. This covers deletion rules, time to live, and moderator abilities, along with the type's `refersTo` references.
 
 A contract update cannot remove or modify an existing token or group. Changing an existing token's configuration is done with a [token configuration update transition](../explanations/tokens.md#configuration-updates), governed by that token's own change control rules, and existing groups are immutable once the contract is registered.
 
-Optional contract revision history storage allows contracts to retain a record of their revisions that can be retrieved and verified. Identity key access rules also allow an encryption or decryption key to be bound to a specific contract or document type for more granular key management. From protocol version 14, non-master authentication keys can also be bound to a contract, document type, or contract group, restricting them to batch transitions within those bounds. See [Identity keys](../explanations/identity.md#keys).
+Optional contract revision history storage allows contracts to retain a record of their revisions that can be retrieved and verified. Identity key access rules also allow an encryption or decryption key to be bound to a specific contract or document type for more granular key management. Non-master authentication keys can also be bound to a contract, document type, or contract group, restricting them to batch transitions within those bounds. See [Identity keys](../explanations/identity.md#keys).
 
 :::{note}
 For more detailed information, see the [Platform Protocol Reference - Data Contract](../protocol-ref/data-contract.md) page.
@@ -165,6 +187,14 @@ The [DashPay contract](https://github.com/dashpay/platform/blob/master/packages/
           "maxItems": 21,
           "description": "Platform address in storage form (type byte 0x00 P2PKH / 0x01 P2SH followed by the 20-byte HASH160, i.e. RIPEMD160 of SHA256, of the public key or redeem script) for public payments. The type byte is consensus-enforced by a data trigger.",
           "position": 6
+        },
+        "shieldedAddress": {
+          "type": "array",
+          "byteArray": true,
+          "minItems": 43,
+          "maxItems": 43,
+          "description": "Raw Orchard receiving address: 11-byte diversifier followed by 32-byte diversified transmission key. Clients validate before payment; wallets should use a dedicated tip account.",
+          "position": 7
         }
       },
       "minProperties": 1,
