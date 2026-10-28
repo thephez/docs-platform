@@ -35,6 +35,7 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = [
     '_build',
+    '.claude',
     '.venv',
     'venv',
     'Thumbs.db',
