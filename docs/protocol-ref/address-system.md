@@ -4,15 +4,13 @@
 
 # Platform Address System
 
-:::{attention}
-Address-based state transitions were [enabled in Protocol Version 11](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-platform-version/src/version/feature_initial_protocol_versions.rs). These transitions enable direct operations using Platform addresses without requiring a pre-existing identity for some operations.
-:::
-
 ## Overview
+
+Address-based state transitions were [enabled in Protocol Version 11](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-platform-version/src/version/feature_initial_protocol_versions.rs). These transitions enable direct operations using Platform addresses without requiring a pre-existing identity for some operations.
 
 Address-based state transitions provide an alternative funding and transfer mechanism using Platform addresses. Unlike identity-signed transactions that require an existing identity with keys, address-based operations can work directly with cryptographic proofs tied to address ownership.
 
-There are six address-based state transition types:
+The address-based state transition types are:
 
 | Type | Name | Description |
 |------|------|-------------|
@@ -38,7 +36,7 @@ Platform addresses are derived from standard Bitcoin/Dash address formats and en
 A `PlatformAddress` has two distinct byte encodings depending on context. The type bytes above (`0xb0` / `0x80`) apply to the user-facing bech32m encoding — what appears in address strings like `dash1k...`. Internal GroveDB storage keys use bincode variant indices `0x00` / `0x01` instead. Decoding one through the other's code path will fail.
 :::
 
-See the [Platform address implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/address_funds/platform_address.rs).
+See the [Platform address implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/address_funds/platform_address.rs).
 
 ### Address Witness
 
@@ -65,7 +63,7 @@ The `$type` discriminator and camelCase `redeemScript` field name apply to the J
 3. Double-SHA256 hash the signable bytes (reused for all signatures)
 4. Match M signatures to N public keys in order
 
-See the [witness implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/address_funds/witness.rs).
+See the [witness implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/address_funds/witness.rs).
 
 ### Fee Strategy
 
@@ -80,7 +78,7 @@ The fee strategy specifies how transaction fees are deducted from inputs or outp
 Fee strategy cannot be empty. Maximum steps: 4 (`max_address_fee_strategies`). No duplicate steps allowed. Steps are processed in sequence until the fee is fully covered.
 :::
 
-See the [fee strategy implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/address_funds/fee_strategy/mod.rs).
+See the [fee strategy implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/address_funds/fee_strategy/mod.rs).
 
 ### Common Type Aliases
 
@@ -109,7 +107,7 @@ Transfer credits from an existing identity to one or more Platform addresses.
 Minimum recipients: 1. Maximum recipients: `max_address_outputs`. Minimum per recipient: 500,000 credits. Fee: 500,000 credits base + 6,000,000 credits per recipient (example: 1 recipient = 6,500,000 credits minimum fee).
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_to_addresses_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_credit_transfer_to_addresses_transition/).
 
 ### Identity Create from Addresses
 
@@ -130,7 +128,7 @@ Create a new identity funded from Platform address balances.
 **Cost:** Base cost 2,000,000 + 6,500,000 per key + 500,000 per input + 6,000,000 for the change output (if present). Example: 2 keys, 1 input, no change output = 15,500,000 credits.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_from_addresses_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_create_from_addresses_transition/).
 
 ### Identity Top-Up from Addresses
 
@@ -151,7 +149,7 @@ Add credits to an existing identity from Platform address balances.
 **Fee:** Base top-up cost 500,000 credits + 500,000 per input + 6,000,000 for the change output (if present).
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_from_addresses_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/state_transition/state_transitions/identity/identity_topup_from_addresses_transition/).
 
 ### Address Funds Transfer
 
@@ -175,7 +173,7 @@ Unlike other address transitions, fund transfers enforce strict balance preserva
 **Fee:** 500,000 credits per input + 6,000,000 credits per output.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funds_transfer_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funds_transfer_transition/).
 
 ### Address Funding from Asset Lock
 
@@ -203,7 +201,7 @@ Exactly one output must have a `None` value. This remainder output receives what
 **Fee:** 50,000,000 credits (asset lock base) + 500,000 per input + 6,000,000 per output (at least one output is counted). Example: 1 output, no inputs = 56,000,000 credits.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funding_from_asset_lock_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_funding_from_asset_lock_transition/).
 
 ### Address Credit Withdrawal
 
@@ -214,19 +212,19 @@ Withdraw credits from Platform addresses back to the Core chain.
 | inputs          | map              | Varies   | Map of source [Platform addresses](#platform-address) to (nonce, credits) pairs                                      |
 | output          | tuple            | Varies   | (Optional) Change output as (Platform address, credits)                                                              |
 | feeStrategy     | array            | Varies   | [Fee deduction strategy](#fee-strategy)                                                                              |
-| coreFeePerByte  | unsigned integer | 32 bits  | Core transaction fee per byte (must be a [Fibonacci number](https://en.wikipedia.org/wiki/Fibonacci_sequence) ≥ 1)   |
+| coreFeePerByte  | unsigned integer | 32 bits  | Core transaction fee per byte (must be a [Fibonacci number](https://en.wikipedia.org/wiki/Fibonacci_sequence) ≥ 1; at most 6,765 from protocol version 14) |
 | pooling         | unsigned integer | 8 bits   | Pooling mode: `0` = Never (required), `1` = IfAvailable, `2` = Standard                                              |
 | outputScript    | array of bytes   | Varies   | Core chain destination script (P2PKH or P2SH only)                                                                   |
 | userFeeIncrease | unsigned integer | 16 bits  | Extra fee to prioritize processing if the mempool is full                                                            |
 | inputWitnesses  | array            | Varies   | [Address witnesses](#address-witness) for each input                                                                 |
 
 :::{note}
-**Constraints:** Minimum inputs: 1. Maximum inputs: `max_address_inputs`. Minimum per input: 100,000 credits. Minimum output: 500,000 credits. Pooling must be `Never` (others not yet implemented). Output script must be P2PKH or P2SH. The withdrawn amount (input sum minus the change output) must be greater than zero and within the [min and max withdrawal amount](protocol-constants.md) limits.
+**Constraints:** Minimum inputs: 1. Maximum inputs: `max_address_inputs`. Minimum per input: 100,000 credits. Minimum output: 500,000 credits. Pooling must be `Never` (others not yet implemented). Output script must be P2PKH or P2SH. The withdrawn amount (input sum minus the change output) must be greater than zero and within the [min and max withdrawal amount](protocol-constants.md) limits. Starting in protocol version 14, the Core transaction fee is deducted from the withdrawn amount, so the withdrawn amount must be at least the min withdrawal amount plus the Core fee (190-byte asset unlock transaction × `coreFeePerByte` × 1,000 credits).
 
 **Fee:** 400,000,000 credits + 500,000 per input + 6,000,000 for the change output (if present). Withdrawal fees are significantly higher due to the complexity and finality of moving funds back to the Core chain.
 :::
 
-See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v4.2-dev/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_credit_withdrawal_transition/).
+See the [implementation in rs-dpp](https://github.com/dashpay/platform/blob/v5.0.1/packages/rs-dpp/src/state_transition/state_transitions/address_funds/address_credit_withdrawal_transition/).
 
 ### Address State Transition Signing
 
