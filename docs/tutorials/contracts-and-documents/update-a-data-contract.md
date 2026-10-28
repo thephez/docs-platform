@@ -8,7 +8,7 @@ It is possible to update existing data contracts in certain backwards-compatible
 
 * Adding new documents
 * Adding new optional properties to existing documents
-* Adding _non-unique_ indices for properties added in the update.
+* Adding new indices only as part of new documents. Indices on existing documents cannot be added, removed, or changed.
 
 In this tutorial we will update an existing data contract.
 
