@@ -214,7 +214,7 @@ rm -rf ~/.dashmate          # Deletes the Dashmate configuration
 
 ## Use JS SDK
 
-To connect to the local network with the [Dash Evo SDK](https://www.npmjs.com/package/@dashevo/evo-sdk), use the `localTrusted()` factory method. It connects to the local network's DAPI and uses the quorum sidecar that `yarn setup` enables on the seed node. See [Connect to a Local Devnet](./connecting-to-testnet.md#connect-to-a-local-devnet) for more detail.
+To connect to the local network with the [Dash Evo SDK](https://www.npmjs.com/package/@dashevo/evo-sdk), use the `localTrusted()` factory method. It connects to the local network's DAPI and uses the quorum sidecar that `yarn setup` enables on the seed node. See [Connect to a Local Devnet](./connecting-to-testnet.md#connect-to-a-local-devnet) for more detail. Install the SDK with `npm install @dashevo/evo-sdk` and save the example as an `.mjs` file, since it uses ES modules and top-level `await`.
 
 ```js
 import { EvoSDK } from '@dashevo/evo-sdk';
